@@ -3,7 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29609.76
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gameboy.VM", "Gameboy.VM\Gameboy.VM.csproj", "{0B1C11FA-38C0-4B72-8E80-B689CF958E85}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gameboy.VM", "Gameboy.VM\Gameboy.VM.csproj", "{0B1C11FA-38C0-4B72-8E80-B689CF958E85}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0D0273B8-1C2D-4C19-949B-6A6D10EF2542}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Roms", "Roms", "{AB78D493-CC92-46B7-863E-E4887E2ED960}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gameboy.VM.Cpu.Tests", "Gameboy.VM.Cpu.Tests\Gameboy.VM.Cpu.Tests.csproj", "{0CC57EB6-D946-4B5D-AD2E-575F68C6805B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +24,10 @@ Global
 		{0B1C11FA-38C0-4B72-8E80-B689CF958E85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B1C11FA-38C0-4B72-8E80-B689CF958E85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B1C11FA-38C0-4B72-8E80-B689CF958E85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CC57EB6-D946-4B5D-AD2E-575F68C6805B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CC57EB6-D946-4B5D-AD2E-575F68C6805B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CC57EB6-D946-4B5D-AD2E-575F68C6805B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CC57EB6-D946-4B5D-AD2E-575F68C6805B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
