@@ -9,7 +9,7 @@ namespace Gameboy.VM
     {
         private bool _inStopMode = false;
         private readonly MMU _mmu = new MMU();
-        private Registers _registers;
+        private Registers _registers = new Registers();
 
         internal CPU()
         {
@@ -510,6 +510,102 @@ namespace Gameboy.VM
                 case 0x9F: // SBC A, A
                     _registers.A = Sub(_registers.A, _registers.A, true);
                     return 1;
+                case 0xA0: // AND B
+                    _registers.A = And(_registers.A, _registers.B);
+                    return 1;
+                case 0xA1: // AND C
+                    _registers.A = And(_registers.A, _registers.C);
+                    return 1;
+                case 0xA2: // AND D
+                    _registers.A = And(_registers.A, _registers.D);
+                    return 1;
+                case 0xA3: // AND E
+                    _registers.A = And(_registers.A, _registers.E);
+                    return 1;
+                case 0xA4: // AND H
+                    _registers.A = And(_registers.A, _registers.H);
+                    return 1;
+                case 0xA5: // AND L
+                    _registers.A = And(_registers.A, _registers.L);
+                    return 1;
+                case 0xA6: // AND (HL)
+                    _registers.A = And(_registers.A, _mmu.ReadByte(_registers.HL));
+                    return 1;
+                case 0xA7: // AND A
+                    _registers.A = And(_registers.A, _registers.B);
+                    return 1;
+                case 0xA8: // XOR B
+                    _registers.A = Xor(_registers.A, _registers.B);
+                    return 1;
+                case 0xA9: // XOR C
+                    _registers.A = Xor(_registers.A, _registers.C);
+                    return 1;
+                case 0xAA: // XOR D
+                    _registers.A = Xor(_registers.A, _registers.D);
+                    return 1;
+                case 0xAB: // XOR E
+                    _registers.A = Xor(_registers.A, _registers.E);
+                    return 1;
+                case 0xAC: // XOR H
+                    _registers.A = Xor(_registers.A, _registers.H);
+                    return 1;
+                case 0xAD: // XOR L
+                    _registers.A = Xor(_registers.A, _registers.L);
+                    return 1;
+                case 0xAE: // XOR (HL)
+                    _registers.A = Xor(_registers.A, _mmu.ReadByte(_registers.HL));
+                    return 1;
+                case 0xAF: // XOR A
+                    _registers.A = Xor(_registers.A, _registers.B);
+                    return 1;
+                case 0xB0: // OR B
+                    _registers.A = Or(_registers.A, _registers.B);
+                    return 1;
+                case 0xB1: // OR C
+                    _registers.A = Or(_registers.A, _registers.C);
+                    return 1;
+                case 0xB2: // OR D
+                    _registers.A = Or(_registers.A, _registers.D);
+                    return 1;
+                case 0xB3: // OR E
+                    _registers.A = Or(_registers.A, _registers.E);
+                    return 1;
+                case 0xB4: // OR H
+                    _registers.A = Or(_registers.A, _registers.H);
+                    return 1;
+                case 0xB5: // OR L
+                    _registers.A = Or(_registers.A, _registers.L);
+                    return 1;
+                case 0xB6: // OR (HL)
+                    _registers.A = Or(_registers.A, _mmu.ReadByte(_registers.HL));
+                    return 1;
+                case 0xB7: // OR A
+                    _registers.A = Or(_registers.A, _registers.B);
+                    return 1;
+                case 0xB8: // CP B
+                    Sub(_registers.A, _registers.B, false);
+                    return 1;
+                case 0xB9: // CP C
+                    Sub(_registers.A, _registers.C, false);
+                    return 1;
+                case 0xBA: // CP D
+                    Sub(_registers.A, _registers.D, false);
+                    return 1;
+                case 0xBB: // CP E
+                    Sub(_registers.A, _registers.E, false);
+                    return 1;
+                case 0xBC: // CP H
+                    Sub(_registers.A, _registers.H, false);
+                    return 1;
+                case 0xBD: // CP L
+                    Sub(_registers.A, _registers.L, false);
+                    return 1;
+                case 0xBE: // CP (HL)
+                    Sub(_registers.A, _mmu.ReadByte(_registers.HL), false);
+                    return 1;
+                case 0xBF: // CP A
+                    Sub(_registers.A, _registers.B, false);
+                    return 1;
                 default:
                     throw new NotImplementedException($"Opcode {opcode} not implemented");
             }
@@ -521,7 +617,7 @@ namespace Gameboy.VM
         internal void Reset()
         {
             _mmu.Clear();
-            _registers = new Registers();
+            _registers.Clear();
         }
 
         private byte FetchByte()
@@ -577,6 +673,31 @@ namespace Gameboy.VM
             _registers.SetFlag(FRegisterFlags.HalfCarryFlag, (a & 0x0F) < (b & 0x0F) + c);
             _registers.SetFlag(FRegisterFlags.CarryFlag, result < 0);
             return (byte)(result & 0xFF);
+        }
+
+        private byte And(byte a, byte b)
+        {
+            var result = a & b;
+            _registers.SetFlag(FRegisterFlags.ZeroFlag, result == 0);
+            _registers.SetFlag(FRegisterFlags.CarryFlag | FRegisterFlags.SubtractFlag, false);
+            _registers.SetFlag(FRegisterFlags.HalfCarryFlag, true);
+            return (byte) result;
+        }
+
+        private byte Xor(byte a, byte b)
+        {
+            var result = a ^ b;
+            _registers.SetFlag(FRegisterFlags.ZeroFlag, result == 0);
+            _registers.SetFlag(FRegisterFlags.CarryFlag | FRegisterFlags.SubtractFlag | FRegisterFlags.HalfCarryFlag, false);
+            return (byte)result;
+        }
+
+        private byte Or(byte a, byte b)
+        {
+            var result = a | b;
+            _registers.SetFlag(FRegisterFlags.ZeroFlag, result == 0);
+            _registers.SetFlag(FRegisterFlags.CarryFlag | FRegisterFlags.SubtractFlag | FRegisterFlags.HalfCarryFlag, false);
+            return (byte)result;
         }
         #endregion
 

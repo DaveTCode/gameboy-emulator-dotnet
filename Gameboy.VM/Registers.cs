@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Gameboy.VM.Cpu.Tests")]
 namespace Gameboy.VM
@@ -8,7 +7,7 @@ namespace Gameboy.VM
     /// TODO - This assumes initialising values to 0x0, which is fine if we 
     /// load from bootrom but not find if we load from cartridge address 0x100.
     /// </summary>
-    internal struct Registers
+    internal class Registers
     {
         internal byte A;
         internal byte B;
@@ -81,6 +80,16 @@ namespace Gameboy.VM
 
         internal ushort ProgramCounter;
         internal ushort StackPointer;
+
+        public void Clear()
+        {
+            AF = 0x0000;
+            BC = 0x0000;
+            DE = 0x0000;
+            HL = 0x0000;
+            ProgramCounter = 0x0000;
+            StackPointer = 0x0000;
+        }
 
         public override string ToString()
         {
