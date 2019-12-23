@@ -39,7 +39,13 @@ namespace Gameboy.VM
 
         internal ushort ReadWord(ushort address) => (ushort)((ReadByte(address) << 8) | (ReadByte(address)));
 
-        internal void WriteByte(ushort address, byte value)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="value"></param>
+        /// <returns>The number of cpu cycles taken to write</returns>
+        internal int WriteByte(ushort address, byte value)
         {
             Trace.WriteLine($"Writing {value} to {address}");
             switch(address)
@@ -78,7 +84,22 @@ namespace Gameboy.VM
                 case 0xFFFF:
                     // Write to interrupt enable register - TODO
                     break;
-            };
+            }
+
+            return 2;
+        }
+
+        /// <summary>
+        /// Write a 2 byte value into the specified memory address.
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="value"></param>
+        /// <returns>The corresponding number of CPU cycles.</returns>
+        internal int WriteWord(ushort address, in ushort value)
+        {
+            return
+                WriteByte(address, (byte)(value & 0xFF)) +
+                WriteByte((ushort)((address + 1) & 0xFFFF), (byte)(value >> 8));
         }
     }
 }

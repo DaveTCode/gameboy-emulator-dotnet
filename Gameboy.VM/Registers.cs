@@ -57,17 +57,25 @@ namespace Gameboy.VM
             }
         }
 
+        internal ushort HLI()
+        {
+            HL = (ushort)((HL + 1) & 0xFFFF);
+            return (ushort)((HL - 1) & 0xFFFF);
+        }
+
+        internal ushort HLD()
+        {
+            HL = (ushort)((HL - 1) & 0xFFFF);
+            return (ushort)((HL + 1) & 0xFFFF);
+        }
+
         internal void SetFlag(FRegisterFlags flag, bool set)
         {
-            switch (set)
+            F |= set switch
             {
-                case true:
-                    F |= (byte)flag;
-                    break;
-                case false:
-                    F |= (byte)~flag;
-                    break;
-            }
+                true => (byte) flag,
+                false => (byte) ~flag
+            };
 
             F &= 0x00F0;
         }
@@ -95,5 +103,14 @@ namespace Gameboy.VM
         {
             return $"AF: {AF:X4}, BC: {BC:X4}, DE: {DE:X4}, HL: {HL:X4}";
         }
+    }
+
+    internal enum Register16Bit
+    {
+        AF,
+        BC,
+        DE,
+        HL,
+        SP
     }
 }

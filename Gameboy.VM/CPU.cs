@@ -7,12 +7,15 @@ namespace Gameboy.VM
 {
     internal class CPU
     {
-        private bool _inStopMode = false;
-        private readonly MMU _mmu = new MMU();
-        private Registers _registers = new Registers();
+        private bool _inStopMode;
+        private readonly MMU _mmu;
+        private readonly ALU _alu;
+        private readonly Registers _registers = new Registers();
 
         internal CPU()
         {
+            _mmu = new MMU();
+            _alu = new ALU(_mmu, _registers);
             Reset();
         }
 
@@ -24,591 +27,211 @@ namespace Gameboy.VM
         /// <returns>
         /// Total CPU cycles this step would have taken on a real gameboy
         /// </returns>
-        internal byte Step()
+        internal int Step()
         {
             var opcode = FetchByte();
 
-            switch(opcode)
+            return opcode switch
             {
-                case 0x00:
-                    return 1;
-                case 0x01:
-                    _registers.BC = FetchWord();
-                    return 3;
-                case 0x02:
-                    _mmu.WriteByte(_registers.DE, _registers.A);
-                    return 2;
-                case 0x03: // Increment BC - Done on 16 bit inc/dec/ld unit, no flag updates
-                    _registers.BC = Increment(_registers.BC);
-                    return 2;
-                case 0x04: // Increment B
-                    _registers.B = Increment(_registers.B);
-                    return 1;
-                case 0x05: // Decrement B
-                    _registers.B = Decrement(_registers.B);
-                    return 1;
-                case 0x06: // LD B, d8
-                    _registers.B = FetchByte();
-                    return 2;
-                case 0x07: // RLCA
-                    _registers.A = RotateLeftWithCarry(_registers.A);
-                    return 1;
-                case 0x08: // LD (a16), SP
-                    var address = FetchWord();
-                    _mmu.WriteByte(address, (byte)(_registers.StackPointer & 0xFF));
-                    _mmu.WriteByte((ushort)((address + 1) & 0xFFFF), (byte)(_registers.StackPointer >> 8));
-                    _registers.StackPointer = FetchWord();
-                    return 5;
-                case 0x09: // ADD HL, BC
-                    _registers.HL = Add(_registers.HL, _registers.BC);
-                    return 2;
-                case 0x0A: // LD A, (BC)
-                    _registers.A = _mmu.ReadByte(_registers.BC);
-                    return 2;
-                case 0x0B: // DEC BC - Done on 16 bit inc/dec/ld unit, no flag updates
-                    _registers.BC = Decrement(_registers.BC);
-                    return 2;
-                case 0x0C: // INC C
-                    _registers.C = Increment(_registers.C);
-                    return 1;
-                case 0x0D: // DEC C
-                    _registers.C = Decrement(_registers.C);
-                    return 1;
-                case 0x0E: // LD C, d8
-                    _registers.C = FetchByte();
-                    return 2;
-                case 0x0F: // RRCA
-                    _registers.A = RotateRightWithCarry(_registers.A);
-                    return 1;
-                case 0x10: // STOP 0
-                    // TODO - programming manual suggests what this does depends on lots of things!
-                    var _ = FetchByte();
-                    _inStopMode = true;
-                    return 2;
-                case 0x11: // LD DE, d16
-                    _registers.DE = FetchWord();
-                    return 3;
-                case 0x12: // LD (DE), A
-                    _mmu.WriteByte(_registers.DE, _registers.A);
-                    return 2;
-                case 0x13: // INC DE
-                    _registers.DE = Increment(_registers.DE);
-                    return 2;
-                case 0x14: // INC D
-                    _registers.D = Increment(_registers.D);
-                    return 1;
-                case 0x15: // DEC D
-                    _registers.D = Decrement(_registers.D);
-                    return 1;
-                case 0x16: // LD D, d8
-                    _registers.D = FetchByte();
-                    return 2;
-                case 0x17: // RLA
-                    _registers.A = RotateLeftNoCarry(_registers.A);
-                    return 1;
-                case 0x18: // JR r8
-                    _registers.ProgramCounter = (ushort)((_registers.ProgramCounter + FetchByte()) & 0xFFFF);
-                    return 3;
-                case 0x19: // ADD HL, DE
-                    _registers.HL = Add(_registers.HL, _registers.DE);
-                    return 2;
-                case 0x1A: // LD A, (DE)
-                    _registers.A = _mmu.ReadByte(_registers.DE);
-                    return 2;
-                case 0x1B: // DEC DE
-                    _registers.DE = Decrement(_registers.DE);
-                    return 2;
-                case 0x1C: // INC E
-                    _registers.E = Increment(_registers.E);
-                    return 1;
-                case 0x1D: // DEC E
-                    _registers.E = Decrement(_registers.E);
-                    return 1;
-                case 0x1E: // LD E, d8
-                    _registers.E = FetchByte();
-                    return 2;
-                case 0x1F: // RRA
-                    _registers.A = RotateRightNoCarry(_registers.A);
-                    return 1;
-                case 0x20: // JR NZ, r8
-                    return JumpOnFlag(FRegisterFlags.ZeroFlag, false);
-                case 0x21: // LD HL, d16
-                    _registers.HL = FetchWord();
-                    return 3;
-                case 0x22: // LD (HL+), A
-                    _mmu.WriteByte(_registers.HL, _registers.A);
-                    _registers.HL = Increment(_registers.HL);
-                    return 2;
-                case 0x23: // INC HL
-                    _registers.HL = Increment(_registers.HL);
-                    return 1;
-                case 0x24: // INC H
-                    _registers.H = Increment(_registers.H);
-                    return 1;
-                case 0x25: // DEC H
-                    _registers.H = Decrement(_registers.H);
-                    return 1;
-                case 0x26: // LD H, d8
-                    _registers.H = FetchByte();
-                    return 2;
-                case 0x27: // DAA
-                    _registers.A = DecimalAdjustRegister(_registers.A);
-                    return 1;
-                case 0x28: // JR Z, r8
-                    return JumpOnFlag(FRegisterFlags.ZeroFlag, true);
-                case 0x29: // ADD HL, HL
-                    _registers.HL = Add(_registers.HL, _registers.HL);
-                    return 2;
-                case 0x2A: // LD A, (HL+)
-                    _registers.A = _mmu.ReadByte(_registers.HL);
-                    _registers.HL = Increment(_registers.HL);
-                    return 2;
-                case 0x2B: // DEC HL
-                    _registers.HL = Decrement(_registers.HL);
-                    return 1;
-                case 0x2C: // INC L
-                    _registers.L = Increment(_registers.L);
-                    return 1;
-                case 0x2D: // DEC L
-                    _registers.L = Decrement(_registers.L);
-                    return 1;
-                case 0x2E: // LD L, d8
-                    _registers.L = FetchByte();
-                    return 2;
-                case 0x2F: // CPL
-                    _registers.A ^= _registers.A;
-                    _registers.SetFlag(FRegisterFlags.HalfCarryFlag | FRegisterFlags.SubtractFlag, true);
-                    return 1;
-                case 0x30: // JR NC, d8
-                    return JumpOnFlag(FRegisterFlags.CarryFlag, false);
-                case 0x31: // LD SP, d16
-                    _registers.StackPointer = FetchWord();
-                    return 3;
-                case 0x32: // LD (HL-), A
-                    _mmu.WriteByte(_registers.HL, _registers.A);
-                    _registers.HL = Decrement(_registers.HL);
-                    return 2;
-                case 0x33: // INC SP
-                    _registers.StackPointer = Increment(_registers.StackPointer);
-                    return 2;
-                case 0x34: // INC (HL)
-                    _mmu.WriteByte(_registers.HL, Increment(_mmu.ReadByte(_registers.HL)));
-                    return 3;
-                case 0x35: // DEC (HL)
-                    _mmu.WriteByte(_registers.HL, Decrement(_mmu.ReadByte(_registers.HL)));
-                    return 3;
-                case 0x36: // LD (HL), d8
-                    _mmu.WriteByte(_registers.HL, FetchByte());
-                    return 3;
-                case 0x37: // SCF
-                    _registers.SetFlag(FRegisterFlags.CarryFlag, true);
-                    _registers.SetFlag(FRegisterFlags.HalfCarryFlag | FRegisterFlags.SubtractFlag, false);
-                    return 1;
-                case 0x38: // JR C, d8
-                    return JumpOnFlag(FRegisterFlags.CarryFlag, true);
-                case 0x39: // ADD HL, SP
-                    _registers.HL = Add(_registers.HL, _registers.StackPointer);
-                    return 2;
-                case 0x3A: // LD A, (HL-)
-                    _registers.A = _mmu.ReadByte(_registers.HL);
-                    _registers.HL = Decrement(_registers.HL);
-                    return 2;
-                case 0x3B: // DEC SP
-                    _registers.StackPointer = Decrement(_registers.StackPointer);
-                    return 2;
-                case 0x3C: // INC A
-                    _registers.A = Increment(_registers.A);
-                    return 1;
-                case 0x3D: // DEC A
-                    _registers.A = Decrement(_registers.A);
-                    return 1;
-                case 0x3E: // LD A, d8
-                    _registers.A = FetchByte();
-                    return 2;
-                case 0x3F: // CCF
-                    _registers.SetFlag(FRegisterFlags.CarryFlag, !_registers.GetFlag(FRegisterFlags.CarryFlag));
-                    _registers.SetFlag(FRegisterFlags.HalfCarryFlag | FRegisterFlags.SubtractFlag, false);
-                    return 1;
-                case 0x40: // LD B, B
-                    return 1;
-                case 0x41: // LD B, C
-                    _registers.B = _registers.C;
-                    return 1;
-                case 0x42: // LD B, D
-                    _registers.B = _registers.D;
-                    return 1;
-                case 0x43: // LD B, E
-                    _registers.B = _registers.E;
-                    return 1;
-                case 0x44: // LD B, H
-                    _registers.B = _registers.H;
-                    return 1;
-                case 0x45: // LD B, L
-                    _registers.B = _registers.L;
-                    return 1;
-                case 0x46: // LD B, (HL)
-                    _registers.B = _mmu.ReadByte(_registers.HL);
-                    return 2;
-                case 0x47: // LD B, A
-                    _registers.B = _registers.A;
-                    return 1;
-                case 0x48: // LD C, B
-                    _registers.C = _registers.B;
-                    return 1;
-                case 0x49: // LD C, C
-                    return 1;
-                case 0x4A: // LD C, D
-                    _registers.C = _registers.D;
-                    return 1;
-                case 0x4B: // LD C, E
-                    _registers.C = _registers.E;
-                    return 1;
-                case 0x4C: // LD C, H
-                    _registers.C = _registers.H;
-                    return 1;
-                case 0x4D: // LD C, L
-                    _registers.C = _registers.L;
-                    return 1;
-                case 0x4E: // LD C, (HL)
-                    _registers.C = _mmu.ReadByte(_registers.HL);
-                    return 2;
-                case 0x4F: // LD C, A
-                    _registers.C = _registers.A;
-                    return 1;
-                case 0x50: // LD D, B
-                    _registers.D = _registers.B;
-                    return 1;
-                case 0x51: // LD D, C
-                    _registers.D = _registers.C;
-                    return 1;
-                case 0x52: // LD D, D
-                    return 1;
-                case 0x53: // LD D, E
-                    _registers.D = _registers.E;
-                    return 1;
-                case 0x54: // LD D, H
-                    _registers.D = _registers.H;
-                    return 1;
-                case 0x55: // LD D, L
-                    _registers.D = _registers.L;
-                    return 1;
-                case 0x56: // LD D, (HL)
-                    _registers.D = _mmu.ReadByte(_registers.HL);
-                    return 2;
-                case 0x57: // LD D, A
-                    _registers.D = _registers.A;
-                    return 1;
-                case 0x58: // LD E, B
-                    _registers.E = _registers.B;
-                    return 1;
-                case 0x59: // LD E, C
-                    _registers.E = _registers.C;
-                    return 1;
-                case 0x5A: // LD E, D
-                    _registers.E = _registers.D;
-                    return 1;
-                case 0x5B: // LD E, E
-                    return 1;
-                case 0x5C: // LD E, H
-                    _registers.E = _registers.H;
-                    return 1;
-                case 0x5D: // LD E, L
-                    _registers.E = _registers.L;
-                    return 1;
-                case 0x5E: // LD E, (HL)
-                    _registers.E = _mmu.ReadByte(_registers.HL);
-                    return 2;
-                case 0x5F: // LD E, A
-                    _registers.E = _registers.A;
-                    return 1;
-                case 0x60: // LD H, B
-                    _registers.H = _registers.B;
-                    return 1;
-                case 0x61: // LD H, C
-                    _registers.H = _registers.C;
-                    return 1;
-                case 0x62: // LD H, D
-                    _registers.H = _registers.D;
-                    return 1;
-                case 0x63: // LD H, E
-                    _registers.H = _registers.E;
-                    return 1;
-                case 0x64: // LD H, H
-                    return 1;
-                case 0x65: // LD H, L
-                    _registers.H = _registers.L;
-                    return 1;
-                case 0x66: // LD H, (HL)
-                    _registers.H = _mmu.ReadByte(_registers.HL);
-                    return 2;
-                case 0x67: // LD H, A
-                    _registers.H = _registers.A;
-                    return 1;
-                case 0x68: // LD L, B
-                    _registers.L = _registers.B;
-                    return 1;
-                case 0x69: // LD L, C
-                    _registers.L = _registers.C;
-                    return 1;
-                case 0x6A: // LD L, D
-                    _registers.L = _registers.D;
-                    return 1;
-                case 0x6B: // LD L, E
-                    _registers.L = _registers.E;
-                    return 1;
-                case 0x6C: // LD L, H
-                    _registers.L = _registers.H;
-                    return 1;
-                case 0x6D: // LD L, L
-                    return 1;
-                case 0x6E: // LD L, (HL)
-                    _registers.L = _mmu.ReadByte(_registers.HL);
-                    return 2;
-                case 0x6F: // LD L, A
-                    _registers.L = _registers.A;
-                    return 1;
-                case 0x70: // LD (HL), B
-                    _mmu.WriteByte(_registers.HL, _registers.B);
-                    return 2;
-                case 0x71: // LD (HL), C
-                    _mmu.WriteByte(_registers.HL, _registers.C);
-                    return 2;
-                case 0x72: // LD (HL), D
-                    _mmu.WriteByte(_registers.HL, _registers.D);
-                    return 2;
-                case 0x73: // LD (HL), E
-                    _mmu.WriteByte(_registers.HL, _registers.E);
-                    return 2;
-                case 0x74: // LD (HL), H
-                    _mmu.WriteByte(_registers.HL, _registers.H);
-                    return 2;
-                case 0x75: // LD (HL), L
-                    _mmu.WriteByte(_registers.HL, _registers.L);
-                    return 2;
-                case 0x76: // HALT
-                    // TODO - What does HALT do?
-                    return 1;
-                case 0x77: // LD (HL), A
-                    _mmu.WriteByte(_registers.HL, _registers.A);
-                    return 2;
-                case 0x78: // LD A, B
-                    _registers.A = _registers.B;
-                    return 1;
-                case 0x79: // LD A, C
-                    _registers.A = _registers.C;
-                    return 1;
-                case 0x7A: // LD A, D
-                    _registers.A = _registers.D;
-                    return 1;
-                case 0x7B: // LD A, E
-                    _registers.A = _registers.E;
-                    return 1;
-                case 0x7C: // LD A, H
-                    _registers.A = _registers.H;
-                    return 1;
-                case 0x7D: // LD A, L
-                    _registers.A = _registers.L;
-                    return 1;
-                case 0x7E: // LD A, (HL)
-                    _registers.A = _mmu.ReadByte(_registers.HL);
-                    return 2;
-                case 0x7F: // LD A, A
-                    return 1;
-                case 0x80: // ADD A, B
-                    _registers.A = Add(_registers.A, _registers.B, false);
-                    return 1;
-                case 0x81: // ADD A, C
-                    _registers.A = Add(_registers.A, _registers.C, false);
-                    return 1;
-                case 0x82: // ADD A, D
-                    _registers.A = Add(_registers.A, _registers.D, false);
-                    return 1;
-                case 0x83: // ADD A, E
-                    _registers.A = Add(_registers.A, _registers.E, false);
-                    return 1;
-                case 0x84: // ADD A, H
-                    _registers.A = Add(_registers.A, _registers.H, false);
-                    return 1;
-                case 0x85: // ADD A, L
-                    _registers.A = Add(_registers.A, _registers.L, false);
-                    return 1;
-                case 0x86: // ADD A, (HL)
-                    _registers.A = Add(_registers.A, _mmu.ReadByte(_registers.HL), false);
-                    return 2;
-                case 0x87: // ADD A, A
-                    _registers.A = Add(_registers.A, _registers.A, false);
-                    return 1;
-                case 0x88: // ADC A, B
-                    _registers.A = Add(_registers.A, _registers.B, true);
-                    return 1;
-                case 0x89: // ADC A, C
-                    _registers.A = Add(_registers.A, _registers.C, true);
-                    return 1;
-                case 0x8A: // ADC A, D
-                    _registers.A = Add(_registers.A, _registers.D, true);
-                    return 1;
-                case 0x8B: // ADC A, E
-                    _registers.A = Add(_registers.A, _registers.E, true);
-                    return 1;
-                case 0x8C: // ADC A, H
-                    _registers.A = Add(_registers.A, _registers.H, true);
-                    return 1;
-                case 0x8D: // ADC A, L
-                    _registers.A = Add(_registers.A, _registers.L, true);
-                    return 1;
-                case 0x8E: // ADC A, (HL)
-                    _registers.A = Add(_registers.A, _mmu.ReadByte(_registers.HL), true);
-                    return 1;
-                case 0x8F: // ADC A, A
-                    _registers.A = Add(_registers.A, _registers.A, true);
-                    return 1;
-                case 0x90: // SUB B
-                    _registers.A = Sub(_registers.A, _registers.B, false);
-                    return 1;
-                case 0x91: // SUB C
-                    _registers.A = Sub(_registers.A, _registers.C, false);
-                    return 1;
-                case 0x92: // SUB D
-                    _registers.A = Sub(_registers.A, _registers.D, false);
-                    return 1;
-                case 0x93: // SUB E
-                    _registers.A = Sub(_registers.A, _registers.E, false);
-                    return 1;
-                case 0x94: // SUB H
-                    _registers.A = Sub(_registers.A, _registers.H, false);
-                    return 1;
-                case 0x95: // SUB L
-                    _registers.A = Sub(_registers.A, _registers.L, false);
-                    return 1;
-                case 0x96: // SUB (HL)
-                    _registers.A = Sub(_registers.A, _mmu.ReadByte(_registers.HL), false);
-                    return 1;
-                case 0x97: // SUB A
-                    _registers.A = Sub(_registers.A, _registers.A, false);
-                    return 1;
-                case 0x98: // SBC B
-                    _registers.A = Sub(_registers.A, _registers.B, true);
-                    return 1;
-                case 0x99: // SBC C
-                    _registers.A = Sub(_registers.A, _registers.C, true);
-                    return 1;
-                case 0x9A: // SBC D
-                    _registers.A = Sub(_registers.A, _registers.D, true);
-                    return 1;
-                case 0x9B: // SBC E
-                    _registers.A = Sub(_registers.A, _registers.E, true);
-                    return 1;
-                case 0x9C: // SBC H
-                    _registers.A = Sub(_registers.A, _registers.H, true);
-                    return 1;
-                case 0x9D: // SBC A, L
-                    _registers.A = Sub(_registers.A, _registers.L, true);
-                    return 1;
-                case 0x9E: // SBC A, (HL)
-                    _registers.A = Sub(_registers.A, _mmu.ReadByte(_registers.HL), true);
-                    return 1;
-                case 0x9F: // SBC A, A
-                    _registers.A = Sub(_registers.A, _registers.A, true);
-                    return 1;
-                case 0xA0: // AND B
-                    _registers.A = And(_registers.A, _registers.B);
-                    return 1;
-                case 0xA1: // AND C
-                    _registers.A = And(_registers.A, _registers.C);
-                    return 1;
-                case 0xA2: // AND D
-                    _registers.A = And(_registers.A, _registers.D);
-                    return 1;
-                case 0xA3: // AND E
-                    _registers.A = And(_registers.A, _registers.E);
-                    return 1;
-                case 0xA4: // AND H
-                    _registers.A = And(_registers.A, _registers.H);
-                    return 1;
-                case 0xA5: // AND L
-                    _registers.A = And(_registers.A, _registers.L);
-                    return 1;
-                case 0xA6: // AND (HL)
-                    _registers.A = And(_registers.A, _mmu.ReadByte(_registers.HL));
-                    return 1;
-                case 0xA7: // AND A
-                    _registers.A = And(_registers.A, _registers.B);
-                    return 1;
-                case 0xA8: // XOR B
-                    _registers.A = Xor(_registers.A, _registers.B);
-                    return 1;
-                case 0xA9: // XOR C
-                    _registers.A = Xor(_registers.A, _registers.C);
-                    return 1;
-                case 0xAA: // XOR D
-                    _registers.A = Xor(_registers.A, _registers.D);
-                    return 1;
-                case 0xAB: // XOR E
-                    _registers.A = Xor(_registers.A, _registers.E);
-                    return 1;
-                case 0xAC: // XOR H
-                    _registers.A = Xor(_registers.A, _registers.H);
-                    return 1;
-                case 0xAD: // XOR L
-                    _registers.A = Xor(_registers.A, _registers.L);
-                    return 1;
-                case 0xAE: // XOR (HL)
-                    _registers.A = Xor(_registers.A, _mmu.ReadByte(_registers.HL));
-                    return 1;
-                case 0xAF: // XOR A
-                    _registers.A = Xor(_registers.A, _registers.B);
-                    return 1;
-                case 0xB0: // OR B
-                    _registers.A = Or(_registers.A, _registers.B);
-                    return 1;
-                case 0xB1: // OR C
-                    _registers.A = Or(_registers.A, _registers.C);
-                    return 1;
-                case 0xB2: // OR D
-                    _registers.A = Or(_registers.A, _registers.D);
-                    return 1;
-                case 0xB3: // OR E
-                    _registers.A = Or(_registers.A, _registers.E);
-                    return 1;
-                case 0xB4: // OR H
-                    _registers.A = Or(_registers.A, _registers.H);
-                    return 1;
-                case 0xB5: // OR L
-                    _registers.A = Or(_registers.A, _registers.L);
-                    return 1;
-                case 0xB6: // OR (HL)
-                    _registers.A = Or(_registers.A, _mmu.ReadByte(_registers.HL));
-                    return 1;
-                case 0xB7: // OR A
-                    _registers.A = Or(_registers.A, _registers.B);
-                    return 1;
-                case 0xB8: // CP B
-                    Sub(_registers.A, _registers.B, false);
-                    return 1;
-                case 0xB9: // CP C
-                    Sub(_registers.A, _registers.C, false);
-                    return 1;
-                case 0xBA: // CP D
-                    Sub(_registers.A, _registers.D, false);
-                    return 1;
-                case 0xBB: // CP E
-                    Sub(_registers.A, _registers.E, false);
-                    return 1;
-                case 0xBC: // CP H
-                    Sub(_registers.A, _registers.H, false);
-                    return 1;
-                case 0xBD: // CP L
-                    Sub(_registers.A, _registers.L, false);
-                    return 1;
-                case 0xBE: // CP (HL)
-                    Sub(_registers.A, _mmu.ReadByte(_registers.HL), false);
-                    return 1;
-                case 0xBF: // CP A
-                    Sub(_registers.A, _registers.B, false);
-                    return 1;
-                default:
-                    throw new NotImplementedException($"Opcode {opcode} not implemented");
-            }
+                0x00 => 1, // NOOP
+                0x01 => _alu.Load(Register16Bit.BC, FetchWord()), // LD BC, d16
+                0x02 => _mmu.WriteByte(_registers.BC, _registers.A), // LD (BC), A
+                0x03 => _alu.Increment(Register16Bit.BC), // Increment BC
+                0x04 => _alu.Increment(ref _registers.B), // Increment B
+                0x05 => _alu.Decrement(ref _registers.B), // Decrement B
+                0x06 => (_alu.Load(ref _registers.B, FetchByte()) + 1), // LD B, d8
+                0x07 => _alu.RotateLeftWithCarry(ref _registers.A), // RLCA
+                0x08 => (_mmu.WriteWord(FetchWord(), _registers.StackPointer) + 1), // LD (a16), SP
+                0x09 => _alu.Add(Register16Bit.HL, _registers.HL, _registers.BC), // ADD HL, BC
+                0x0A => (_alu.Load(ref _registers.A, _mmu.ReadByte(_registers.BC)) + 1), // LD A, (BC)
+                0x0B => _alu.Decrement(Register16Bit.BC), // DEC BC - Done on 16 bit inc/dec/ld unit, no flag updates
+                0x0C => _alu.Increment(ref _registers.C), // INC C
+                0x0D => _alu.Decrement(ref _registers.C), // DEC C
+                0x0E => (_alu.Load(ref _registers.C, FetchByte()) + 1), // LD C, d8
+                0x0F => _alu.RotateRightWithCarry(ref _registers.A), // RRCA
+                0x10 => Stop(), // STOP 0
+                0x11 => _alu.Load(Register16Bit.DE, FetchWord()), // LD DE, d16
+                0x12 => _mmu.WriteByte(_registers.DE, _registers.A), // LD (DE), A
+                0x13 => _alu.Increment(Register16Bit.DE), // INC DE
+                0x14 => _alu.Increment(ref _registers.D), // INC D
+                0x15 => _alu.Decrement(ref _registers.D), // DEC D
+                0x16 => (_alu.Load(ref _registers.D, FetchByte()) + 1), // LD D, d8
+                0x17 => _alu.RotateLeftNoCarry(ref _registers.A), // RLA
+                0x18 => _alu.JumpRight((sbyte)FetchByte()), // JR r8
+                0x19 => _alu.Add(Register16Bit.HL, _registers.HL, _registers.DE), // ADD HL, DE
+                0x1A => _alu.Load(ref _registers.A, _mmu.ReadByte(_registers.DE)), // LD A, (DE)
+                0x1B => _alu.Decrement(Register16Bit.DE), // DEC DE
+                0x1C => _alu.Increment(ref _registers.E), // INC E
+                0x1D => _alu.Decrement(ref _registers.E), // DEC E
+                0x1E => (_alu.Load(ref _registers.E, FetchByte()) + 1), // LD E, d8
+                0x1F => _alu.RotateRightNoCarry(ref _registers.A), // RRA
+                0x20 => _alu.JumpRightOnFlag(FRegisterFlags.ZeroFlag, (sbyte)FetchByte(), false), // JR NZ, r8
+                0x21 => (_alu.Load(Register16Bit.HL, FetchWord()) + 1), // LD HL, d16
+                0x22 => _mmu.WriteByte(_registers.HLI(), _registers.A), // LD (HL+), A
+                0x23 => _alu.Increment(Register16Bit.HL), // INC HL
+                0x24 => _alu.Increment(ref _registers.H), // INC H
+                0x25 => _alu.Decrement(ref _registers.H), // DEC H
+                0x26 => (_alu.Load(ref _registers.H, FetchByte()) + 1), // LD H, d8
+                0x27 => _alu.DecimalAdjustRegister(ref _registers.A), // DAA
+                0x28 => _alu.JumpRightOnFlag(FRegisterFlags.ZeroFlag, (sbyte)FetchByte(), true), // JR Z, r8
+                0x29 => _alu.Add(Register16Bit.HL, _registers.HL, _registers.HL), // ADD HL, HL
+                0x2A => _alu.Load(ref _registers.A, _mmu.ReadByte(_registers.HLI())), // LD A, (HL+)
+                0x2B => _alu.Decrement(Register16Bit.HL), // DEC HL
+                0x2C => _alu.Increment(ref _registers.L), // INC L
+                0x2D => _alu.Decrement(ref _registers.L), // DEC L
+                0x2E => (_alu.Load(ref _registers.L, FetchByte()) + 1), // LD L, d8
+                0x2F => _alu.CPL(), // CPL
+                0x30 => _alu.JumpRightOnFlag(FRegisterFlags.CarryFlag, (sbyte)FetchByte(), false), // JR NC, d8
+                0x31 => (_alu.Load(Register16Bit.SP, FetchWord()) + 1), // LD SP, d16
+                0x32 => _mmu.WriteByte(_registers.HLD(), _registers.A), // LD (HL-), A
+                0x33 => _alu.Increment(Register16Bit.SP), // INC SP
+                0x34 => _alu.IncrementMemoryValue(_registers.HL), // INC (HL)
+                0x35 => _alu.DecrementMemoryValue(_registers.HL), // DEC (HL)
+                0x36 => (_mmu.WriteByte(_registers.HL, FetchByte()) + 1), // LD (HL), d8
+                0x37 => _alu.SCF(), // SCF
+                0x38 => _alu.JumpRightOnFlag(FRegisterFlags.CarryFlag, (sbyte)FetchByte(), true), // JR C, d8
+                0x39 => _alu.Add(Register16Bit.HL, _registers.HL, _registers.StackPointer), // ADD HL, SP
+                0x3A => _alu.Load(ref _registers.A, _mmu.ReadByte(_registers.HLD())), // LD A, (HL-)
+                0x3B => _alu.Decrement(Register16Bit.SP), // DEC SP
+                0x3C => _alu.Increment(ref _registers.A), // INC A
+                0x3D => _alu.Decrement(ref _registers.A), // DEC A
+                0x3E => (_alu.Load(ref _registers.A, FetchByte()) + 1), // LD A, d8
+                0x3F => _alu.CCF(), // CCF
+                0x40 => 1, // LD B, B
+                0x41 => _alu.Load(ref _registers.B, _registers.C), // LD B, C
+                0x42 => _alu.Load(ref _registers.B, _registers.D), // LD B, D
+                0x43 => _alu.Load(ref _registers.B, _registers.E), // LD B, E
+                0x44 => _alu.Load(ref _registers.B, _registers.H), // LD B, H
+                0x45 => _alu.Load(ref _registers.B, _registers.L), // LD B, L
+                0x46 => (_alu.Load(ref _registers.B, _mmu.ReadByte(_registers.HL)) + 1), // LD B, (HL)
+                0x47 => _alu.Load(ref _registers.B, _registers.A), // LD B, A
+                0x48 => _alu.Load(ref _registers.C, _registers.B), // LD C, B
+                0x49 => 1, // LD C, C
+                0x4A => _alu.Load(ref _registers.C, _registers.D), // LD C, D
+                0x4B => _alu.Load(ref _registers.C, _registers.E), // LD C, E
+                0x4C => _alu.Load(ref _registers.C, _registers.H), // LD C, H
+                0x4D => _alu.Load(ref _registers.C, _registers.L), // LD C, L
+                0x4E => (_alu.Load(ref _registers.C, _mmu.ReadByte(_registers.HL)) + 1), // LD C, (HL)
+                0x4F => _alu.Load(ref _registers.C, _registers.A), // LD C, A
+                0x50 => _alu.Load(ref _registers.D, _registers.B), // LD D, B
+                0x51 => _alu.Load(ref _registers.D, _registers.C), // LD D, C
+                0x52 => 1, // LD D, D
+                0x53 => _alu.Load(ref _registers.D, _registers.E), // LD D, E
+                0x54 => _alu.Load(ref _registers.D, _registers.H), // LD D, H
+                0x55 => _alu.Load(ref _registers.D, _registers.L), // LD D, L
+                0x56 => (_alu.Load(ref _registers.D, _mmu.ReadByte(_registers.HL)) + 1), // LD D, (HL)
+                0x57 => _alu.Load(ref _registers.D, _registers.A), // LD D, A
+                0x58 => _alu.Load(ref _registers.E, _registers.B), // LD E, B
+                0x59 => _alu.Load(ref _registers.E, _registers.C), // LD E, C
+                0x5A => _alu.Load(ref _registers.E, _registers.D), // LD E, D
+                0x5B => 1, // LD E, E
+                0x5C => _alu.Load(ref _registers.E, _registers.H), // LD E, H
+                0x5D => _alu.Load(ref _registers.E, _registers.L), // LD E, L
+                0x5E => (_alu.Load(ref _registers.E, _mmu.ReadByte(_registers.HL)) + 1), // LD E, (HL)
+                0x5F => _alu.Load(ref _registers.E, _registers.A), // LD E, A
+                0x60 => _alu.Load(ref _registers.H, _registers.B), // LD H, B
+                0x61 => _alu.Load(ref _registers.H, _registers.C), // LD H, C
+                0x62 => _alu.Load(ref _registers.H, _registers.D), // LD H, D
+                0x63 => _alu.Load(ref _registers.H, _registers.E), // LD H, E
+                0x64 => 1, // LD H, H
+                0x65 => _alu.Load(ref _registers.H, _registers.L), // LD H, L
+                0x66 => (_alu.Load(ref _registers.H, _mmu.ReadByte(_registers.HL)) + 1), // LD H, (HL)
+                0x67 => _alu.Load(ref _registers.H, _registers.A), // LD H, A
+                0x68 => _alu.Load(ref _registers.L, _registers.B), // LD L, B
+                0x69 => _alu.Load(ref _registers.L, _registers.C), // LD L, C
+                0x6A => _alu.Load(ref _registers.L, _registers.D), // LD L, D
+                0x6B => _alu.Load(ref _registers.L, _registers.E), // LD L, E
+                0x6C => _alu.Load(ref _registers.L, _registers.H), // LD L, H
+                0x6D => 1, // LD L, L
+                0x6E => (_alu.Load(ref _registers.L, _mmu.ReadByte(_registers.HL)) + 1), // LD L, (HL)
+                0x6F => _alu.Load(ref _registers.L, _registers.A), // LD L, A
+                0x70 => _mmu.WriteByte(_registers.HL, _registers.B), // LD (HL), B
+                0x71 => _mmu.WriteByte(_registers.HL, _registers.C), // LD (HL), C
+                0x72 => _mmu.WriteByte(_registers.HL, _registers.D), // LD (HL), D
+                0x73 => _mmu.WriteByte(_registers.HL, _registers.E), // LD (HL), E
+                0x74 => _mmu.WriteByte(_registers.HL, _registers.H), // LD (HL), H
+                0x75 => _mmu.WriteByte(_registers.HL, _registers.L), // LD (HL), L
+                0x76 => Halt(), // HALT
+                0x77 => _mmu.WriteByte(_registers.HL, _registers.A), // LD (HL), A
+                0x78 => _alu.Load(ref _registers.A, _registers.B), // LD A, B
+                0x79 => _alu.Load(ref _registers.A, _registers.C), // LD A, C
+                0x7A => _alu.Load(ref _registers.A, _registers.D), // LD A, D
+                0x7B => _alu.Load(ref _registers.A, _registers.E), // LD A, E
+                0x7C => _alu.Load(ref _registers.A, _registers.H), // LD A, H
+                0x7D => _alu.Load(ref _registers.A, _registers.L), // LD A, L
+                0x7E => (_alu.Load(ref _registers.A, _mmu.ReadByte(_registers.HL)) + 1), // LD A, (HL)
+                0x7F => 1, // LD A, A
+                0x80 => _alu.Add(ref _registers.A, _registers.B, false), // ADD A, B
+                0x81 => _alu.Add(ref _registers.A, _registers.C, false), // ADD A, C
+                0x82 => _alu.Add(ref _registers.A, _registers.D, false), // ADD A, D
+                0x83 => _alu.Add(ref _registers.A, _registers.E, false), // ADD A, E
+                0x84 => _alu.Add(ref _registers.A, _registers.H, false), // ADD A, H
+                0x85 => _alu.Add(ref _registers.A, _registers.L, false), // ADD A, L
+                0x86 => _alu.Add(ref _registers.A, _mmu.ReadByte(_registers.HL), false), // ADD A, (HL)
+                0x87 => _alu.Add(ref _registers.A, _registers.A, false), // ADD A, A
+                0x88 => _alu.Add(ref _registers.A, _registers.B, true), // ADC A, B
+                0x89 => _alu.Add(ref _registers.A, _registers.C, true), // ADC A, C
+                0x8A => _alu.Add(ref _registers.A, _registers.D, true), // ADC A, D
+                0x8B => _alu.Add(ref _registers.A, _registers.E, true), // ADC A, E
+                0x8C => _alu.Add(ref _registers.A, _registers.H, true), // ADC A, H
+                0x8D => _alu.Add(ref _registers.A, _registers.L, true), // ADC A, L
+                0x8E => _alu.Add(ref _registers.A, _mmu.ReadByte(_registers.HL), true), // ADC A, (HL)
+                0x8F => _alu.Add(ref _registers.A, _registers.A, true), // ADC A, A
+                0x90 => _alu.Sub(ref _registers.A, _registers.B, false), // SUB B
+                0x91 => _alu.Sub(ref _registers.A, _registers.C, false), // SUB C
+                0x92 => _alu.Sub(ref _registers.A, _registers.D, false), // SUB D
+                0x93 => _alu.Sub(ref _registers.A, _registers.E, false), // SUB E
+                0x94 => _alu.Sub(ref _registers.A, _registers.H, false), // SUB H
+                0x95 => _alu.Sub(ref _registers.A, _registers.L, false), // SUB L
+                0x96 => _alu.Sub(ref _registers.A, _mmu.ReadByte(_registers.HL), false), // SUB (HL)
+                0x97 => _alu.Sub(ref _registers.A, _registers.A, false), // SUB A
+                0x98 => _alu.Sub(ref _registers.A, _registers.B, true), // SBC B
+                0x99 => _alu.Sub(ref _registers.A, _registers.C, true), // SBC C
+                0x9A => _alu.Sub(ref _registers.A, _registers.D, true), // SBC D
+                0x9B => _alu.Sub(ref _registers.A, _registers.E, true), // SBC E
+                0x9C => _alu.Sub(ref _registers.A, _registers.H, true), // SBC H
+                0x9D => _alu.Sub(ref _registers.A, _registers.L, true), // SBC A, L
+                0x9E => _alu.Sub(ref _registers.A, _mmu.ReadByte(_registers.HL), true), // SBC A, (HL)
+                0x9F => _alu.Sub(ref _registers.A, _registers.A, true), // SBC A, A
+                0xA0 => _alu.And(ref _registers.A, _registers.B), // AND B
+                0xA1 => _alu.And(ref _registers.A, _registers.C), // AND C
+                0xA2 => _alu.And(ref _registers.A, _registers.D), // AND D
+                0xA3 => _alu.And(ref _registers.A, _registers.E), // AND E
+                0xA4 => _alu.And(ref _registers.A, _registers.H), // AND H
+                0xA5 => _alu.And(ref _registers.A, _registers.L), // AND L
+                0xA6 => _alu.And(ref _registers.A, _mmu.ReadByte(_registers.HL)), // AND (HL)
+                0xA7 => _alu.And(ref _registers.A, _registers.B), // AND A
+                0xA8 => _alu.Xor(ref _registers.A, _registers.B), // XOR B
+                0xA9 => _alu.Xor(ref _registers.A, _registers.C), // XOR C
+                0xAA => _alu.Xor(ref _registers.A, _registers.D), // XOR D
+                0xAB => _alu.Xor(ref _registers.A, _registers.E), // XOR E
+                0xAC => _alu.Xor(ref _registers.A, _registers.H), // XOR H
+                0xAD => _alu.Xor(ref _registers.A, _registers.L), // XOR L
+                0xAE => _alu.Xor(ref _registers.A, _mmu.ReadByte(_registers.HL)), // XOR (HL)
+                0xAF => _alu.Xor(ref _registers.A, _registers.B), // XOR A
+                0xB0 => _alu.Or(ref _registers.A, _registers.B), // OR B
+                0xB1 => _alu.Or(ref _registers.A, _registers.C), // OR C
+                0xB2 => _alu.Or(ref _registers.A, _registers.D), // OR D
+                0xB3 => _alu.Or(ref _registers.A, _registers.E), // OR E
+                0xB4 => _alu.Or(ref _registers.A, _registers.H), // OR H
+                0xB5 => _alu.Or(ref _registers.A, _registers.L), // OR L
+                0xB6 => _alu.Or(ref _registers.A, _mmu.ReadByte(_registers.HL)), // OR (HL)
+                0xB7 => _alu.Or(ref _registers.A, _registers.B), // OR A
+                0xB8 => _alu.Cp(_registers.A, _registers.B), // CP B
+                0xB9 => _alu.Cp(_registers.A, _registers.C), // CP C
+                0xBA => _alu.Cp(_registers.A, _registers.D), // CP D
+                0xBB => _alu.Cp(_registers.A, _registers.E), // CP E
+                0xBC => _alu.Cp(_registers.A, _registers.H), // CP H
+                0xBD => _alu.Cp(_registers.A, _registers.L), // CP L
+                0xBE => _alu.Cp(_registers.A, _mmu.ReadByte(_registers.HL)), // CP (HL)
+                0xBF => _alu.Cp(_registers.A, _registers.A), // CP A
+                0xC0 => !_registers.GetFlag(FRegisterFlags.ZeroFlag) ? _alu.Jump(PopFromStack()) + 1 : 2, // RET NZ
+                0xC1 => (_alu.Load(Register16Bit.BC, PopFromStack()) + 1), // POP BC
+                0xC2 => _alu.JumpOnFlag(FRegisterFlags.ZeroFlag, FetchWord(), false), // JP NZ, a16
+                0xC3 => _alu.Jump(FetchWord()), // JP a16
+                0xC4 => !_registers.GetFlag(FRegisterFlags.ZeroFlag) ? _alu.Jump(FetchWord()) + PushToStack(_registers.ProgramCounter) - 2: 3, // CALL NZ, a16
+                _ => throw new NotImplementedException($"Opcode {opcode} not implemented")
+            };
         }
 
         /// <summary>
@@ -634,144 +257,31 @@ namespace Gameboy.VM
             return w;
         }
 
-        #region 8bit Arithemetic functions
-        private byte Increment(byte a)
+        private ushort PopFromStack()
         {
-            var result = (byte)((a + 1) & 0xFF);
-            _registers.SetFlag(FRegisterFlags.ZeroFlag, result == 0);
-            _registers.SetFlag(FRegisterFlags.SubtractFlag, false);
-            _registers.SetFlag(FRegisterFlags.HalfCarryFlag, (a & 0x0F) + 1 > 0x0F);
-            return result;
+            var w = _mmu.ReadWord(_registers.StackPointer);
+            _registers.StackPointer = (ushort)((_registers.StackPointer + 2) & 0xFFFF);
+            return w;
         }
 
-        private byte Decrement(byte a)
+        private int PushToStack(ushort value)
         {
-            var result = (byte)((a - 1) & 0xFF);
-            _registers.SetFlag(FRegisterFlags.ZeroFlag, result == 0);
-            _registers.SetFlag(FRegisterFlags.SubtractFlag, true);
-            _registers.SetFlag(FRegisterFlags.HalfCarryFlag, (a & 0xF) == 0xF);
-            return result;
+            _registers.StackPointer = (ushort)((_registers.StackPointer - 2) & 0xFFFF);
+            return _mmu.WriteWord(_registers.StackPointer, value);
         }
 
-        private byte Add(byte a, byte b, bool includeCarry)
+        private int Halt()
         {
-            var c = includeCarry && _registers.GetFlag(FRegisterFlags.CarryFlag) ? 1 : 0;
-            var result = a + b + c;
-            _registers.SetFlag(FRegisterFlags.ZeroFlag, (result & 0xFF) == 0x0);
-            _registers.SetFlag(FRegisterFlags.SubtractFlag, false);
-            _registers.SetFlag(FRegisterFlags.HalfCarryFlag, (((a & 0xF) + (b & 0xF) + (c & 0xF)) & 0x10) == 0x10);
-            _registers.SetFlag(FRegisterFlags.CarryFlag, result > 0xFF);
-            return (byte)(result & 0xFF);
+            // TODO
+            return 1;
         }
 
-        private byte Sub(byte a, byte b, bool includeCarry)
+        private int Stop()
         {
-            var c = includeCarry && _registers.GetFlag(FRegisterFlags.CarryFlag) ? 1 : 0;
-            var result = a - b - c;
-            _registers.SetFlag(FRegisterFlags.ZeroFlag, (result & 0xFF) == 0x0);
-            _registers.SetFlag(FRegisterFlags.SubtractFlag, true);
-            _registers.SetFlag(FRegisterFlags.HalfCarryFlag, (a & 0x0F) < (b & 0x0F) + c);
-            _registers.SetFlag(FRegisterFlags.CarryFlag, result < 0);
-            return (byte)(result & 0xFF);
-        }
-
-        private byte And(byte a, byte b)
-        {
-            var result = a & b;
-            _registers.SetFlag(FRegisterFlags.ZeroFlag, result == 0);
-            _registers.SetFlag(FRegisterFlags.CarryFlag | FRegisterFlags.SubtractFlag, false);
-            _registers.SetFlag(FRegisterFlags.HalfCarryFlag, true);
-            return (byte) result;
-        }
-
-        private byte Xor(byte a, byte b)
-        {
-            var result = a ^ b;
-            _registers.SetFlag(FRegisterFlags.ZeroFlag, result == 0);
-            _registers.SetFlag(FRegisterFlags.CarryFlag | FRegisterFlags.SubtractFlag | FRegisterFlags.HalfCarryFlag, false);
-            return (byte)result;
-        }
-
-        private byte Or(byte a, byte b)
-        {
-            var result = a | b;
-            _registers.SetFlag(FRegisterFlags.ZeroFlag, result == 0);
-            _registers.SetFlag(FRegisterFlags.CarryFlag | FRegisterFlags.SubtractFlag | FRegisterFlags.HalfCarryFlag, false);
-            return (byte)result;
-        }
-        #endregion
-
-        private ushort Increment(ushort a) => (ushort)((a + 1) & 0xFFFF);
-
-        private ushort Decrement(ushort a) => (ushort)((a - 1) & 0xFFFF);
-
-        private ushort Add(ushort a, ushort b)
-        {
-            var result = a + b;
-            _registers.SetFlag(FRegisterFlags.SubtractFlag, false);
-            _registers.SetFlag(FRegisterFlags.HalfCarryFlag, (a & 0xFFF) > (result & 0xFFF));
-            _registers.SetFlag(FRegisterFlags.CarryFlag, result > 0xFFFF);
-            return (ushort)(result & 0xFFFF);
-        }
-
-        private byte RotateLeftWithCarry(byte a)
-        {
-            var result = (byte)(((a << 1) | (a >> 7)) & 0xFF);
-            _registers.SetFlag(FRegisterFlags.ZeroFlag | FRegisterFlags.HalfCarryFlag | FRegisterFlags.SubtractFlag, false);
-            _registers.SetFlag(FRegisterFlags.CarryFlag, a >= 0x7F);
-            return result;
-        }
-
-        private byte RotateLeftNoCarry(byte a)
-        {
-            var result = (byte)((a << 1) | (_registers.GetFlag(FRegisterFlags.CarryFlag) ? 0x1 : 0x0));
-            _registers.SetFlag(FRegisterFlags.ZeroFlag | FRegisterFlags.HalfCarryFlag | FRegisterFlags.SubtractFlag, false);
-            _registers.SetFlag(FRegisterFlags.CarryFlag, a >= 0x7F);
-            return result;
-        }
-
-        private byte RotateRightWithCarry(byte a)
-        {
-            var result = (byte)((a >> 1) | ((a & 1) << 7));
-            _registers.SetFlag(FRegisterFlags.ZeroFlag | FRegisterFlags.HalfCarryFlag | FRegisterFlags.SubtractFlag, false);
-            _registers.SetFlag(FRegisterFlags.CarryFlag, (a & 0x1) == 0x1);
-            return result;
-        }
-
-        private byte RotateRightNoCarry(byte a)
-        {
-            var result = (byte)((a >> 1) | (_registers.GetFlag(FRegisterFlags.CarryFlag) ? 0x80 : 0x0));
-            _registers.SetFlag(FRegisterFlags.ZeroFlag | FRegisterFlags.HalfCarryFlag | FRegisterFlags.SubtractFlag, false);
-            _registers.SetFlag(FRegisterFlags.CarryFlag, (a & 0x1) == 0x1);
-            return result;
-        }
-
-        private byte JumpOnFlag(FRegisterFlags flag, bool isSet)
-        {
-            var jumpSteps = FetchByte();
-            if (_registers.GetFlag(flag) == isSet)
-            {
-                return 2;
-            }
-            _registers.ProgramCounter = (ushort)((_registers.ProgramCounter + jumpSteps) & 0xFFFF);
-            return 3;
-        }
-
-        private byte DecimalAdjustRegister(byte a)
-        {
-            var adjust = 0;
-
-            if (_registers.GetFlag(FRegisterFlags.CarryFlag) ||
-                (_registers.GetFlag(FRegisterFlags.SubtractFlag) && a > 0x99)) adjust |= 0x60;
-            if (_registers.GetFlag(FRegisterFlags.HalfCarryFlag) ||
-                (_registers.GetFlag(FRegisterFlags.SubtractFlag) && (a & 0x0F) > 0x09)) adjust |= 0x06;
-
-            var result = (byte)((a + adjust) & 0xFF);
-
-            _registers.SetFlag(FRegisterFlags.ZeroFlag, result == 0x0);
-            _registers.SetFlag(FRegisterFlags.HalfCarryFlag, false);
-            _registers.SetFlag(FRegisterFlags.CarryFlag, adjust > 0x60);
-            return result;
+            // TODO
+            var _ = FetchByte();
+            _inStopMode = true;
+            return 2;
         }
     }
 }
