@@ -71,11 +71,15 @@ namespace Gameboy.VM
 
         internal void SetFlag(FRegisterFlags flag, bool set)
         {
-            F |= set switch
+            switch (set)
             {
-                true => (byte) flag,
-                false => (byte) ~flag
-            };
+                case true:
+                    F |= (byte)flag;
+                    break;
+                case false:
+                    F &= (byte)~flag;
+                    break;
+            }
 
             F &= 0x00F0;
         }

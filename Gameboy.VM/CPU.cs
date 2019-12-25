@@ -230,6 +230,17 @@ namespace Gameboy.VM
                 0xC2 => _alu.JumpOnFlag(FRegisterFlags.ZeroFlag, FetchWord(), false), // JP NZ, a16
                 0xC3 => _alu.Jump(FetchWord()), // JP a16
                 0xC4 => !_registers.GetFlag(FRegisterFlags.ZeroFlag) ? _alu.Jump(FetchWord()) + PushToStack(_registers.ProgramCounter) - 2: 3, // CALL NZ, a16
+                0xC5 => PushToStack(_registers.BC), // PUSH BC
+                0xC6 => _alu.Add(ref _registers.A, FetchByte(), false) + 1, // ADD A, d8
+                0xC7 => Rst(0), // RST 0
+                0xC8 => _registers.GetFlag(FRegisterFlags.ZeroFlag) ? _alu.Jump(PopFromStack()) + 1 : 2, // RET Z
+                0xC9 => _alu.Jump(PopFromStack()), // RET
+                0xCA => _alu.JumpOnFlag(FRegisterFlags.ZeroFlag, FetchWord(), true), // JP Z, a16
+                0xCB => 1, // TODO - Prefix CB
+                0xCC => _registers.GetFlag(FRegisterFlags.ZeroFlag) ? _alu.Jump(FetchWord()) + PushToStack(_registers.ProgramCounter) - 2 : 3, // CALL Z, a16
+                0xCD => _alu.Jump(FetchWord()) + PushToStack(_registers.ProgramCounter) - 2, // CALL a16
+                0xCE => _alu.Add(ref _registers.A, FetchByte(), true) + 1, // ADC A, d8
+                0xCF => Rst(0x08), // RST 08h
                 _ => throw new NotImplementedException($"Opcode {opcode} not implemented")
             };
         }
@@ -268,6 +279,13 @@ namespace Gameboy.VM
         {
             _registers.StackPointer = (ushort)((_registers.StackPointer - 2) & 0xFFFF);
             return _mmu.WriteWord(_registers.StackPointer, value);
+        }
+
+        private int Rst(byte page)
+        {
+            PushToStack(_registers.ProgramCounter);
+            _registers.ProgramCounter = page;
+            return 4;
         }
 
         private int Halt()

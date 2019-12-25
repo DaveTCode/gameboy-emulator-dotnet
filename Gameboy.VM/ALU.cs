@@ -77,7 +77,7 @@ namespace Gameboy.VM
             var result = (byte)((a - 1) & 0xFF);
             _registers.SetFlag(FRegisterFlags.ZeroFlag, result == 0);
             _registers.SetFlag(FRegisterFlags.SubtractFlag, true);
-            _registers.SetFlag(FRegisterFlags.HalfCarryFlag, (a & 0xF) == 0xF);
+            _registers.SetFlag(FRegisterFlags.HalfCarryFlag, (a & 0x0F) < 0x01);
             a = result;
             return 1;
         }
@@ -158,20 +158,32 @@ namespace Gameboy.VM
 
         internal int DecimalAdjustRegister(ref byte a)
         {
-            var adjust = 0;
+            int tmp = a;
 
-            if (_registers.GetFlag(FRegisterFlags.CarryFlag) ||
-                (_registers.GetFlag(FRegisterFlags.SubtractFlag) && a > 0x99)) adjust |= 0x60;
-            if (_registers.GetFlag(FRegisterFlags.HalfCarryFlag) ||
-                (_registers.GetFlag(FRegisterFlags.SubtractFlag) && (a & 0x0F) > 0x09)) adjust |= 0x06;
+            if (!_registers.GetFlag(FRegisterFlags.SubtractFlag))
+            {
+                if (_registers.GetFlag(FRegisterFlags.HalfCarryFlag) || (tmp & 0x0F) > 9)
+                    tmp += 0x06;
+                if (_registers.GetFlag(FRegisterFlags.CarryFlag) || tmp > 0x9F)
+                    tmp += 0x60;
+            }
+            else
+            {
+                if (_registers.GetFlag(FRegisterFlags.HalfCarryFlag))
+                {
+                    tmp -= 0x06;
+                    if (!_registers.GetFlag(FRegisterFlags.CarryFlag))
+                        tmp &= 0xFF;
+                }
+                if (_registers.GetFlag(FRegisterFlags.CarryFlag))
+                    tmp -= 0x60;
+            }
 
-            var result = (byte)((a + adjust) & 0xFF);
-
-            _registers.SetFlag(FRegisterFlags.ZeroFlag, result == 0x0);
+            a = (byte)(tmp & 0xFF);
+            _registers.SetFlag(FRegisterFlags.ZeroFlag, a == 0x0);
+            _registers.SetFlag(FRegisterFlags.CarryFlag, tmp > 0xFF);
             _registers.SetFlag(FRegisterFlags.HalfCarryFlag, false);
-            _registers.SetFlag(FRegisterFlags.CarryFlag, adjust > 0x60);
 
-            a = result;
             return 1;
         }
 
@@ -191,7 +203,7 @@ namespace Gameboy.VM
 
         internal int CPL()
         {
-            _registers.A ^= _registers.A;
+            _registers.A = (byte)(~_registers.A);
             _registers.SetFlag(FRegisterFlags.HalfCarryFlag | FRegisterFlags.SubtractFlag, true);
             return 1;
         }
@@ -294,7 +306,7 @@ namespace Gameboy.VM
                     throw new ArgumentOutOfRangeException(nameof(outputRegister), outputRegister, null);
             }
 
-            return 2;
+            return 4;
         }
 
         #endregion
