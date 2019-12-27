@@ -278,7 +278,7 @@ namespace Gameboy.VM
             return 2;
         }
 
-        internal int Add(Register16Bit outputRegister, ushort a, ushort b)
+        internal int Add(Register16Bit outputRegister, ushort a, int b)
         {
             var result = a + b;
             _registers.SetFlag(FRegisterFlags.SubtractFlag, false);
@@ -363,6 +363,15 @@ namespace Gameboy.VM
         internal int JumpOnFlag(FRegisterFlags flag, ushort address, bool isSet)
         {
             return _registers.GetFlag(flag) != isSet ? 3 : Jump(address);
+        }
+
+        internal int ReturnAndEnableInterrupts(ushort address)
+        {
+            _registers.ProgramCounter = address;
+
+            // TODO - No interrupt registers to update yet
+
+            return 4;
         }
 
         #endregion

@@ -241,8 +241,66 @@ namespace Gameboy.VM
                 0xCD => _alu.Jump(FetchWord()) + PushToStack(_registers.ProgramCounter) - 2, // CALL a16
                 0xCE => _alu.Add(ref _registers.A, FetchByte(), true) + 1, // ADC A, d8
                 0xCF => Rst(0x08), // RST 08h
+                0xD0 => !_registers.GetFlag(FRegisterFlags.CarryFlag) ? _alu.Jump(PopFromStack()) + 1 : 2, // RET NC
+                0xD1 => (_alu.Load(Register16Bit.DE, PopFromStack()) + 1), // POP DE
+                0xD2 => _alu.JumpOnFlag(FRegisterFlags.CarryFlag, FetchWord(), false), // JP NC, a16
+                0xD3 => 0, // Unused opcode
+                0xD4 => !_registers.GetFlag(FRegisterFlags.CarryFlag) ? _alu.Jump(FetchWord()) + PushToStack(_registers.ProgramCounter) - 2 : 3, // CALL NC, a16
+                0xD5 => PushToStack(_registers.DE), // PUSH DE
+                0xD6 => _alu.Sub(ref _registers.A, FetchByte(), false) + 1, // SUB d8
+                0xD7 => Rst(0x10), // RST 10
+                0xD8 => _registers.GetFlag(FRegisterFlags.CarryFlag) ? _alu.Jump(PopFromStack()) + 1 : 2, // RET C
+                0xD9 => _alu.ReturnAndEnableInterrupts(PopFromStack()), // RETI
+                0xDA => _alu.JumpOnFlag(FRegisterFlags.CarryFlag, FetchWord(), true), // JP C, a16
+                0xDB => 0, // Unused opcode
+                0xDC => _registers.GetFlag(FRegisterFlags.CarryFlag) ? _alu.Jump(FetchWord()) + PushToStack(_registers.ProgramCounter) - 2 : 3, // CALL C, a16
+                0xDD => 0, // Unused opcode - TODO - what actually happens on an unused opcode?
+                0xDE => _alu.Sub(ref _registers.A, FetchByte(), true) + 1, // SBC A, d8
+                0xDF => Rst(0x18), // RST 18
+                0xE0 => _mmu.WriteByte((ushort)(0xFF00 + FetchByte()), _registers.A) + 1, // LDH (a8),A
+                0xE1 => (_alu.Load(Register16Bit.HL, PopFromStack()) + 1), // POP HL
+                0xE2 => _mmu.WriteByte((ushort)(0xFF00 + _registers.C), _registers.A), // LD (C), A
+                0xE3 => 0, // Unused opcode
+                0xE4 => 0, // Unused opcode
+                0xE5 => PushToStack(_registers.HL), // PUSH HL
+                0xE6 => _alu.And(ref _registers.A, FetchByte()) + 1, // AND d8
+                0xE7 => Rst(0x20), // RST 20
+                0xE8 => _alu.Add(Register16Bit.SP, _registers.StackPointer, (sbyte)FetchByte()), // ADD SP, r8
+                0xE9 => _alu.Jump(_mmu.ReadWord(_registers.HL)), // JP (HL)
+                0xEA => _mmu.WriteByte(FetchWord(), _registers.A) + 2, // LD (a16), A
+                0xEB => 0, // Unused opcode
+                0xEC => 0, // Unused opcode
+                0xED => 0, // Unused opcode
+                0xEE => _alu.Xor(ref _registers.A, FetchByte()) + 1, // XOR d8
+                0xEF => Rst(0x28), // RST 28
+                0xF0 => _alu.Load(ref _registers.A, _mmu.ReadByte((ushort)(0xFF00 + FetchByte()))) + 2, // LDH A, (a8)
+                0xF1 => (_alu.Load(Register16Bit.AF, PopFromStack()) + 1), // POP AF
+                0xF2 => _alu.Load(ref _registers.A, _mmu.ReadByte((ushort)(0xFF00 + _registers.C))) + 1, // LD A, (C)
+                0xF3 => DisableInterrupts(), // DI
+                0xF4 => 0, // Unused opcode
+                0xF5 => PushToStack(_registers.AF), // PUSH AF
+                0xF6 => _alu.And(ref _registers.A, FetchByte()) + 1, // OR d8
+                0xF7 => Rst(0x30), // RST 30
+                0xF8 => _alu.Load(Register16Bit.HL, _mmu.ReadWord((ushort)((_registers.StackPointer + (sbyte)FetchByte()) & 0xFFFF))) + 1, // LD HL, SP+r8
+                0xF9 => _alu.Load(Register16Bit.SP, _registers.HL), // LD SP, HL
+                0xFA => _alu.Load(ref _registers.A, _mmu.ReadByte(FetchWord())) + 2, // LD A, (a16)
+                0xFB => EnableInterrupts(), // EI
+                0xFC => 0, // Unused opcode
+                0xFD => 0, // Unused opcode
+                0xFE => _alu.Cp(_registers.A, FetchByte()) + 1, // CP d8
+                0xFF => Rst(0x28), // RST 38
                 _ => throw new NotImplementedException($"Opcode {opcode} not implemented")
             };
+        }
+
+        private int EnableInterrupts()
+        {
+            throw new NotImplementedException();
+        }
+
+        private int DisableInterrupts()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
