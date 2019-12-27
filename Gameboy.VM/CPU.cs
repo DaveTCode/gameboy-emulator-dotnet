@@ -7,7 +7,6 @@ namespace Gameboy.VM
 {
     internal class CPU
     {
-        private bool _inStopMode;
         private readonly MMU _mmu;
         private readonly ALU _alu;
         private readonly Registers _registers = new Registers();
@@ -356,7 +355,6 @@ namespace Gameboy.VM
         {
             // TODO
             var _ = FetchByte();
-            _inStopMode = true;
             return 2;
         }
     }
