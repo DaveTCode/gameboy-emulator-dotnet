@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Gameboy.VM.Cpu.Tests")]
-namespace Gameboy.VM
+namespace Gameboy.VM.CPU
 {
     /// <summary>
     /// TODO - This assumes initialising values to 0x0, which is fine if we 
@@ -69,7 +69,7 @@ namespace Gameboy.VM
             return (ushort)((HL + 1) & 0xFFFF);
         }
 
-        internal void SetFlag(FRegisterFlags flag, bool set)
+        internal void SetFlag(CpuFlags flag, bool set)
         {
             switch (set)
             {
@@ -84,7 +84,7 @@ namespace Gameboy.VM
             F &= 0x00F0;
         }
 
-        internal bool GetFlag(FRegisterFlags flag)
+        internal bool GetFlag(CpuFlags flag)
         {
             return (F & (byte)flag) == (byte)flag;
         }
@@ -105,7 +105,7 @@ namespace Gameboy.VM
 
         public override string ToString()
         {
-            return $"AF: {AF:X4}, BC: {BC:X4}, DE: {DE:X4}, HL: {HL:X4}";
+            return $"AF: {AF:X4}, BC: {BC:X4}, DE: {DE:X4}, HL: {HL:X4}, SP: {StackPointer:X4}, PC: {ProgramCounter:X4}";
         }
     }
 

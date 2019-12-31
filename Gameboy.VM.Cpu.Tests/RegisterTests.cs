@@ -1,4 +1,5 @@
 using System;
+using Gameboy.VM.CPU;
 using Xunit;
 
 namespace Gameboy.VM.Cpu.Tests
@@ -114,7 +115,7 @@ namespace Gameboy.VM.Cpu.Tests
                 StackPointer = 0xFFFE,
             };
 
-            Assert.Equal("AF: 01B0, BC: 0013, DE: 00D8, HL: 014D", registers.ToString());
+            Assert.Equal("AF: 01B0, BC: 0013, DE: 00D8, HL: 014D, SP: FFFE, PC: 0100", registers.ToString());
         }
     }
 }

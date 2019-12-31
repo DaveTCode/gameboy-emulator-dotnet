@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Blarg CPU Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "-f ../../../../Roms/cpu_instrs.gb --skipBootRom"
+    }
+  }
+}

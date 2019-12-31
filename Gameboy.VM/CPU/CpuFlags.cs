@@ -2,10 +2,10 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Gameboy.VM.Cpu.Tests")]
-namespace Gameboy.VM
+namespace Gameboy.VM.CPU
 {
     [Flags]
-    internal enum FRegisterFlags : byte
+    internal enum CpuFlags : byte
     {
         ZeroFlag      = 0b10000000,
         SubtractFlag  = 0b01000000,

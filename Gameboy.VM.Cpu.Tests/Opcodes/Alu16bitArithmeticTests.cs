@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using System;
+using Gameboy.VM.CPU;
+using Xunit;
 
 namespace Gameboy.VM.Cpu.Tests.Opcodes
 {
@@ -11,19 +13,19 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData((ushort)0x235F, (ushort)0x2360, true, true, true, true)]
         public void Test16BitIncrement(ushort bc, ushort result, bool c, bool h, bool n, bool z)
         {
-            var reg = new Registers();
-            var alu = new ALU(new MMU(), reg);
-            reg.BC = bc;
-            reg.SetFlag(FRegisterFlags.CarryFlag, c);
-            reg.SetFlag(FRegisterFlags.HalfCarryFlag, h);
-            reg.SetFlag(FRegisterFlags.SubtractFlag, n);
-            reg.SetFlag(FRegisterFlags.ZeroFlag, z);
+            var cpu = new CPU.CPU(new MMU(null, null, null));
+            var alu = new ALU(cpu);
+            cpu.Registers.BC = bc;
+            cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);
+            cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, h);
+            cpu.Registers.SetFlag(CpuFlags.SubtractFlag, n);
+            cpu.Registers.SetFlag(CpuFlags.ZeroFlag, z);
             Assert.Equal(2, alu.Increment(Register16Bit.BC));
-            Assert.Equal(result, reg.BC);
-            Assert.Equal(c, reg.GetFlag(FRegisterFlags.CarryFlag));
-            Assert.Equal(h, reg.GetFlag(FRegisterFlags.HalfCarryFlag));
-            Assert.Equal(n, reg.GetFlag(FRegisterFlags.SubtractFlag));
-            Assert.Equal(z, reg.GetFlag(FRegisterFlags.ZeroFlag));
+            Assert.Equal(result, cpu.Registers.BC);
+            Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+            Assert.Equal(n, cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.Equal(z, cpu.Registers.GetFlag(CpuFlags.ZeroFlag));
         }
 
         [Theory]
@@ -33,19 +35,19 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData((ushort)0x235F, (ushort)0x235E, true, true, true, true)]
         public void Test16BitDecrement(ushort bc, ushort result, bool c, bool h, bool n, bool z)
         {
-            var reg = new Registers();
-            var alu = new ALU(new MMU(), reg);
-            reg.BC = bc;
-            reg.SetFlag(FRegisterFlags.CarryFlag, c);
-            reg.SetFlag(FRegisterFlags.HalfCarryFlag, h);
-            reg.SetFlag(FRegisterFlags.SubtractFlag, n);
-            reg.SetFlag(FRegisterFlags.ZeroFlag, z);
+            var cpu = new CPU.CPU(new MMU(null, null, null));
+            var alu = new ALU(cpu);
+            cpu.Registers.BC = bc;
+            cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);
+            cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, h);
+            cpu.Registers.SetFlag(CpuFlags.SubtractFlag, n);
+            cpu.Registers.SetFlag(CpuFlags.ZeroFlag, z);
             Assert.Equal(2, alu.Decrement(Register16Bit.BC));
-            Assert.Equal(result, reg.BC);
-            Assert.Equal(c, reg.GetFlag(FRegisterFlags.CarryFlag));
-            Assert.Equal(h, reg.GetFlag(FRegisterFlags.HalfCarryFlag));
-            Assert.Equal(n, reg.GetFlag(FRegisterFlags.SubtractFlag));
-            Assert.Equal(z, reg.GetFlag(FRegisterFlags.ZeroFlag));
+            Assert.Equal(result, cpu.Registers.BC);
+            Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+            Assert.Equal(n, cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.Equal(z, cpu.Registers.GetFlag(CpuFlags.ZeroFlag));
         }
 
         [Theory]
@@ -54,19 +56,19 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0xFFF8, 0x0002, 0xFFFA, false, false, false, false)]
         public void Test16BitAdd(ushort a, ushort b, ushort result, bool c, bool h, bool n, bool z)
         {
-            var reg = new Registers();
-            var alu = new ALU(new MMU(), reg);
-            reg.BC = a;
-            reg.SetFlag(FRegisterFlags.CarryFlag, c);
-            reg.SetFlag(FRegisterFlags.HalfCarryFlag, h);
-            reg.SetFlag(FRegisterFlags.SubtractFlag, n);
-            reg.SetFlag(FRegisterFlags.ZeroFlag, z);
+            var cpu = new CPU.CPU(new MMU(null, null, null));
+            var alu = new ALU(cpu);
+            cpu.Registers.BC = a;
+            cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);
+            cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, h);
+            cpu.Registers.SetFlag(CpuFlags.SubtractFlag, n);
+            cpu.Registers.SetFlag(CpuFlags.ZeroFlag, z);
             Assert.Equal(4, alu.Add(Register16Bit.BC, a, b));
-            Assert.Equal(result, reg.BC);
-            Assert.Equal(c, reg.GetFlag(FRegisterFlags.CarryFlag));
-            Assert.Equal(h, reg.GetFlag(FRegisterFlags.HalfCarryFlag));
-            Assert.Equal(n, reg.GetFlag(FRegisterFlags.SubtractFlag));
-            Assert.Equal(z, reg.GetFlag(FRegisterFlags.ZeroFlag));
+            Assert.Equal(result, cpu.Registers.BC);
+            Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+            Assert.Equal(n, cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.Equal(z, cpu.Registers.GetFlag(CpuFlags.ZeroFlag));
         }
     }
 }
