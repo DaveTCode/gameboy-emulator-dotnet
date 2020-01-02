@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Gameboy.VM.CPU
 {
@@ -404,8 +405,8 @@ namespace Gameboy.VM.CPU
 
         internal int Call(ushort address)
         {
-            Jump(address);
             PushToStack(_cpu.Registers.ProgramCounter);
+            Jump(address);
             return 6;
         }
 
@@ -433,12 +434,14 @@ namespace Gameboy.VM.CPU
 
         internal int Jump(ushort address)
         {
+            Trace.TraceInformation("Jumping to address {0:X4}", address);
             _cpu.Registers.ProgramCounter = address;
             return 4;
         }
 
         internal int JumpRight(sbyte distance)
         {
+            Trace.TraceInformation("Jumping right by {0} to address {1:X4}", distance, (ushort)((_cpu.Registers.ProgramCounter + distance) & 0xFFFF));
             _cpu.Registers.ProgramCounter = (ushort)((_cpu.Registers.ProgramCounter + distance) & 0xFFFF);
             return 3;
         }
@@ -471,6 +474,8 @@ namespace Gameboy.VM.CPU
 
         #endregion
 
+
+        // TODO - Suspect this is all broken wrt how it writes return addresses
         #region Stack Functions
 
         internal int PushToStack(ushort value)

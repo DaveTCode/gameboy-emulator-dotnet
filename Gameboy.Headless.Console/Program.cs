@@ -38,7 +38,7 @@ namespace Gameboy.Headless.Console
 
             if (options.SkipBootRom) device.SkipBootRom();
 
-            for (var i = 0; i < 10000; i++)
+            for (var i = 0; i < 1000; i++)
             {
                 device.Step();
             }

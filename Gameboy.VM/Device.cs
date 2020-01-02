@@ -1,4 +1,6 @@
-﻿namespace Gameboy.VM
+﻿using System.Diagnostics;
+
+namespace Gameboy.VM
 {
     /// <summary>
     /// A device here refers to the entire of an emulated gameboy and provides
@@ -90,7 +92,8 @@
 
         public void Step()
         {
-            _cpu.Step();
+            var cycles = _cpu.Step();
+            Trace.TraceInformation("{0} {1}", _controlRegisters, _cpu.Registers);
         }
     }
 }

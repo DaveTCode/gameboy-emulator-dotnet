@@ -565,12 +565,12 @@ namespace Gameboy.VM.CPU
 
         private int EnableInterrupts()
         {
-            throw new NotImplementedException();
+            return 1; // TODO - Implement interrupts
         }
 
         private int DisableInterrupts()
         {
-            throw new NotImplementedException();
+            return 1; // TODO - Implement interrupts
         }
 
         /// <summary>
