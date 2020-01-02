@@ -54,12 +54,14 @@ namespace Gameboy.VM
                 return _workingRam[address - 0xE000];
             if (address >= 0xFE00 && address <= 0xFE9F) // Read from sprite attribute table
                 return _oamRam[address - 0xFE00];
-            if (address >= 0xFEA0 && address <= 0xFEFF) // Unusable addresses
+            if (address >= 0xFEA0 && address <= 0xFEFF) // Unusable addresses - all reads return 0
                 return 0x0;
             if (address == 0xFF01) // SB register
                 return _controlRegisters.SerialTransferData;
             if (address == 0xFF02) // SC register
                 return _controlRegisters.SerialTransferControl;
+            if (address == 0xFF04) // Divider
+                return _controlRegisters.Divider;
             if (address == 0xFF05) // Timer Counter
                 return _controlRegisters.TimerCounter;
             if (address == 0xFF06) // Timer Modulo
@@ -79,7 +81,9 @@ namespace Gameboy.VM
             if (address == 0xFF43) // SCX Register
                 return _controlRegisters.ScrollX;
             if (address == 0xFF44) // LY Register
-                return _controlRegisters.LineDataBeingProcessed;
+                return _controlRegisters.LCDCurrentScanline;
+            if (address == 0xFF45) // LYC Register
+                return _controlRegisters.LYCompare;
             if (address == 0xFF47) // Background Palette Register
                 return _controlRegisters.BackgroundPaletteData;
             if (address == 0xFF48) // Object 0 Palette Register
@@ -128,12 +132,14 @@ namespace Gameboy.VM
                 _workingRam[address - 0xE000] = value;
             else if (address >= 0xFE00 && address <= 0xFE9F) // Write to the sprite attribute table
                 _oamRam[address - 0xFE00] = value;
-            else if (address >= 0xFEA0 && address <= 0xFEFF) // Unusable addresses
+            else if (address >= 0xFEA0 && address <= 0xFEFF) // Unusable addresses - writes explicitly ignored
                 Trace.WriteLine("Unusable address for write");
             else if (address == 0xFF01)
                 _controlRegisters.SerialTransferData = value;
             else if (address == 0xFF02)
                 _controlRegisters.SerialTransferControl = value;
+            else if (address == 0xFF04)
+                _controlRegisters.Divider = 0x0; // Always reset divider to 0 on write
             else if (address == 0xFF05)
                 _controlRegisters.TimerCounter = value;
             else if (address == 0xFF06)
@@ -151,7 +157,9 @@ namespace Gameboy.VM
             else if (address == 0xFF43)
                 _controlRegisters.ScrollX = value;
             else if (address == 0xFF44)
-                _controlRegisters.LineDataBeingProcessed = value;
+                Trace.WriteLine("Can't write directly to LY register from MMU");
+            else if (address == 0xFF45)
+                _controlRegisters.LYCompare = value;
             else if (address == 0xFF47)
                 _controlRegisters.BackgroundPaletteData = value;
             else if (address == 0xFF48)

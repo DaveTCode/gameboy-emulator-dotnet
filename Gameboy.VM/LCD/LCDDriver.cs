@@ -13,6 +13,10 @@ namespace Gameboy.VM.LCD
 
         private readonly byte[] _frameBuffer = new byte[256 * 256];
 
+        // Current state of LCD driver
+        private int _line;
+        private StatMode _mode = StatMode.OAMRAMPeriod;
+
         internal LCDDriver(MMU mmu, ControlRegisters controlRegisters)
         {
             _mmu = mmu;
@@ -21,6 +25,7 @@ namespace Gameboy.VM.LCD
         
         internal void Clear()
         {
+            _line = 0;
             Array.Clear(_frameBuffer, 0, _frameBuffer.Length);
         }
         
@@ -30,13 +35,15 @@ namespace Gameboy.VM.LCD
         /// <param name="cycles">The number of cycles since the last step was called.</param>
         internal void Step(int cycles)
         {
-
+            for (var cycle = 0; cycle < cycles; cycle++)
+            {
+                DoSingleCycle();
+            }
         }
 
-        private int BgCharacterDataOffset => ((_controlRegisters.LCDControlRegister >> 4) & 0x1) == 0x0 ? 0x8800 : 0x8000;
+        private void DoSingleCycle()
+        {
 
-        private int BgCodeAreaOffset => ((_controlRegisters.LCDControlRegister >> 3) & 0x1) == 0x0 ? 0x9800 : 0x9C00;
-
-        private int WindowCodeAreaOffset => ((_controlRegisters.LCDControlRegister >> 3) & 0x1) == 0x0 ? 0x9800 : 0x9C00;
+        }
     }
 }

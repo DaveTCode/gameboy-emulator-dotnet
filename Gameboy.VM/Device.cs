@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Gameboy.VM.LCD;
+using System.Diagnostics;
 
 namespace Gameboy.VM
 {
@@ -10,8 +11,6 @@ namespace Gameboy.VM
     {
         /// <summary>
         /// Original ROM from a DMG, used to set initial values of registers
-        ///
-        /// UNUSED AT THE MOMENT
         /// </summary>
         private readonly byte[] _romContents =
         {
@@ -36,7 +35,8 @@ namespace Gameboy.VM
         private readonly MMU _mmu;
         private readonly CPU.CPU _cpu;
         private readonly ControlRegisters _controlRegisters;
-        private Cartridge _cartridge;
+        private readonly Cartridge _cartridge;
+        private readonly LCDDriver _lcdDriver;
 
         public Device(byte[] cartridgeContents)
         {
@@ -44,8 +44,13 @@ namespace Gameboy.VM
             _cartridge = new Cartridge(cartridgeContents);
             _mmu = new MMU(_romContents, _controlRegisters, _cartridge);
             _cpu = new CPU.CPU(_mmu);
+            _lcdDriver = new LCDDriver(_mmu, _controlRegisters);
         }
 
+        /// <summary>
+        /// Sets registers/memory to initial values as if we've run the boot 
+        /// rom successfully.
+        /// </summary>
         public void SkipBootRom()
         {
             // Set up registers
@@ -93,6 +98,7 @@ namespace Gameboy.VM
         public void Step()
         {
             var cycles = _cpu.Step();
+            _lcdDriver.Step(cycles);
             Trace.TraceInformation("{0} {1}", _controlRegisters, _cpu.Registers);
         }
     }
