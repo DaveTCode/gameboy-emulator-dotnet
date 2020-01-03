@@ -1,5 +1,6 @@
 ﻿using System;
 using Gameboy.VM.CPU;
+using Gameboy.VM.LCD;
 using Gameboy.VM.Sound;
 using Xunit;
 
@@ -12,7 +13,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0x50, 0x51, false, false)]
         public void TestIncrement(byte a, byte result, bool h, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             var cycles = alu.Increment(ref a);
             Assert.Equal(1, cycles);
@@ -27,7 +28,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0x00, 0xFF, true, false)]
         public void TestDecrement(byte a, byte result, bool h, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             var cycles = alu.Decrement(ref a);
             Assert.Equal(1, cycles);
@@ -43,7 +44,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0x3C, 0x12, 0x4E, false, false, false)]
         public void TestAdd(byte a, byte b, byte result, bool c, bool h, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             var cycles = alu.Add(ref a, b, false);
             Assert.Equal(1, cycles);
@@ -60,7 +61,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0xE1, 0x1E, 0x00, true, true, true, true)]
         public void TestAdc(byte a, byte b, byte result, bool currentCarry, bool c, bool h, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, currentCarry);
             var alu = new ALU(cpu);
             var cycles = alu.Add(ref a, b, true);
@@ -79,7 +80,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0x00, 0x01, 0xFF, true, true, false)]
         public void TestSub(byte a, byte b, byte result, bool c, bool h, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             var cycles = alu.Sub(ref a, b, false);
             Assert.Equal(1, cycles);
@@ -96,7 +97,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0x3B, 0x4F, 0xEB, true, true, true, false)]
         public void TestSbc(byte a, byte b, byte result, bool currentCarry, bool c, bool h, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, currentCarry);
             var alu = new ALU(cpu);
             var cycles = alu.Sub(ref a, b, true);
@@ -114,7 +115,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0x5A, 0x00, 0x00, true)]
         public void TestAnd(byte a, byte b, byte result, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             var cycles = alu.And(ref a, b);
             Assert.Equal(1, cycles);
@@ -131,7 +132,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0x00, 0x00, 0x00, true)]
         public void TestOr(byte a, byte b, byte result, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             var cycles = alu.Or(ref a, b);
             Assert.Equal(1, cycles);
@@ -148,7 +149,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0xFF, 0x8A, 0x75, false)]
         public void TestXor(byte a, byte b, byte result, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             var cycles = alu.Xor(ref a, b);
             Assert.Equal(1, cycles);
@@ -165,7 +166,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0x3C, 0x40, true, false, false)]
         public void TestCp(byte a, byte b, bool c, bool h, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             var cycles = alu.Cp(a, b);
             Assert.Equal(1, cycles);
@@ -178,7 +179,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [Fact]
         public void TestDecimalAdjustRegister()
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             cpu.Registers.A = 0x45;
             cpu.Registers.B = 0x38;
@@ -199,7 +200,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [Fact]
         public void TestCCF()
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             alu.CCF();
             Assert.True(cpu.Registers.GetFlag(CpuFlags.CarryFlag));
@@ -210,7 +211,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [Fact]
         public void TestSCF()
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             alu.SCF();
             Assert.True(cpu.Registers.GetFlag(CpuFlags.CarryFlag));
@@ -222,7 +223,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0x35, 0xCA)]
         public void TestCPL(byte a, byte result)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
             cpu.Registers.A = a;
             alu.CPL();

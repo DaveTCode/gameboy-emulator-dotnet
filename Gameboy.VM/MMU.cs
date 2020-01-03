@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Gameboy.VM.LCD;
 using Gameboy.VM.Sound;
 
 namespace Gameboy.VM
@@ -15,7 +16,8 @@ namespace Gameboy.VM
         private readonly byte[] _rom = new byte[0x100];
         private readonly ControlRegisters _controlRegisters;
         private readonly SoundRegisters _soundRegisters;
-        private readonly Cartridge _cartridge;
+        private readonly LCDRegisters _lcdRegisters;
+        private readonly Cartridge.Cartridge _cartridge;
 
         private readonly byte[] _workingRam = new byte[WRAMSize];
         private readonly byte[] _hRam = new byte[HRAMSize];
@@ -23,12 +25,13 @@ namespace Gameboy.VM
         private readonly byte[] _oamRam = new byte[OAMRAMSize];
         private readonly byte[] _waveRam = new byte[WaveRAMSize];
 
-        public MMU(byte[] rom, ControlRegisters controlRegisters, SoundRegisters soundRegisters, Cartridge cartridge)
+        public MMU(byte[] rom, ControlRegisters controlRegisters, SoundRegisters soundRegisters, LCDRegisters lcdRegisters, Cartridge.Cartridge cartridge)
         {
             Array.Clear(_rom, 0, _rom.Length);
             Array.Copy(rom, 0, _rom, 0, rom.Length);
             _controlRegisters = controlRegisters;
             _soundRegisters = soundRegisters;
+            _lcdRegisters = lcdRegisters;
             _cartridge = cartridge;
         }
 
@@ -48,19 +51,37 @@ namespace Gameboy.VM
             if (address <= 0xFF)
                 return _controlRegisters.RomDisabledRegister > 0
                     ? _rom[address]                     // Read from device ROM if in that state
-                    : _cartridge.ReadByte(address);     // Read from the 8kB ROM on the cartridge
+                    : _cartridge.ReadRom(address);      // Read from the 8kB ROM on the cartridge
             if (address >= 0x0100 && address <= 0x7FFF) // Read from the 8kB ROM on the cartridge
-                return _cartridge.ReadByte(address);
+                return _cartridge.ReadRom(address);
             if (address >= 0x8000 && address <= 0x9FFF) // Read from the 8kB Video RAM
+            {
+                // Video RAM is unreadable during STAT mode 3
+                if (_lcdRegisters.StatMode == StatMode.TransferringDataToDriver)
+                {
+                    Trace.TraceWarning("Attempted to read VRAM ({0:X2}) during stat mode 3", address);
+                    return 0xFF; // May not be 100% correct, based on speculative information on the internet
+                }
+
                 return _vRam[address - 0x8000];
-            if (address >= 0xA000 && address <= 0xBFFF) // Read from MBC RAM on the cartridge - TODO
-                return 0x0;
+            }
+            if (address >= 0xA000 && address <= 0xBFFF) // Read from MBC RAM on the cartridge
+                return _cartridge.ReadRam(address);
             if (address >= 0xC000 && address <= 0xDFFF) // Read from 8kB internal RAM
                 return _workingRam[address - 0xC000];
             if (address >= 0xE000 && address <= 0xFDFF) // Read from echo of internal RAM
                 return _workingRam[address - 0xE000];
             if (address >= 0xFE00 && address <= 0xFE9F) // Read from sprite attribute table
+            {
+                // OAM RAM is unreadable during STAT mode 2 & 3                                              
+                if (_lcdRegisters.StatMode == StatMode.OAMRAMPeriod || _lcdRegisters.StatMode == StatMode.TransferringDataToDriver)
+                {
+                    Trace.TraceWarning("Attempted to read OAM RAM ({0:X2}) during stat mode {1}", address, _lcdRegisters.StatMode);
+                    return 0xFF; // May not be 100% correct, based on speculative information on the internet
+                }
+
                 return _oamRam[address - 0xFE00];
+            }
             if (address >= 0xFEA0 && address <= 0xFEFF) // Unusable addresses
                 return ReadUnusedAddress(address);
             if (address == 0xFF00) // P1 Register - TODO
@@ -93,32 +114,32 @@ namespace Gameboy.VM
             if (address >= 0xFF30 && address <= 0xFF3F) // Wave Pattern RAM
                 return _waveRam[address - 0xFF30];
             if (address == 0xFF40) // LCDC Register
-                return _controlRegisters.LCDControlRegister;
+                return _lcdRegisters.LCDControlRegister;
             if (address == 0xFF41) // STAT Register
-                return _controlRegisters.StatRegister;
+                return _lcdRegisters.StatRegister;
             if (address == 0xFF42) // SCY Register
-                return _controlRegisters.ScrollY;
+                return _lcdRegisters.ScrollY;
             if (address == 0xFF43) // SCX Register
-                return _controlRegisters.ScrollX;
+                return _lcdRegisters.ScrollX;
             if (address == 0xFF44) // LY Register
-                return _controlRegisters.LCDCurrentScanline;
+                return _lcdRegisters.LCDCurrentScanline;
             if (address == 0xFF45) // LYC Register
-                return _controlRegisters.LYCompare;
+                return _lcdRegisters.LYCompare;
             if (address == 0xFF46) // DMA Register - TODO
             {
                 Trace.TraceWarning("DMA register read, not yet implemented");
                 return 0x0;
             }
             if (address == 0xFF47) // Background Palette Register
-                return _controlRegisters.BackgroundPaletteData;
+                return _lcdRegisters.BackgroundPaletteData;
             if (address == 0xFF48) // Object 0 Palette Register
-                return _controlRegisters.ObjectPaletteData0;
+                return _lcdRegisters.ObjectPaletteData0;
             if (address == 0xFF49) // Object 1 Palette Register
-                return _controlRegisters.ObjectPaletteData1;
+                return _lcdRegisters.ObjectPaletteData1;
             if (address == 0xFF4A) // WY Register
-                return _controlRegisters.WindowY;
+                return _lcdRegisters.WindowY;
             if (address == 0xFF4B) // WX Register
-                return _controlRegisters.WindowX;
+                return _lcdRegisters.WindowX;
             if (address >= 0xFF4C && address <= 0xFF4F) // Unused addresses (TODO 0xFF4D used in CGB)
                 return ReadUnusedAddress(address);
             if (address == 0xFF50) // Is device ROM enabled?
@@ -135,7 +156,7 @@ namespace Gameboy.VM
 
         private static byte ReadUnusedAddress(ushort address)
         {
-            Trace.TraceWarning("Attempt to read from unused memory location {0}", address);
+            Trace.TraceWarning("Attempt to read from unused memory location {0:X4}", address);
             return 0x0;
         }
 
@@ -152,12 +173,12 @@ namespace Gameboy.VM
         {
             Trace.TraceInformation($"Writing {value:X2} to {address:X4}");
 
-            if (address <= 0x7FFF) // Write to the 8kB ROM on the cartridge - TODO
-                Trace.TraceWarning("Unhandled write to {0}", address);
+            if (address <= 0x7FFF) // Write to the 8kB ROM on the cartridge
+                _cartridge.WriteRom(address, value);
             else if (address >= 0x8000 && address <= 0x9FFF) // Write to the 8kB Video RAM
                 _vRam[address - 0x8000] = value;
             else if (address >= 0xA000 && address <= 0xBFFF) // Write to the MBC RAM on the cartridge - TODO
-                Trace.TraceWarning("Unhandled write to {0}", address);
+                _cartridge.WriteRam(address, value);
             else if (address >= 0xC000 && address <= 0xDFFF) // Write to the 8kB internal RAM
                 _workingRam[address - 0xC000] = value;
             else if (address >= 0xE000 && address <= 0xFDFF) // Write to the 8kB internal RAM
@@ -165,7 +186,7 @@ namespace Gameboy.VM
             else if (address >= 0xFE00 && address <= 0xFE9F) // Write to the sprite attribute table
                 _oamRam[address - 0xFE00] = value;
             else if (address >= 0xFEA0 && address <= 0xFEFF) // Unusable addresses - writes explicitly ignored
-                Trace.TraceWarning("Unusable address {0} for write", address);
+                Trace.TraceWarning("Unusable address {0:X4} for write", address);
             else if (address == 0xFF00) // IO Ports Register - TODO
                 Trace.TraceWarning("IO Ports register is not implemented yet");
             else if (address == 0xFF01)
@@ -183,45 +204,45 @@ namespace Gameboy.VM
             else if (address == 0xFF07)
                 _controlRegisters.TimerController = value;
             else if (address >= 0xFF08 && address <= 0xFF0E) // Unused addresses
-                Trace.TraceWarning("Write to unused address {0}", address);
+                Trace.TraceWarning("Write to unused address {0:X4}", address);
             else if (address == 0xFF0F)
                 _controlRegisters.InterruptRequest = value;
             else if (address >= 0xFF10 && address <= 0xFF26)
                 _soundRegisters.WriteToRegister(address, value);
             else if (address >= 0xFF27 && address <= 0xFF2F) // Unused addresses
-                Trace.TraceWarning("Write to unused address {0}", address);
+                Trace.TraceWarning("Write to unused address {0:X4}", address);
             else if (address >= 0xFF30 && address <= 0xFF3F) // Waveform RAM
                 _waveRam[address - 0xFF30] = value;
             else if (address == 0xFF40)
-                _controlRegisters.LCDControlRegister = value;
+                _lcdRegisters.LCDControlRegister = value;
             else if (address == 0xFF41)
-                _controlRegisters.StatRegister = value;
+                _lcdRegisters.StatRegister = value;
             else if (address == 0xFF42)
-                _controlRegisters.ScrollY = value;
+                _lcdRegisters.ScrollY = value;
             else if (address == 0xFF43)
-                _controlRegisters.ScrollX = value;
+                _lcdRegisters.ScrollX = value;
             else if (address == 0xFF44)
                 Trace.TraceWarning("Can't write directly to LY register from MMU");
             else if (address == 0xFF45)
-                _controlRegisters.LYCompare = value;
+                _lcdRegisters.LYCompare = value;
             else if (address == 0xFF46) // DMA register - TODO
                 Trace.TraceWarning("DMA register not yet implemented");
             else if (address == 0xFF47)
-                _controlRegisters.BackgroundPaletteData = value;
+                _lcdRegisters.BackgroundPaletteData = value;
             else if (address == 0xFF48)
-                _controlRegisters.ObjectPaletteData0 = value;
+                _lcdRegisters.ObjectPaletteData0 = value;
             else if (address == 0xFF49)
-                _controlRegisters.ObjectPaletteData1 = value;
+                _lcdRegisters.ObjectPaletteData1 = value;
             else if (address == 0xFF4A)
-                _controlRegisters.WindowY = value;
+                _lcdRegisters.WindowY = value;
             else if (address == 0xFF4B)
-                _controlRegisters.WindowX = value;
+                _lcdRegisters.WindowX = value;
             else if (address >= 0xFF4C && address <= 0xFF4F) // Unused addresses (TODO 0xFF4D used in CGB)
-                Trace.TraceWarning("Write to unused address {0}", address);
+                Trace.TraceWarning("Write to unused address {0:X4}", address);
             else if (address == 0xFF50) // Undocumented register to unmap ROM and map cartridge
                 _controlRegisters.RomDisabledRegister = value;
             else if (address >= 0xFF51 && address <= 0xFF7F) // Unused addresses (TODO - some used in CGB)
-                Trace.TraceWarning("Write to unused address {0}", address);
+                Trace.TraceWarning("Write to unused address {0:X4}", address);
             else if (address >= 0xFF80 && address <= 0xFFFE)  // Write to HRAM
                 _hRam[address - 0xFF80] = value;
             else if (address == 0xFFFF) // Write to interrupt enable register
