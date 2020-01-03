@@ -1,4 +1,6 @@
-﻿using Gameboy.VM.CPU;
+﻿using System;
+using Gameboy.VM.CPU;
+using Gameboy.VM.Sound;
 using Xunit;
 
 namespace Gameboy.VM.Cpu.Tests.Opcodes
@@ -8,7 +10,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [Fact]
         public void TestCallFunctionAndReturn()
         {
-            var cpu = new CPU.CPU(new MMU(null, null, null));
+            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new Cartridge(Array.Empty<byte>())));
             var alu = new ALU(cpu);
 
             cpu.Registers.StackPointer = 0xFFFE;

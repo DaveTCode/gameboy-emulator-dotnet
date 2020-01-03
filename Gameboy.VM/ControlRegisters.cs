@@ -60,7 +60,7 @@ namespace Gameboy.VM
                     s &= 0xFC; // Bit 0 & 1 are always 0 if the LCD is turned off
                 }
                 s &= (byte)((LYCompare == LCDCurrentScanline) ? 0xFF : 0xFB); // Bit 2 is set based on whether LYC = LY
-                
+
                 return s;
             }
             set

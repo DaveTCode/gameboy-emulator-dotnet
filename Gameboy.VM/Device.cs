@@ -1,5 +1,6 @@
 ﻿using Gameboy.VM.LCD;
 using System.Diagnostics;
+using Gameboy.VM.Sound;
 
 namespace Gameboy.VM
 {
@@ -12,7 +13,7 @@ namespace Gameboy.VM
         /// <summary>
         /// Original ROM from a DMG, used to set initial values of registers
         /// </summary>
-        private readonly byte[] _romContents =
+        internal static readonly byte[] DmgRomContents =
         {
             0x31, 0xfe, 0xff, 0xaf, 0x21, 0xff, 0x9f, 0x32, 0xcb, 0x7c, 0x20, 0xfb, 0x21, 0x26, 0xff, 0x0e,
             0x11, 0x3e, 0x80, 0x32, 0xe2, 0x0c, 0x3e, 0xf3, 0xe2, 0x32, 0x3e, 0x77, 0x77, 0x3e, 0xfc, 0xe0,
@@ -35,14 +36,16 @@ namespace Gameboy.VM
         private readonly MMU _mmu;
         private readonly CPU.CPU _cpu;
         private readonly ControlRegisters _controlRegisters;
+        private readonly SoundRegisters _soundRegisters;
         private readonly Cartridge _cartridge;
         private readonly LCDDriver _lcdDriver;
 
         public Device(byte[] cartridgeContents)
         {
             _controlRegisters = new ControlRegisters();
+            _soundRegisters = new SoundRegisters();
             _cartridge = new Cartridge(cartridgeContents);
-            _mmu = new MMU(_romContents, _controlRegisters, _cartridge);
+            _mmu = new MMU(DmgRomContents, _controlRegisters, _soundRegisters, _cartridge);
             _cpu = new CPU.CPU(_mmu);
             _lcdDriver = new LCDDriver(_mmu, _controlRegisters);
         }
@@ -99,7 +102,7 @@ namespace Gameboy.VM
         {
             var cycles = _cpu.Step();
             _lcdDriver.Step(cycles);
-            Trace.TraceInformation("{0} {1}", _controlRegisters, _cpu.Registers);
+            Trace.TraceInformation("{0} {1} {2}", _controlRegisters, _cpu.Registers, _soundRegisters);
         }
     }
 }
