@@ -6,6 +6,8 @@ namespace Gameboy.VM.Cartridge
 {
     public abstract class Cartridge
     {
+        protected const int RomBankSizeBytes = 0x4000;
+
         protected readonly byte[] Contents;
 
         internal Cartridge(in byte[] contents)
@@ -63,6 +65,11 @@ namespace Gameboy.VM.Cartridge
         {
             var calculatedChecksum = Contents[..0x14D].Aggregate(0, (i, b) => i + b);
             return (ushort)calculatedChecksum == ROMChecksum;
+        }
+
+        public override string ToString()
+        {
+            return $"{GameTitle} - {ManufacturerCode} - {MakerCode}";
         }
     }
 }

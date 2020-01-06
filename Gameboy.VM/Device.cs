@@ -1,5 +1,6 @@
 ﻿using Gameboy.VM.LCD;
 using System.Diagnostics;
+using Gameboy.VM.Interrupts;
 using Gameboy.VM.Sound;
 
 namespace Gameboy.VM
@@ -38,18 +39,20 @@ namespace Gameboy.VM
         private readonly ControlRegisters _controlRegisters;
         private readonly SoundRegisters _soundRegisters;
         private readonly LCDRegisters _lcdRegisters;
+        private readonly InterruptRegisters _interruptRegisters;
         private readonly Cartridge.Cartridge _cartridge;
         private readonly LCDDriver _lcdDriver;
 
-        public Device(byte[] cartridgeContents)
+        public Device(Cartridge.Cartridge cartridge)
         {
+            _interruptRegisters = new InterruptRegisters();
             _controlRegisters = new ControlRegisters();
             _soundRegisters = new SoundRegisters();
             _lcdRegisters = new LCDRegisters();
-            _cartridge = new Cartridge.Cartridge(cartridgeContents);
-            _mmu = new MMU(DmgRomContents, _controlRegisters, _soundRegisters, _lcdRegisters, _cartridge);
-            _cpu = new CPU.CPU(_mmu);
-            _lcdDriver = new LCDDriver(_mmu, _lcdRegisters);
+            _cartridge = cartridge;
+            _mmu = new MMU(DmgRomContents, _controlRegisters, _soundRegisters, _lcdRegisters, _interruptRegisters, _cartridge);
+            _cpu = new CPU.CPU(_mmu, _interruptRegisters);
+            _lcdDriver = new LCDDriver(_mmu, _lcdRegisters, _interruptRegisters);
         }
 
         /// <summary>
@@ -102,8 +105,10 @@ namespace Gameboy.VM
 
         public void Step()
         {
+            // TODO - Check for and handle interrupts
             var cycles = _cpu.Step();
             _lcdDriver.Step(cycles);
+            
             Trace.TraceInformation("{0} {1} {2}", _controlRegisters, _cpu.Registers, _lcdRegisters);
         }
     }

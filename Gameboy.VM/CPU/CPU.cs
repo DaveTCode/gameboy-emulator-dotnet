@@ -1,24 +1,57 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Gameboy.VM.Interrupts;
 
 [assembly: InternalsVisibleTo("Gameboy.VM.Cpu.Tests")]
 namespace Gameboy.VM.CPU
 {
     internal class CPU
     {
+        private readonly InterruptRegisters _interruptRegisters;
         private readonly ALU _alu;
 
         internal MMU MMU { get; }
 
         internal Registers Registers { get; }
 
-        internal CPU(MMU mmu)
+        internal CPU(in MMU mmu, in InterruptRegisters interruptRegisters)
         {
+            _interruptRegisters = interruptRegisters;
             Registers = new Registers();
             MMU = mmu;
             _alu = new ALU(this);
             Reset();
+        }
+
+
+
+        /// <summary>
+        /// Called before each opcode is processed, checks for interrupt
+        /// requests and transfer the program into the interrupt handler.
+        /// </summary>
+        internal void CheckForInterrupts()
+        {
+            // Note that the priority ordering is the same as the bit ordering so this works
+            for (var bit = 0; bit < 6; bit++)
+            {
+                var mask = 1 << bit;
+                if ((_interruptRegisters.InterruptEnable & _interruptRegisters.InterruptRequest & mask) == mask)
+                {
+                    var interrupt = (Interrupt)bit;
+                    Trace.TraceInformation("Interrupt {0} enabled and requested", interrupt);
+
+                    // First disable the master interrupt flag
+                    _interruptRegisters.AreInterruptsEnabledGlobally = false;
+
+                    // Then reset the interrupt request
+                    _interruptRegisters.ResetInterrupt(interrupt);
+
+                    // Finally push the PC to the stack and call the interrupt address
+                    // TODO - Write PC to stack
+                    // TODO - JUMP to the interrupt address
+                }
+            }
         }
 
         /// <summary>
@@ -559,18 +592,20 @@ namespace Gameboy.VM.CPU
                 0xFD => _alu.Set(ref Registers.L, 7), // SET L, 7
                 0xFE => _alu.ActOnMemoryAddressOneParam(Registers.HL, _alu.Set, 7), // SET (HL), 7
                 0xFF => _alu.Set(ref Registers.A, 7), // SET A, 7
-                _ => throw new NotImplementedException($"CB sub opcode {subcode} not implemented")
+                _ => throw new ArgumentException($"CB sub opcode {subcode} not implemented", nameof(subcode))
             };
         }
 
         private int EnableInterrupts()
         {
-            return 1; // TODO - Implement interrupts
+            _interruptRegisters.AreInterruptsEnabledGlobally = true;
+            return 1;
         }
 
         private int DisableInterrupts()
         {
-            return 1; // TODO - Implement interrupts
+            _interruptRegisters.AreInterruptsEnabledGlobally = false;
+            return 1;
         }
 
         /// <summary>

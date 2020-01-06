@@ -1,17 +1,14 @@
-﻿using System;
-using Gameboy.VM.CPU;
-using Gameboy.VM.LCD;
-using Gameboy.VM.Sound;
+﻿using Gameboy.VM.CPU;
 using Xunit;
 
-namespace Gameboy.VM.Cpu.Tests.Opcodes
+namespace Gameboy.VM.Cpu.Tests.CPU
 {
     public class FunctionTests
     {
         [Fact]
         public void TestCallFunctionAndReturn()
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
+            var cpu = TestUtils.CreateCPU();
             var alu = new ALU(cpu);
 
             cpu.Registers.StackPointer = 0xFFFE;

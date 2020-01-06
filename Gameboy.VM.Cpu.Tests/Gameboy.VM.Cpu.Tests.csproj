@@ -23,4 +23,10 @@
     <ProjectReference Include="..\Gameboy.VM\Gameboy.VM.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="ROMs\base.gb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

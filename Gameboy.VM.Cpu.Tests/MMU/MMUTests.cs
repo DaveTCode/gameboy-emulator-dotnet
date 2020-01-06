@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
+using Gameboy.VM.Interrupts;
 using Gameboy.VM.LCD;
 using Gameboy.VM.Sound;
 using Xunit;
 
-namespace Gameboy.VM.Cpu.Tests
+namespace Gameboy.VM.Cpu.Tests.MMU
 {
     public class MMUTests
     {
@@ -14,7 +14,7 @@ namespace Gameboy.VM.Cpu.Tests
         public void TestReadAllAddresses(byte isRomMapped)
         {
             var cr = new ControlRegisters {RomDisabledRegister = isRomMapped};
-            var mmu = new MMU(Device.DmgRomContents, cr, new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>()));
+            var mmu = new VM.MMU(Device.DmgRomContents, cr, new SoundRegisters(), new LCDRegisters(), new InterruptRegisters(), TestUtils.CreateMBC0ROMCartridge());
 
             foreach (var address in Enumerable.Range(ushort.MinValue, ushort.MaxValue + 1))
             {
@@ -27,7 +27,7 @@ namespace Gameboy.VM.Cpu.Tests
         public void TestWriteAllAddresses()
         {
             var cr = new ControlRegisters { RomDisabledRegister = 0x1 };
-            var mmu = new MMU(Device.DmgRomContents, cr, new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>()));
+            var mmu = new VM.MMU(Device.DmgRomContents, cr, new SoundRegisters(), new LCDRegisters(), new InterruptRegisters(), TestUtils.CreateMBC0ROMCartridge());
 
             foreach (var address in Enumerable.Range(ushort.MinValue, ushort.MaxValue + 1))
             {

@@ -19,11 +19,6 @@
         internal byte TimerController { get; set; }
         #endregion
 
-        #region Interrupt Registers
-        internal byte InterruptRequest { get; set; }
-        internal byte InterruptEnable { get; set; }
-        #endregion
-
         public void Clear()
         {
             SerialTransferData = 0x0;

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using Gameboy.VM.Interrupts;
 
 namespace Gameboy.VM.LCD
 {
@@ -14,16 +14,18 @@ namespace Gameboy.VM.LCD
 
         private readonly MMU _mmu;
         private readonly LCDRegisters _lcdRegisters;
+        private readonly InterruptRegisters _interruptRegisters;
 
         private readonly byte[] _frameBuffer = new byte[256 * 256];
 
         // Current state of LCD driver
         private int _currentCycle;
 
-        internal LCDDriver(MMU mmu, LCDRegisters lcdRegisters)
+        internal LCDDriver(MMU mmu, LCDRegisters lcdRegisters, InterruptRegisters interruptRegisters)
         {
             _mmu = mmu;
             _lcdRegisters = lcdRegisters;
+            _interruptRegisters = interruptRegisters;
         }
         
         internal void Clear()
@@ -88,7 +90,7 @@ namespace Gameboy.VM.LCD
                 _lcdRegisters.StatMode = _currentCycle switch
                 {
                     _ when _currentCycle < 80 => StatMode.OAMRAMPeriod,
-                    _ when _currentCycle < 252 => StatMode.TransferringDataToDriver,
+                    _ when _currentCycle < 252 => StatMode.TransferringDataToDriver, // TODO - Not strictly true, depends on #sprites
                     _ => StatMode.HBlankPeriod
                 };
 
@@ -98,17 +100,17 @@ namespace Gameboy.VM.LCD
                     if (_lcdRegisters.Mode0HBlankCheckEnabled && _lcdRegisters.StatMode == StatMode.HBlankPeriod)
                     {
                         Trace.TraceInformation("Triggered HBlank interrupt");
-                        // TODO - Trigger HBlank Interrupt
+                        _interruptRegisters.RequestInterrupt(Interrupt.LCDSTAT); // TODO - Is this the right interrupt?
                     }
                     else if (_lcdRegisters.Mode1VBlankCheckEnabled && _lcdRegisters.StatMode == StatMode.VBlankPeriod)
                     {
                         Trace.TraceInformation("Triggered VBlank interrupt");
-                        // TODO - Trigger VBlank Interrupt
+                        _interruptRegisters.RequestInterrupt(Interrupt.VerticalBlank);
                     }
                     else if (_lcdRegisters.Mode2OAMCheckEnabled && _lcdRegisters.StatMode == StatMode.OAMRAMPeriod)
                     {
                         Trace.TraceInformation("Triggered OAM Read interrupt");
-                        // TODO - Trigger OAM Read Interrupt
+                        _interruptRegisters.RequestInterrupt(Interrupt.LCDSTAT); // TODO - Is this the right interrupt?
                     }
                 }
             }

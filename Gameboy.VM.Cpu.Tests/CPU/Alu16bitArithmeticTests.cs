@@ -1,10 +1,7 @@
-﻿using System;
-using Gameboy.VM.CPU;
-using Gameboy.VM.LCD;
-using Gameboy.VM.Sound;
+﻿using Gameboy.VM.CPU;
 using Xunit;
 
-namespace Gameboy.VM.Cpu.Tests.Opcodes
+namespace Gameboy.VM.Cpu.Tests.CPU
 {
     public class Alu16BitArithmeticTests
     {
@@ -15,7 +12,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData((ushort)0x235F, (ushort)0x2360, true, true, true, true)]
         public void Test16BitIncrement(ushort bc, ushort result, bool c, bool h, bool n, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
+            var cpu = TestUtils.CreateCPU();
             var alu = new ALU(cpu);
             cpu.Registers.BC = bc;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);
@@ -37,7 +34,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData((ushort)0x235F, (ushort)0x235E, true, true, true, true)]
         public void Test16BitDecrement(ushort bc, ushort result, bool c, bool h, bool n, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
+            var cpu = TestUtils.CreateCPU();
             var alu = new ALU(cpu);
             cpu.Registers.BC = bc;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);
@@ -58,7 +55,7 @@ namespace Gameboy.VM.Cpu.Tests.Opcodes
         [InlineData(0xFFF8, 0x0002, 0xFFFA, false, false, false, false)]
         public void Test16BitAdd(ushort a, ushort b, ushort result, bool c, bool h, bool n, bool z)
         {
-            var cpu = new CPU.CPU(new MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), new Cartridge.Cartridge(Array.Empty<byte>())));
+            var cpu = TestUtils.CreateCPU();
             var alu = new ALU(cpu);
             cpu.Registers.BC = a;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);

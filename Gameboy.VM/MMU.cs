@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Gameboy.VM.Interrupts;
 using Gameboy.VM.LCD;
 using Gameboy.VM.Sound;
 
@@ -17,6 +18,7 @@ namespace Gameboy.VM
         private readonly ControlRegisters _controlRegisters;
         private readonly SoundRegisters _soundRegisters;
         private readonly LCDRegisters _lcdRegisters;
+        private readonly InterruptRegisters _interruptRegisters;
         private readonly Cartridge.Cartridge _cartridge;
 
         private readonly byte[] _workingRam = new byte[WRAMSize];
@@ -25,13 +27,14 @@ namespace Gameboy.VM
         private readonly byte[] _oamRam = new byte[OAMRAMSize];
         private readonly byte[] _waveRam = new byte[WaveRAMSize];
 
-        public MMU(byte[] rom, ControlRegisters controlRegisters, SoundRegisters soundRegisters, LCDRegisters lcdRegisters, Cartridge.Cartridge cartridge)
+        public MMU(byte[] rom, ControlRegisters controlRegisters, SoundRegisters soundRegisters, LCDRegisters lcdRegisters, InterruptRegisters interruptRegisters, Cartridge.Cartridge cartridge)
         {
             Array.Clear(_rom, 0, _rom.Length);
             Array.Copy(rom, 0, _rom, 0, rom.Length);
             _controlRegisters = controlRegisters;
             _soundRegisters = soundRegisters;
             _lcdRegisters = lcdRegisters;
+            _interruptRegisters = interruptRegisters;
             _cartridge = cartridge;
         }
 
@@ -106,7 +109,7 @@ namespace Gameboy.VM
             if (address >= 0xFF08 && address <= 0xFF0E) // Unused addresses - all reads return 0
                 return ReadUnusedAddress(address);
             if (address == 0xFF0F) // IF Register
-                return _controlRegisters.InterruptRequest;
+                return _interruptRegisters.InterruptRequest;
             if (address >= 0xFF10 && address <= 0xFF26) // Sound registers
                 return _soundRegisters.ReadFromRegister(address);
             if (address >= 0xFF27 && address <= 0xFF2F) // Unused addresses - all reads return 0
@@ -149,7 +152,7 @@ namespace Gameboy.VM
             if (address >= 0xFF80 && address <= 0xFFFE) // Read from HRAM
                 return _hRam[address - 0xFF80];
             if (address == 0xFFFF) // Read from the interrupt enable register
-                return _controlRegisters.InterruptEnable;
+                return _interruptRegisters.InterruptEnable;
 
             throw new Exception($"Memory address {address:X4} doesn't map to anything");
         }
@@ -206,7 +209,7 @@ namespace Gameboy.VM
             else if (address >= 0xFF08 && address <= 0xFF0E) // Unused addresses
                 Trace.TraceWarning("Write to unused address {0:X4}", address);
             else if (address == 0xFF0F)
-                _controlRegisters.InterruptRequest = value;
+                _interruptRegisters.InterruptRequest = value;
             else if (address >= 0xFF10 && address <= 0xFF26)
                 _soundRegisters.WriteToRegister(address, value);
             else if (address >= 0xFF27 && address <= 0xFF2F) // Unused addresses
@@ -246,7 +249,7 @@ namespace Gameboy.VM
             else if (address >= 0xFF80 && address <= 0xFFFE)  // Write to HRAM
                 _hRam[address - 0xFF80] = value;
             else if (address == 0xFFFF) // Write to interrupt enable register
-                _controlRegisters.InterruptEnable = value;
+                _interruptRegisters.InterruptEnable = value;
             else
                 // Happy to throw an exception and crash here as we should map all addresses
                 throw new Exception($"Address {address:X4} is not mapped");

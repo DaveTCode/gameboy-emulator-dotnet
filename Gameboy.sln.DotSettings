@@ -9,9 +9,12 @@
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=HL/@EntryIndexedValue">HL</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=HLD/@EntryIndexedValue">HLD</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=HLI/@EntryIndexedValue">HLI</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=KB/@EntryIndexedValue">KB</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=LCD/@EntryIndexedValue">LCD</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=LCDSTAT/@EntryIndexedValue">LCDSTAT</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=LY/@EntryIndexedValue">LY</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=LYLC/@EntryIndexedValue">LYLC</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=MB/@EntryIndexedValue">MB</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=MBC/@EntryIndexedValue">MBC</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=MMU/@EntryIndexedValue">MMU</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=NR/@EntryIndexedValue">NR</s:String>
@@ -38,6 +41,7 @@
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=HRAM/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=initialising/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=instrs/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Joypad/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=LCDC/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=OAMRAM/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=obvs/@EntryIndexedValue">True</s:Boolean>

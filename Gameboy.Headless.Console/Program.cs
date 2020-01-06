@@ -2,6 +2,7 @@
 using System.IO;
 using CommandLine;
 using Gameboy.VM;
+using Gameboy.VM.Cartridge;
 
 namespace Gameboy.Headless.Console
 {
@@ -34,7 +35,7 @@ namespace Gameboy.Headless.Console
             var fileTracer = new TextWriterTraceListener(logFile);
             Trace.Listeners.Add(fileTracer);
 
-            var device = new Device(File.ReadAllBytes(options.RomFilePath));
+            var device = new Device(CartridgeFactory.CreateCartridge(File.ReadAllBytes(options.RomFilePath)));
 
             if (options.SkipBootRom) device.SkipBootRom();
 
