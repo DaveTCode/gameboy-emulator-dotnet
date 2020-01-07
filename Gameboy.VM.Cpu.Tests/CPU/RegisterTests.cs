@@ -103,7 +103,7 @@ namespace Gameboy.VM.Cpu.Tests.CPU
             var registers = new Registers
             {
                 A = 0x01,
-                F = 0xB0,
+                F = 0xF0,
                 B = 0x00,
                 C = 0x13,
                 D = 0x00,
@@ -114,7 +114,7 @@ namespace Gameboy.VM.Cpu.Tests.CPU
                 StackPointer = 0xFFFE,
             };
 
-            Assert.Equal("AF: 01B0, BC: 0013, DE: 00D8, HL: 014D, SP: FFFE, PC: 0100", registers.ToString());
+            Assert.Equal("A:01, BC:0013, DE:00D8, HL:014D, SP:FFFE, PC:0100, Z:True, C:True, H:True, N:True", registers.ToString());
         }
     }
 }

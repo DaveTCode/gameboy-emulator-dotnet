@@ -8,7 +8,7 @@ namespace Gameboy.VM.LCD
         
         internal byte ScrollY { get; set; }
         
-        internal byte WindowX { get; set; }
+        internal byte WindowX { get; set; } // TODO - Must be > 7
         
         internal byte WindowY { get; set; }
         
@@ -54,12 +54,26 @@ namespace Gameboy.VM.LCD
             }
         }
 
+        #region BackgroundPaletteData Utilities
+
+        internal Grayscale GetColorFromNumber(int colorNumber) => colorNumber switch
+        {
+            0 => (Grayscale)(BackgroundPaletteData & 0x3),
+            1 => (Grayscale)((BackgroundPaletteData >> 2) & 0x3),
+            2 => (Grayscale)((BackgroundPaletteData >> 4) & 0x3),
+            3 => (Grayscale)((BackgroundPaletteData >> 6) & 0x3),
+            _ => throw new ArgumentOutOfRangeException(nameof(colorNumber), colorNumber, "Color number out of range (0-3)")
+        };
+
+        #endregion
+
         internal bool IsLcdOn => (LCDControlRegister & 0x80) == 0x80; // Bit 7 set on LCDC register determines whether the LCD is on or not
-        internal int WindowTileMapOffset => ((LCDControlRegister & 0x40) == 0x40) ? 0x9C00 : 0x9800; // Bit 6 on LCDC register controls which memory location contains the window tile map
+        internal int WindowTileMapOffset => (LCDControlRegister & 0x40) == 0x40 ? 0x9C00 : 0x9800; // Bit 6 on LCDC register controls which memory location contains the window tile map
         internal bool IsWindowEnabled => (LCDControlRegister & 0x20) == 0x20; // Bit 5 set on LCDC register controls whether the window overlay is displayed
-        internal int BackgroundAndWindowTilesetOffset => ((LCDControlRegister & 0x10) == 0x10) ? 0x8000 : 0x8800; // Bit 4 on LCDC register controls which memory location contains the background and window tileset
-        internal int BackgroundTilemapOffset => ((LCDControlRegister & 0x8) == 0x8) ? 0x9C00 : 0x9800; // Bit 3 on LCDC register controls which memory location contains the backgroudn tilemap
-        internal int SpriteHeight => ((LCDControlRegister & 0x4) == 0x4) ? 16 : 8; // Bit 2 on LCDC register controls which memory location contains the window tile map
+        internal int BackgroundAndWindowTilesetOffset => (LCDControlRegister & 0x10) == 0x10 ? 0x8000 : 0x8800; // Bit 4 on LCDC register controls which memory location contains the background and window tileset
+        internal bool UsingSignedByteForTileData => BackgroundAndWindowTilesetOffset == 0x8800; // Bit 4 also determines whether the tile relative address is signed or unsigned
+        internal int BackgroundTilemapOffset => (LCDControlRegister & 0x8) == 0x8 ? 0x9C00 : 0x9800; // Bit 3 on LCDC register controls which memory location contains the background tilemap
+        internal int SpriteHeight => (LCDControlRegister & 0x4) == 0x4 ? 16 : 8; // Bit 2 on LCDC register controls which memory location contains the window tile map
         internal bool IsSpritesEnabled => (LCDControlRegister & 0x2) == 0x2; // Bit 1 on LCDC register controls whether to display sprites
         internal bool IsBackgroundEnabled => (LCDControlRegister & 0x1) == 0x1; // Bit 0 on LCDC register controls whether to display the background
 

@@ -4,6 +4,7 @@ using CommandLine;
 using Gameboy.VM;
 using Gameboy.VM.Cartridge;
 
+
 namespace Gameboy.Headless.Console
 {
     public class CommandLineOptions

@@ -49,7 +49,7 @@ namespace Gameboy.VM
 
         internal byte ReadByte(ushort address)
         {
-            Trace.TraceInformation($"Reading from {address:X4}");
+            //Trace.TraceInformation($"Reading from {address:X4}");
 
             if (address <= 0xFF)
                 return _controlRegisters.RomDisabledRegister > 0
@@ -174,7 +174,7 @@ namespace Gameboy.VM
         /// <returns>The number of cpu cycles taken to write</returns>
         internal int WriteByte(ushort address, byte value)
         {
-            Trace.TraceInformation($"Writing {value:X2} to {address:X4}");
+            //Trace.TraceInformation($"Writing {value:X2} to {address:X4}");
 
             if (address <= 0x7FFF) // Write to the 8kB ROM on the cartridge
                 _cartridge.WriteRom(address, value);

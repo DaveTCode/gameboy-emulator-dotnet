@@ -3,9 +3,10 @@
 [assembly: InternalsVisibleTo("Gameboy.VM.Cpu.Tests")]
 namespace Gameboy.VM.CPU
 {
+
     /// <summary>
-    /// TODO - This assumes initialising values to 0x0, which is fine if we 
-    /// load from bootrom but not find if we load from cartridge address 0x100.
+    /// Holds the CPU register state and provides utility functions to access
+    /// flag information.
     /// </summary>
     internal class Registers
     {
@@ -24,7 +25,7 @@ namespace Gameboy.VM.CPU
             set
             {
                 A = (byte)(value >> 8);
-                F = (byte)(value & 0x00F0); // Note that the lowest 4 bits of the F register are always 0
+                F = (byte)(value & 0xF0); // Note that the lowest 4 bits of the F register are always 0
             }
         }
 
@@ -34,7 +35,7 @@ namespace Gameboy.VM.CPU
             set
             {
                 B = (byte)(value >> 8);
-                C = (byte)(value & 0x00FF);
+                C = (byte)(value & 0xFF);
             }
         }
 
@@ -44,7 +45,7 @@ namespace Gameboy.VM.CPU
             set
             {
                 D = (byte)(value >> 8);
-                E = (byte)(value & 0x00FF);
+                E = (byte)(value & 0xFF);
             }
         }
         internal ushort HL
@@ -53,7 +54,7 @@ namespace Gameboy.VM.CPU
             set
             {
                 H = (byte)(value >> 8);
-                L = (byte)(value & 0x00FF);
+                L = (byte)(value & 0xFF);
             }
         }
 
@@ -105,7 +106,7 @@ namespace Gameboy.VM.CPU
 
         public override string ToString()
         {
-            return $"AF: {AF:X4}, BC: {BC:X4}, DE: {DE:X4}, HL: {HL:X4}, SP: {StackPointer:X4}, PC: {ProgramCounter:X4}";
+            return $"A:{A:X2}, BC:{BC:X4}, DE:{DE:X4}, HL:{HL:X4}, SP:{StackPointer:X4}, PC:{ProgramCounter:X4}, Z:{GetFlag(CpuFlags.ZeroFlag)}, C:{GetFlag(CpuFlags.CarryFlag)}, H:{GetFlag(CpuFlags.HalfCarryFlag)}, N:{GetFlag(CpuFlags.SubtractFlag)}";
         }
     }
 

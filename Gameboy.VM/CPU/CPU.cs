@@ -30,7 +30,14 @@ namespace Gameboy.VM.CPU
         /// Called before each opcode is processed, checks for interrupt
         /// requests and transfer the program into the interrupt handler.
         /// </summary>
-        internal void CheckForInterrupts()
+        /// <returns>
+        /// The total number of cycles taken to check for interrupts.
+        /// 0 if no interrupts to handle, 6 (one CALL) if there _are_
+        /// interrupts to handle regardless of the number.
+        ///
+        /// TODO - This is guesswork not evidenced 
+        /// </returns>
+        internal int CheckForInterrupts()
         {
             // Note that the priority ordering is the same as the bit ordering so this works
             for (var bit = 0; bit < 6; bit++)
@@ -39,7 +46,7 @@ namespace Gameboy.VM.CPU
                 if ((_interruptRegisters.InterruptEnable & _interruptRegisters.InterruptRequest & mask) == mask)
                 {
                     var interrupt = (Interrupt)bit;
-                    Trace.TraceInformation("Interrupt {0} enabled and requested", interrupt);
+                    //Trace.TraceInformation("Interrupt {0} enabled and requested", interrupt);
 
                     // First disable the master interrupt flag
                     _interruptRegisters.AreInterruptsEnabledGlobally = false;
@@ -48,10 +55,14 @@ namespace Gameboy.VM.CPU
                     _interruptRegisters.ResetInterrupt(interrupt);
 
                     // Finally push the PC to the stack and call the interrupt address
-                    // TODO - Write PC to stack
-                    // TODO - JUMP to the interrupt address
+                    // Note that we only handle one interrupt at a time, the
+                    // next won't be handled until the previous one completes
+                    // and that's done through normal opcode cycles.
+                    return _alu.Call(interrupt.StartingAddress());
                 }
             }
+
+            return 0;
         }
 
         /// <summary>
@@ -66,7 +77,7 @@ namespace Gameboy.VM.CPU
         {
             var opcode = FetchByte();
 
-            Trace.TraceInformation("Processing opcode {0:X2}", opcode);
+            //Trace.TraceInformation("Processing opcode {0:X2}", opcode);
 
             return opcode switch
             {
@@ -287,7 +298,7 @@ namespace Gameboy.VM.CPU
                 0xD6 => _alu.Sub(ref Registers.A, FetchByte(), false) + 1, // SUB d8
                 0xD7 => _alu.Rst(0x10), // RST 10
                 0xD8 => _alu.ReturnOnFlag(CpuFlags.CarryFlag, true), // RET C
-                0xD9 => _alu.ReturnAndEnableInterrupts(), // RETI
+                0xD9 => _alu.ReturnAndEnableInterrupts(_interruptRegisters), // RETI
                 0xDA => _alu.JumpOnFlag(CpuFlags.CarryFlag, FetchWord(), true), // JP C, a16
                 0xDB => 0, // Unused opcode
                 0xDC => _alu.CallOnFlag(CpuFlags.CarryFlag, FetchWord(), true), // CALL C, a16
@@ -326,7 +337,7 @@ namespace Gameboy.VM.CPU
                 0xFD => 0, // Unused opcode
                 0xFE => _alu.Cp(Registers.A, FetchByte()) + 1, // CP d8
                 0xFF => _alu.Rst(0x28), // RST 38
-                _ => throw new NotImplementedException($"Opcode {opcode} not implemented")
+                _ => throw new ArgumentException($"Opcode {opcode} not implemented", nameof(opcode))
             };
         }
 

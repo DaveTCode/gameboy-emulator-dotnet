@@ -11,6 +11,10 @@ namespace Gameboy.VM
     /// </summary>
     public class Device
     {
+        public const int ScreenWidth = 160;
+        public const int ScreenHeight = 144;
+        public const int ClockCyclesPerSecond = 4194304;
+
         /// <summary>
         /// Original ROM from a DMG, used to set initial values of registers
         /// </summary>
@@ -53,6 +57,27 @@ namespace Gameboy.VM
             _mmu = new MMU(DmgRomContents, _controlRegisters, _soundRegisters, _lcdRegisters, _interruptRegisters, _cartridge);
             _cpu = new CPU.CPU(_mmu, _interruptRegisters);
             _lcdDriver = new LCDDriver(_mmu, _lcdRegisters, _interruptRegisters);
+        }
+
+        /// <summary>
+        /// Rendering the screen should only really happen during VBlank so
+        /// we expose that to the calling code here.
+        /// </summary>
+        /// <returns>
+        /// True if the LCD is performing VBlank and false otherwise
+        /// </returns>
+        public bool SafeToDrawScreen() => _lcdRegisters.LCDCurrentScanline >= ScreenHeight;
+
+        /// <summary>
+        /// We need to expose information on whether the LCD is actually on to
+        /// determine whether to actually display anything.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsScreenOn() => _lcdRegisters.IsLcdOn;
+
+        public Grayscale[] GetCurrentFrame()
+        {
+            return _lcdDriver.GetCurrentFrame();
         }
 
         /// <summary>
@@ -103,13 +128,34 @@ namespace Gameboy.VM
             _mmu.WriteByte(0xFF4B, 0);
         }
 
-        public void Step()
+        /// <summary>
+        /// Performs a update to all subsystems returning the number of CPU
+        /// cycles taken.
+        /// </summary>
+        /// <returns>
+        /// The total number of CPU cycles taken by the step.
+        /// </returns>
+        public int Step()
         {
-            // TODO - Check for and handle interrupts
-            var cycles = _cpu.Step();
+            // Step 1: Check for interrupts
+            var cycles = _cpu.CheckForInterrupts();
+
+            if (cycles > 0)
+            {
+                // Step 1.5: Update the LCD subsystem to sync with the new number of cycles if an interrupt occurred
+                _lcdDriver.Step(cycles);
+            }
+
+            // Step 2: Atomically run the next operation
+            cycles += _cpu.Step();
+
+            // Step 3: Update the LCD subsystem to sync with the new number of cycles
             _lcdDriver.Step(cycles);
-            
-            Trace.TraceInformation("{0} {1} {2}", _controlRegisters, _cpu.Registers, _lcdRegisters);
+
+            // Print out debug information after each cycle
+            //Trace.TraceInformation("{0} {1} {2}", _controlRegisters, _cpu.Registers, _lcdRegisters);
+
+            return cycles;
         }
     }
 }

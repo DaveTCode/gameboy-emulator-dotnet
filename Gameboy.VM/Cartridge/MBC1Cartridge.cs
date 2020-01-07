@@ -61,12 +61,12 @@ namespace Gameboy.VM.Cartridge
             if (address <= 0x1FFF)
             {
                 _isRamEnabled = (value & 0x0F) == 0x0A;
-                Trace.TraceInformation("RAM enabled is now {0} by setting {1} to {2}", _isRamEnabled, value, address);
+                //Trace.TraceInformation("RAM enabled is now {0} by setting {1} to {2}", _isRamEnabled, value, address);
             }
             else if (address >= 0x2000 && address <= 0x3FFF)
             {
                 SetRomBank((_romBank & 0b11100000) | (value & 0x1F));
-                Trace.TraceInformation("Selecting ROM Bank {0} by setting {1} to {2}", _romBank, value, address);
+                //Trace.TraceInformation("Selecting ROM Bank {0} by setting {1} to {2}", _romBank, value, address);
             }
             else if (address >= 0x4000 && address <= 0x5FFF)
             {
@@ -74,12 +74,12 @@ namespace Gameboy.VM.Cartridge
                 if (_mode == MBC1Mode.RAM)
                 {
                     _ramBank = highBits % RAMSize.NumberBanks();
-                    Trace.TraceInformation("Switched RAM bank to {0} by setting {1} to {2}", _ramBank, value, address);
+                    //Trace.TraceInformation("Switched RAM bank to {0} by setting {1} to {2}", _ramBank, value, address);
                 }
                 else
                 {
                     SetRomBank((_romBank & 0x31) | (value & 0xE0));
-                    Trace.TraceInformation("Switched ROM bank to {0} by setting {1} to {2}", _ramBank, value, address);
+                    //Trace.TraceInformation("Switched ROM bank to {0} by setting {1} to {2}", _ramBank, value, address);
                 }
             }
             else if (address >= 0x6000 && address <= 0x7FFF)
@@ -87,16 +87,16 @@ namespace Gameboy.VM.Cartridge
                 if (value == 0x0)
                 {
                     _mode = MBC1Mode.ROM;
-                    Trace.TraceInformation("Switching MBC1 bank mode to RAM by write of {0} to {1}", value, address);
+                    //Trace.TraceInformation("Switching MBC1 bank mode to RAM by write of {0} to {1}", value, address);
                 }
                 else if (value == 0x1)
                 {
                     _mode = MBC1Mode.RAM;
-                    Trace.TraceInformation("Switching MBC1 bank mode to RAM by write of {0} to {1}", value, address);
+                    //Trace.TraceInformation("Switching MBC1 bank mode to RAM by write of {0} to {1}", value, address);
                 }
                 else
                 {
-                    Trace.TraceWarning("Value {0} at address {1} written to select MBC1 bank mode but only 0,1 are accepted", value, address);
+                    //Trace.TraceWarning("Value {0} at address {1} written to select MBC1 bank mode but only 0,1 are accepted", value, address);
                 }
             }
         }
