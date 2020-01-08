@@ -16,7 +16,7 @@ namespace Gameboy.VM.Cpu.Tests
         internal static VM.CPU.CPU CreateCPU()
         {
             var interruptRegisters = new InterruptRegisters();
-            
+
             return new VM.CPU.CPU(CreateMMU(interruptRegisters), interruptRegisters);
         }
 

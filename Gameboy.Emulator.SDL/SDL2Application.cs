@@ -58,7 +58,7 @@ namespace Gameboy.Emulator.SDL
                         case SDL2.SDL_EventType.SDL_QUIT:
                             quit = true;
                             break;
-                        // TODO - Handle input here when joypad implementation complete
+                            // TODO - Handle input here when joypad implementation complete
                     }
                 }
 

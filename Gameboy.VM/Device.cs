@@ -1,5 +1,4 @@
 ﻿using Gameboy.VM.LCD;
-using System.Diagnostics;
 using Gameboy.VM.Interrupts;
 using Gameboy.VM.Sound;
 
@@ -93,7 +92,7 @@ namespace Gameboy.VM
             _cpu.Registers.HL = 0x014D;
             _cpu.Registers.ProgramCounter = 0x0100;
             _cpu.Registers.StackPointer = 0xFFFE;
-        
+
             // Set up memory
             _mmu.WriteByte(0xFF05, 0);
             _mmu.WriteByte(0xFF06, 0);

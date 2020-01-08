@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Gameboy.VM.Interrupts
+﻿namespace Gameboy.VM.Interrupts
 {
     internal class InterruptRegisters
     {

@@ -13,7 +13,7 @@ namespace Gameboy.VM.Cpu.Tests.MMU
         [InlineData(0)]
         public void TestReadAllAddresses(byte isRomMapped)
         {
-            var cr = new ControlRegisters {RomDisabledRegister = isRomMapped};
+            var cr = new ControlRegisters { RomDisabledRegister = isRomMapped };
             var mmu = new VM.MMU(Device.DmgRomContents, cr, new SoundRegisters(), new LCDRegisters(), new InterruptRegisters(), TestUtils.CreateMBC0ROMCartridge());
 
             foreach (var address in Enumerable.Range(ushort.MinValue, ushort.MaxValue + 1))

@@ -5,19 +5,19 @@ namespace Gameboy.VM.LCD
     internal class LCDRegisters
     {
         internal byte ScrollX { get; set; }
-        
+
         internal byte ScrollY { get; set; }
-        
+
         internal byte WindowX { get; set; } // TODO - Must be > 7
-        
+
         internal byte WindowY { get; set; }
-        
+
         internal byte BackgroundPaletteData { get; set; }
-        
+
         internal byte ObjectPaletteData0 { get; set; }
-        
+
         internal byte ObjectPaletteData1 { get; set; }
-        
+
         // Note - Only settable from LCDDriver, not from memory address
         internal byte LCDCurrentScanline { get; set; }
 

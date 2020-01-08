@@ -1,7 +1,4 @@
-﻿using System;
-using Gameboy.VM.CPU;
-using Gameboy.VM.LCD;
-using Gameboy.VM.Sound;
+﻿using Gameboy.VM.CPU;
 using Xunit;
 
 namespace Gameboy.VM.Cpu.Tests.CPU

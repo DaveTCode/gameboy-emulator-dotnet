@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Gameboy.VM.Cartridge
 {
@@ -114,7 +113,7 @@ namespace Gameboy.VM.Cartridge
         {
             // Setting ROM bank which isn't present on the cartridge causes it to wrap.
             romBank %= ROMSize.NumberBanks();
-            
+
             _romBank = romBank switch
             {
                 0 => 1,

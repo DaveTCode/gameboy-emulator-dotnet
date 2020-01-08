@@ -44,9 +44,9 @@ namespace Gameboy.VM.Cartridge
 
         public CartridgeROMSize ROMSize => (CartridgeROMSize)Contents[0x148];
 
-        public CartridgeRAMSize RAMSize => (CartridgeRAMSize) Contents[0x149];
+        public CartridgeRAMSize RAMSize => (CartridgeRAMSize)Contents[0x149];
 
-        public CartridgeDestinationCode DestinationCode => (CartridgeDestinationCode) Contents[0x14A];
+        public CartridgeDestinationCode DestinationCode => (CartridgeDestinationCode)Contents[0x14A];
 
         public byte MaskRomNumber => Contents[0x14C];
 
@@ -57,7 +57,7 @@ namespace Gameboy.VM.Cartridge
         public bool IsHeaderValid()
         {
             var calculatedChecksum = Contents[0x134..0x14D].Aggregate(0, (c, b) => c - b - 1);
-            
+
             return (byte)calculatedChecksum == HeaderChecksum;
         }
 
