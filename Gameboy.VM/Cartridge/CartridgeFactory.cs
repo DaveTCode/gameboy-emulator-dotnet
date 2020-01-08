@@ -4,6 +4,15 @@ namespace Gameboy.VM.Cartridge
 {
     public static class CartridgeFactory
     {
+        /// <summary>
+        /// Given a gameboy cartridge binary dump this function will return a 
+        /// Cartridge object by determining which type of cartridge it is, how much
+        /// RAM it has, how many ROM banks it has etc.
+        /// </summary>
+        /// 
+        /// <param name="contents">The full binary dump of a ROM</param>
+        /// 
+        /// <returns>A cartridge ready to inject into a <see cref="Device"/></returns>
         public static Cartridge CreateCartridge(byte[] contents)
         {
             if (contents.Length < 0x150)

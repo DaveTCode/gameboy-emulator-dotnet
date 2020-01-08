@@ -73,7 +73,7 @@ namespace Gameboy.VM.LCD
         internal int BackgroundAndWindowTilesetOffset => (LCDControlRegister & 0x10) == 0x10 ? 0x8000 : 0x8800; // Bit 4 on LCDC register controls which memory location contains the background and window tileset
         internal bool UsingSignedByteForTileData => BackgroundAndWindowTilesetOffset == 0x8800; // Bit 4 also determines whether the tile relative address is signed or unsigned
         internal int BackgroundTilemapOffset => (LCDControlRegister & 0x8) == 0x8 ? 0x9C00 : 0x9800; // Bit 3 on LCDC register controls which memory location contains the background tilemap
-        internal int SpriteHeight => (LCDControlRegister & 0x4) == 0x4 ? 16 : 8; // Bit 2 on LCDC register controls which memory location contains the window tile map
+        internal int SpriteHeight => (LCDControlRegister & 0x4) == 0x4 ? 16 : 8; // Bit 2 on LCDC register controls how large sprites are
         internal bool IsSpritesEnabled => (LCDControlRegister & 0x2) == 0x2; // Bit 1 on LCDC register controls whether to display sprites
         internal bool IsBackgroundEnabled => (LCDControlRegister & 0x1) == 0x1; // Bit 0 on LCDC register controls whether to display the background
 
