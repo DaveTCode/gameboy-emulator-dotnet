@@ -188,7 +188,13 @@ namespace Gameboy.VM
             else if (address == 0xFF00) // IO Ports Register - TODO
                 _device.Log.Error("IO Ports register not implemented", address);
             else if (address == 0xFF01)
-                _device.ControlRegisters.SerialTransferData = value;
+            {
+                // TODO - Replace with proper implementation of serial port
+                if (_device.ControlRegisters.SerialTransferControl == 0x81)
+                {
+                    Console.Write(Convert.ToChar(value));
+                }
+            }
             else if (address == 0xFF02)
                 _device.ControlRegisters.SerialTransferControl = value;
             else if (address == 0xFF03)
@@ -223,7 +229,7 @@ namespace Gameboy.VM
                 _device.Log.Information("Can't write directly to LY register from MMU");
             else if (address == 0xFF45)
                 _device.LCDRegisters.LYCompare = value;
-            else if (address == 0xFF46) // DMA register - TODO
+            else if (address == 0xFF46) // DMA register
             {
                 _device.DMAController.InitiateDMATransfer(value);
             }

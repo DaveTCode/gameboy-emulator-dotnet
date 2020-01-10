@@ -62,7 +62,7 @@ namespace Gameboy.Emulator.SDL
                             var frameBuffer = _device.GetCurrentFrame();
                             using (var infile = System.IO.File.OpenWrite("framebuffer"))
                             {
-                                infile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join(",", frameBuffer.Select(f => (int)f))));
+                                infile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(f => (int)f))));
                             }
                             break;
                         // TODO - Handle input here when joypad implementation complete
@@ -107,7 +107,7 @@ namespace Gameboy.Emulator.SDL
                 }
 
                 var msToSleep = msPerFrame - (stopwatch.ElapsedTicks / Stopwatch.Frequency) * 1000;
-                Console.WriteLine($"Frame took {stopwatch.ElapsedTicks * 1000 / Stopwatch.Frequency}ms, ms per frame should be {msPerFrame}");
+                //Console.WriteLine($"Frame took {stopwatch.ElapsedTicks * 1000 / Stopwatch.Frequency}ms, ms per frame should be {msPerFrame}");
                 if (msToSleep > 0)
                 {
                     SDL2.SDL_Delay((uint)msToSleep);

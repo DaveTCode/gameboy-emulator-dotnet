@@ -6,11 +6,11 @@
     },
     "Blarg CPU Tests - All (MBC1)": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/cpu_instrs.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "-f ../../../../Roms/gb-test-roms-master/cpu_instrs/cpu_instrs.gb --skipBootRom -s 60 -p 2"
     },
     "Blarg CPU Tests - 01 Special (MBC0)": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/01-special.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "-f ../../../../Roms/gb-test-roms-master/cpu_instrs/individual/01-special.gb --skipBootRom -s 60 -p 2"
     },
     "Tetris": {
       "commandName": "Project",

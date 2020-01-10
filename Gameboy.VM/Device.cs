@@ -145,6 +145,7 @@ namespace Gameboy.VM
             MMU.WriteByte(0xFF49, 0xFF);
             MMU.WriteByte(0xFF4A, 0);
             MMU.WriteByte(0xFF4B, 0);
+            MMU.WriteByte(0xFF50, 0x1); // Turn off boot ROM
         }
 
         /// <summary>
