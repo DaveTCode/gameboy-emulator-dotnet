@@ -6,18 +6,19 @@
         /// Undocumented byte at 0xFF50 which is set to 0/1. 0 To enable the boot ROM
         /// and 1 to disable it.
         /// </summary>
-        internal byte RomDisabledRegister { get; set; }
+        private byte _romDisabled = 0x0;
+        internal byte RomDisabledRegister
+        {
+            get => _romDisabled;
+            set
+            {
+                _romDisabled = value;
+            }
+        }
 
         // Serial Cable Registers
         internal byte SerialTransferData { get; set; }
         internal byte SerialTransferControl { get; set; }
-
-        #region Timer Registers
-        internal byte Divider { get; set; }
-        internal byte TimerCounter { get; set; }
-        internal byte TimerModulo { get; set; }
-        internal byte TimerController { get; set; }
-        #endregion
 
         public void Clear()
         {

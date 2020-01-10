@@ -12,11 +12,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Roms", "Roms", "{AB78D493-CC92-46B7-863E-E4887E2ED960}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gameboy.VM.Cpu.Tests", "Gameboy.VM.Cpu.Tests\Gameboy.VM.Cpu.Tests.csproj", "{0CC57EB6-D946-4B5D-AD2E-575F68C6805B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gameboy.VM.Tests", "Gameboy.VM.Cpu.Tests\Gameboy.VM.Tests.csproj", "{0CC57EB6-D946-4B5D-AD2E-575F68C6805B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gameboy.Headless.Console", "Gameboy.Headless.Console\Gameboy.Headless.Console.csproj", "{7B642E37-B2DB-4C2D-8E8D-9BC548BCA9E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gameboy.Emulator.SDL", "Gameboy.Emulator.SDL\Gameboy.Emulator.SDL.csproj", "{DD4C0DCE-EE06-4550-B9A9-E6126CF6A4A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gameboy.Emulator.SDL", "Gameboy.Emulator.SDL\Gameboy.Emulator.SDL.csproj", "{DD4C0DCE-EE06-4550-B9A9-E6126CF6A4A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

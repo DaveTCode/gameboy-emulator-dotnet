@@ -2,28 +2,22 @@
 using System.Runtime.CompilerServices;
 using Gameboy.VM.Interrupts;
 
-[assembly: InternalsVisibleTo("Gameboy.VM.Cpu.Tests")]
 namespace Gameboy.VM.CPU
 {
     internal class CPU
     {
-        private readonly InterruptRegisters _interruptRegisters;
         private readonly ALU _alu;
-
-        internal MMU MMU { get; }
+        private readonly Device _device;
 
         internal Registers Registers { get; }
 
-        internal CPU(in MMU mmu, in InterruptRegisters interruptRegisters)
+        internal CPU(in Device device)
         {
-            _interruptRegisters = interruptRegisters;
             Registers = new Registers();
-            MMU = mmu;
-            _alu = new ALU(this);
+            _alu = new ALU(this, device.MMU);
+            _device = device;
             Reset();
         }
-
-
 
         /// <summary>
         /// Called before each opcode is processed, checks for interrupt
@@ -42,16 +36,15 @@ namespace Gameboy.VM.CPU
             for (var bit = 0; bit < 6; bit++)
             {
                 var mask = 1 << bit;
-                if ((_interruptRegisters.InterruptEnable & _interruptRegisters.InterruptRequest & mask) == mask)
+                if ((_device.InterruptRegisters.InterruptEnable & _device.InterruptRegisters.InterruptRequest & mask) == mask)
                 {
                     var interrupt = (Interrupt)bit;
-                    //Trace.TraceInformation("Interrupt {0} enabled and requested", interrupt);
 
                     // First disable the master interrupt flag
-                    _interruptRegisters.AreInterruptsEnabledGlobally = false;
+                    _device.InterruptRegisters.AreInterruptsEnabledGlobally = false;
 
                     // Then reset the interrupt request
-                    _interruptRegisters.ResetInterrupt(interrupt);
+                    _device.InterruptRegisters.ResetInterrupt(interrupt);
 
                     // Finally push the PC to the stack and call the interrupt address
                     // Note that we only handle one interrupt at a time, the
@@ -76,21 +69,19 @@ namespace Gameboy.VM.CPU
         {
             var opcode = FetchByte();
 
-            //Trace.TraceInformation("Processing opcode {0:X2}", opcode);
-
             return opcode switch
             {
                 0x00 => 1, // NOOP
                 0x01 => _alu.Load(Register16Bit.BC, FetchWord()), // LD BC, d16
-                0x02 => MMU.WriteByte(Registers.BC, Registers.A), // LD (BC), A
+                0x02 => _device.MMU.WriteByte(Registers.BC, Registers.A), // LD (BC), A
                 0x03 => _alu.Increment(Register16Bit.BC), // Increment BC
                 0x04 => _alu.Increment(ref Registers.B), // Increment B
                 0x05 => _alu.Decrement(ref Registers.B), // Decrement B
                 0x06 => (_alu.Load(ref Registers.B, FetchByte()) + 1), // LD B, d8
                 0x07 => _alu.RotateLeftWithCarry(ref Registers.A), // RLCA
-                0x08 => (MMU.WriteWord(FetchWord(), Registers.StackPointer) + 1), // LD (a16), SP
+                0x08 => (_device.MMU.WriteWord(FetchWord(), Registers.StackPointer) + 1), // LD (a16), SP
                 0x09 => _alu.Add(Register16Bit.HL, Registers.HL, Registers.BC), // ADD HL, BC
-                0x0A => (_alu.Load(ref Registers.A, MMU.ReadByte(Registers.BC)) + 1), // LD A, (BC)
+                0x0A => (_alu.Load(ref Registers.A, _device.MMU.ReadByte(Registers.BC)) + 1), // LD A, (BC)
                 0x0B => _alu.Decrement(Register16Bit.BC), // DEC BC - Done on 16 bit inc/dec/ld unit, no flag updates
                 0x0C => _alu.Increment(ref Registers.C), // INC C
                 0x0D => _alu.Decrement(ref Registers.C), // DEC C
@@ -98,7 +89,7 @@ namespace Gameboy.VM.CPU
                 0x0F => _alu.RotateRightWithCarry(ref Registers.A), // RRCA
                 0x10 => Stop(), // STOP 0
                 0x11 => _alu.Load(Register16Bit.DE, FetchWord()), // LD DE, d16
-                0x12 => MMU.WriteByte(Registers.DE, Registers.A), // LD (DE), A
+                0x12 => _device.MMU.WriteByte(Registers.DE, Registers.A), // LD (DE), A
                 0x13 => _alu.Increment(Register16Bit.DE), // INC DE
                 0x14 => _alu.Increment(ref Registers.D), // INC D
                 0x15 => _alu.Decrement(ref Registers.D), // DEC D
@@ -106,7 +97,7 @@ namespace Gameboy.VM.CPU
                 0x17 => _alu.RotateLeftNoCarry(ref Registers.A), // RLA
                 0x18 => _alu.JumpRight((sbyte)FetchByte()), // JR r8
                 0x19 => _alu.Add(Register16Bit.HL, Registers.HL, Registers.DE), // ADD HL, DE
-                0x1A => _alu.Load(ref Registers.A, MMU.ReadByte(Registers.DE)), // LD A, (DE)
+                0x1A => _alu.Load(ref Registers.A, _device.MMU.ReadByte(Registers.DE)), // LD A, (DE)
                 0x1B => _alu.Decrement(Register16Bit.DE), // DEC DE
                 0x1C => _alu.Increment(ref Registers.E), // INC E
                 0x1D => _alu.Decrement(ref Registers.E), // DEC E
@@ -114,7 +105,7 @@ namespace Gameboy.VM.CPU
                 0x1F => _alu.RotateRightNoCarry(ref Registers.A), // RRA
                 0x20 => _alu.JumpRightOnFlag(CpuFlags.ZeroFlag, (sbyte)FetchByte(), false), // JR NZ, r8
                 0x21 => (_alu.Load(Register16Bit.HL, FetchWord()) + 1), // LD HL, d16
-                0x22 => MMU.WriteByte(Registers.HLI(), Registers.A), // LD (HL+), A
+                0x22 => _device.MMU.WriteByte(Registers.HLI(), Registers.A), // LD (HL+), A
                 0x23 => _alu.Increment(Register16Bit.HL), // INC HL
                 0x24 => _alu.Increment(ref Registers.H), // INC H
                 0x25 => _alu.Decrement(ref Registers.H), // DEC H
@@ -122,7 +113,7 @@ namespace Gameboy.VM.CPU
                 0x27 => _alu.DecimalAdjustRegister(ref Registers.A), // DAA
                 0x28 => _alu.JumpRightOnFlag(CpuFlags.ZeroFlag, (sbyte)FetchByte(), true), // JR Z, r8
                 0x29 => _alu.Add(Register16Bit.HL, Registers.HL, Registers.HL), // ADD HL, HL
-                0x2A => _alu.Load(ref Registers.A, MMU.ReadByte(Registers.HLI())), // LD A, (HL+)
+                0x2A => _alu.Load(ref Registers.A, _device.MMU.ReadByte(Registers.HLI())), // LD A, (HL+)
                 0x2B => _alu.Decrement(Register16Bit.HL), // DEC HL
                 0x2C => _alu.Increment(ref Registers.L), // INC L
                 0x2D => _alu.Decrement(ref Registers.L), // DEC L
@@ -130,15 +121,15 @@ namespace Gameboy.VM.CPU
                 0x2F => _alu.CPL(), // CPL
                 0x30 => _alu.JumpRightOnFlag(CpuFlags.CarryFlag, (sbyte)FetchByte(), false), // JR NC, d8
                 0x31 => (_alu.Load(Register16Bit.SP, FetchWord()) + 1), // LD SP, d16
-                0x32 => MMU.WriteByte(Registers.HLD(), Registers.A), // LD (HL-), A
+                0x32 => _device.MMU.WriteByte(Registers.HLD(), Registers.A), // LD (HL-), A
                 0x33 => _alu.Increment(Register16Bit.SP), // INC SP
                 0x34 => _alu.ActOnMemoryAddress(Registers.HL, _alu.Increment), // INC (HL)
                 0x35 => _alu.ActOnMemoryAddress(Registers.HL, _alu.Decrement), // DEC (HL)
-                0x36 => (MMU.WriteByte(Registers.HL, FetchByte()) + 1), // LD (HL), d8
+                0x36 => (_device.MMU.WriteByte(Registers.HL, FetchByte()) + 1), // LD (HL), d8
                 0x37 => _alu.SCF(), // SCF
                 0x38 => _alu.JumpRightOnFlag(CpuFlags.CarryFlag, (sbyte)FetchByte(), true), // JR C, d8
                 0x39 => _alu.Add(Register16Bit.HL, Registers.HL, Registers.StackPointer), // ADD HL, SP
-                0x3A => _alu.Load(ref Registers.A, MMU.ReadByte(Registers.HLD())), // LD A, (HL-)
+                0x3A => _alu.Load(ref Registers.A, _device.MMU.ReadByte(Registers.HLD())), // LD A, (HL-)
                 0x3B => _alu.Decrement(Register16Bit.SP), // DEC SP
                 0x3C => _alu.Increment(ref Registers.A), // INC A
                 0x3D => _alu.Decrement(ref Registers.A), // DEC A
@@ -150,7 +141,7 @@ namespace Gameboy.VM.CPU
                 0x43 => _alu.Load(ref Registers.B, Registers.E), // LD B, E
                 0x44 => _alu.Load(ref Registers.B, Registers.H), // LD B, H
                 0x45 => _alu.Load(ref Registers.B, Registers.L), // LD B, L
-                0x46 => (_alu.Load(ref Registers.B, MMU.ReadByte(Registers.HL)) + 1), // LD B, (HL)
+                0x46 => (_alu.Load(ref Registers.B, _device.MMU.ReadByte(Registers.HL)) + 1), // LD B, (HL)
                 0x47 => _alu.Load(ref Registers.B, Registers.A), // LD B, A
                 0x48 => _alu.Load(ref Registers.C, Registers.B), // LD C, B
                 0x49 => 1, // LD C, C
@@ -158,7 +149,7 @@ namespace Gameboy.VM.CPU
                 0x4B => _alu.Load(ref Registers.C, Registers.E), // LD C, E
                 0x4C => _alu.Load(ref Registers.C, Registers.H), // LD C, H
                 0x4D => _alu.Load(ref Registers.C, Registers.L), // LD C, L
-                0x4E => (_alu.Load(ref Registers.C, MMU.ReadByte(Registers.HL)) + 1), // LD C, (HL)
+                0x4E => (_alu.Load(ref Registers.C, _device.MMU.ReadByte(Registers.HL)) + 1), // LD C, (HL)
                 0x4F => _alu.Load(ref Registers.C, Registers.A), // LD C, A
                 0x50 => _alu.Load(ref Registers.D, Registers.B), // LD D, B
                 0x51 => _alu.Load(ref Registers.D, Registers.C), // LD D, C
@@ -166,7 +157,7 @@ namespace Gameboy.VM.CPU
                 0x53 => _alu.Load(ref Registers.D, Registers.E), // LD D, E
                 0x54 => _alu.Load(ref Registers.D, Registers.H), // LD D, H
                 0x55 => _alu.Load(ref Registers.D, Registers.L), // LD D, L
-                0x56 => (_alu.Load(ref Registers.D, MMU.ReadByte(Registers.HL)) + 1), // LD D, (HL)
+                0x56 => (_alu.Load(ref Registers.D, _device.MMU.ReadByte(Registers.HL)) + 1), // LD D, (HL)
                 0x57 => _alu.Load(ref Registers.D, Registers.A), // LD D, A
                 0x58 => _alu.Load(ref Registers.E, Registers.B), // LD E, B
                 0x59 => _alu.Load(ref Registers.E, Registers.C), // LD E, C
@@ -174,7 +165,7 @@ namespace Gameboy.VM.CPU
                 0x5B => 1, // LD E, E
                 0x5C => _alu.Load(ref Registers.E, Registers.H), // LD E, H
                 0x5D => _alu.Load(ref Registers.E, Registers.L), // LD E, L
-                0x5E => (_alu.Load(ref Registers.E, MMU.ReadByte(Registers.HL)) + 1), // LD E, (HL)
+                0x5E => (_alu.Load(ref Registers.E, _device.MMU.ReadByte(Registers.HL)) + 1), // LD E, (HL)
                 0x5F => _alu.Load(ref Registers.E, Registers.A), // LD E, A
                 0x60 => _alu.Load(ref Registers.H, Registers.B), // LD H, B
                 0x61 => _alu.Load(ref Registers.H, Registers.C), // LD H, C
@@ -182,7 +173,7 @@ namespace Gameboy.VM.CPU
                 0x63 => _alu.Load(ref Registers.H, Registers.E), // LD H, E
                 0x64 => 1, // LD H, H
                 0x65 => _alu.Load(ref Registers.H, Registers.L), // LD H, L
-                0x66 => (_alu.Load(ref Registers.H, MMU.ReadByte(Registers.HL)) + 1), // LD H, (HL)
+                0x66 => (_alu.Load(ref Registers.H, _device.MMU.ReadByte(Registers.HL)) + 1), // LD H, (HL)
                 0x67 => _alu.Load(ref Registers.H, Registers.A), // LD H, A
                 0x68 => _alu.Load(ref Registers.L, Registers.B), // LD L, B
                 0x69 => _alu.Load(ref Registers.L, Registers.C), // LD L, C
@@ -190,23 +181,23 @@ namespace Gameboy.VM.CPU
                 0x6B => _alu.Load(ref Registers.L, Registers.E), // LD L, E
                 0x6C => _alu.Load(ref Registers.L, Registers.H), // LD L, H
                 0x6D => 1, // LD L, L
-                0x6E => (_alu.Load(ref Registers.L, MMU.ReadByte(Registers.HL)) + 1), // LD L, (HL)
+                0x6E => (_alu.Load(ref Registers.L, _device.MMU.ReadByte(Registers.HL)) + 1), // LD L, (HL)
                 0x6F => _alu.Load(ref Registers.L, Registers.A), // LD L, A
-                0x70 => MMU.WriteByte(Registers.HL, Registers.B), // LD (HL), B
-                0x71 => MMU.WriteByte(Registers.HL, Registers.C), // LD (HL), C
-                0x72 => MMU.WriteByte(Registers.HL, Registers.D), // LD (HL), D
-                0x73 => MMU.WriteByte(Registers.HL, Registers.E), // LD (HL), E
-                0x74 => MMU.WriteByte(Registers.HL, Registers.H), // LD (HL), H
-                0x75 => MMU.WriteByte(Registers.HL, Registers.L), // LD (HL), L
+                0x70 => _device.MMU.WriteByte(Registers.HL, Registers.B), // LD (HL), B
+                0x71 => _device.MMU.WriteByte(Registers.HL, Registers.C), // LD (HL), C
+                0x72 => _device.MMU.WriteByte(Registers.HL, Registers.D), // LD (HL), D
+                0x73 => _device.MMU.WriteByte(Registers.HL, Registers.E), // LD (HL), E
+                0x74 => _device.MMU.WriteByte(Registers.HL, Registers.H), // LD (HL), H
+                0x75 => _device.MMU.WriteByte(Registers.HL, Registers.L), // LD (HL), L
                 0x76 => Halt(), // HALT
-                0x77 => MMU.WriteByte(Registers.HL, Registers.A), // LD (HL), A
+                0x77 => _device.MMU.WriteByte(Registers.HL, Registers.A), // LD (HL), A
                 0x78 => _alu.Load(ref Registers.A, Registers.B), // LD A, B
                 0x79 => _alu.Load(ref Registers.A, Registers.C), // LD A, C
                 0x7A => _alu.Load(ref Registers.A, Registers.D), // LD A, D
                 0x7B => _alu.Load(ref Registers.A, Registers.E), // LD A, E
                 0x7C => _alu.Load(ref Registers.A, Registers.H), // LD A, H
                 0x7D => _alu.Load(ref Registers.A, Registers.L), // LD A, L
-                0x7E => (_alu.Load(ref Registers.A, MMU.ReadByte(Registers.HL)) + 1), // LD A, (HL)
+                0x7E => (_alu.Load(ref Registers.A, _device.MMU.ReadByte(Registers.HL)) + 1), // LD A, (HL)
                 0x7F => 1, // LD A, A
                 0x80 => _alu.Add(ref Registers.A, Registers.B, false), // ADD A, B
                 0x81 => _alu.Add(ref Registers.A, Registers.C, false), // ADD A, C
@@ -214,7 +205,7 @@ namespace Gameboy.VM.CPU
                 0x83 => _alu.Add(ref Registers.A, Registers.E, false), // ADD A, E
                 0x84 => _alu.Add(ref Registers.A, Registers.H, false), // ADD A, H
                 0x85 => _alu.Add(ref Registers.A, Registers.L, false), // ADD A, L
-                0x86 => _alu.Add(ref Registers.A, MMU.ReadByte(Registers.HL), false), // ADD A, (HL)
+                0x86 => _alu.Add(ref Registers.A, _device.MMU.ReadByte(Registers.HL), false), // ADD A, (HL)
                 0x87 => _alu.Add(ref Registers.A, Registers.A, false), // ADD A, A
                 0x88 => _alu.Add(ref Registers.A, Registers.B, true), // ADC A, B
                 0x89 => _alu.Add(ref Registers.A, Registers.C, true), // ADC A, C
@@ -222,7 +213,7 @@ namespace Gameboy.VM.CPU
                 0x8B => _alu.Add(ref Registers.A, Registers.E, true), // ADC A, E
                 0x8C => _alu.Add(ref Registers.A, Registers.H, true), // ADC A, H
                 0x8D => _alu.Add(ref Registers.A, Registers.L, true), // ADC A, L
-                0x8E => _alu.Add(ref Registers.A, MMU.ReadByte(Registers.HL), true), // ADC A, (HL)
+                0x8E => _alu.Add(ref Registers.A, _device.MMU.ReadByte(Registers.HL), true), // ADC A, (HL)
                 0x8F => _alu.Add(ref Registers.A, Registers.A, true), // ADC A, A
                 0x90 => _alu.Sub(ref Registers.A, Registers.B, false), // SUB B
                 0x91 => _alu.Sub(ref Registers.A, Registers.C, false), // SUB C
@@ -230,7 +221,7 @@ namespace Gameboy.VM.CPU
                 0x93 => _alu.Sub(ref Registers.A, Registers.E, false), // SUB E
                 0x94 => _alu.Sub(ref Registers.A, Registers.H, false), // SUB H
                 0x95 => _alu.Sub(ref Registers.A, Registers.L, false), // SUB L
-                0x96 => _alu.Sub(ref Registers.A, MMU.ReadByte(Registers.HL), false), // SUB (HL)
+                0x96 => _alu.Sub(ref Registers.A, _device.MMU.ReadByte(Registers.HL), false), // SUB (HL)
                 0x97 => _alu.Sub(ref Registers.A, Registers.A, false), // SUB A
                 0x98 => _alu.Sub(ref Registers.A, Registers.B, true), // SBC B
                 0x99 => _alu.Sub(ref Registers.A, Registers.C, true), // SBC C
@@ -238,7 +229,7 @@ namespace Gameboy.VM.CPU
                 0x9B => _alu.Sub(ref Registers.A, Registers.E, true), // SBC E
                 0x9C => _alu.Sub(ref Registers.A, Registers.H, true), // SBC H
                 0x9D => _alu.Sub(ref Registers.A, Registers.L, true), // SBC A, L
-                0x9E => _alu.Sub(ref Registers.A, MMU.ReadByte(Registers.HL), true), // SBC A, (HL)
+                0x9E => _alu.Sub(ref Registers.A, _device.MMU.ReadByte(Registers.HL), true), // SBC A, (HL)
                 0x9F => _alu.Sub(ref Registers.A, Registers.A, true), // SBC A, A
                 0xA0 => _alu.And(ref Registers.A, Registers.B), // AND B
                 0xA1 => _alu.And(ref Registers.A, Registers.C), // AND C
@@ -246,7 +237,7 @@ namespace Gameboy.VM.CPU
                 0xA3 => _alu.And(ref Registers.A, Registers.E), // AND E
                 0xA4 => _alu.And(ref Registers.A, Registers.H), // AND H
                 0xA5 => _alu.And(ref Registers.A, Registers.L), // AND L
-                0xA6 => _alu.And(ref Registers.A, MMU.ReadByte(Registers.HL)), // AND (HL)
+                0xA6 => _alu.And(ref Registers.A, _device.MMU.ReadByte(Registers.HL)), // AND (HL)
                 0xA7 => _alu.And(ref Registers.A, Registers.B), // AND A
                 0xA8 => _alu.Xor(ref Registers.A, Registers.B), // XOR B
                 0xA9 => _alu.Xor(ref Registers.A, Registers.C), // XOR C
@@ -254,7 +245,7 @@ namespace Gameboy.VM.CPU
                 0xAB => _alu.Xor(ref Registers.A, Registers.E), // XOR E
                 0xAC => _alu.Xor(ref Registers.A, Registers.H), // XOR H
                 0xAD => _alu.Xor(ref Registers.A, Registers.L), // XOR L
-                0xAE => _alu.Xor(ref Registers.A, MMU.ReadByte(Registers.HL)), // XOR (HL)
+                0xAE => _alu.Xor(ref Registers.A, _device.MMU.ReadByte(Registers.HL)), // XOR (HL)
                 0xAF => _alu.Xor(ref Registers.A, Registers.B), // XOR A
                 0xB0 => _alu.Or(ref Registers.A, Registers.B), // OR B
                 0xB1 => _alu.Or(ref Registers.A, Registers.C), // OR C
@@ -262,7 +253,7 @@ namespace Gameboy.VM.CPU
                 0xB3 => _alu.Or(ref Registers.A, Registers.E), // OR E
                 0xB4 => _alu.Or(ref Registers.A, Registers.H), // OR H
                 0xB5 => _alu.Or(ref Registers.A, Registers.L), // OR L
-                0xB6 => _alu.Or(ref Registers.A, MMU.ReadByte(Registers.HL)), // OR (HL)
+                0xB6 => _alu.Or(ref Registers.A, _device.MMU.ReadByte(Registers.HL)), // OR (HL)
                 0xB7 => _alu.Or(ref Registers.A, Registers.B), // OR A
                 0xB8 => _alu.Cp(Registers.A, Registers.B), // CP B
                 0xB9 => _alu.Cp(Registers.A, Registers.C), // CP C
@@ -270,7 +261,7 @@ namespace Gameboy.VM.CPU
                 0xBB => _alu.Cp(Registers.A, Registers.E), // CP E
                 0xBC => _alu.Cp(Registers.A, Registers.H), // CP H
                 0xBD => _alu.Cp(Registers.A, Registers.L), // CP L
-                0xBE => _alu.Cp(Registers.A, MMU.ReadByte(Registers.HL)), // CP (HL)
+                0xBE => _alu.Cp(Registers.A, _device.MMU.ReadByte(Registers.HL)), // CP (HL)
                 0xBF => _alu.Cp(Registers.A, Registers.A), // CP A
                 0xC0 => _alu.ReturnOnFlag(CpuFlags.ZeroFlag, false), // RET NZ
                 0xC1 => _alu.PopFromStackIntoRegister(Register16Bit.BC), // POP BC
@@ -297,40 +288,40 @@ namespace Gameboy.VM.CPU
                 0xD6 => _alu.Sub(ref Registers.A, FetchByte(), false) + 1, // SUB d8
                 0xD7 => _alu.Rst(0x10), // RST 10
                 0xD8 => _alu.ReturnOnFlag(CpuFlags.CarryFlag, true), // RET C
-                0xD9 => _alu.ReturnAndEnableInterrupts(_interruptRegisters), // RETI
+                0xD9 => _alu.ReturnAndEnableInterrupts(_device.InterruptRegisters), // RETI
                 0xDA => _alu.JumpOnFlag(CpuFlags.CarryFlag, FetchWord(), true), // JP C, a16
                 0xDB => 0, // Unused opcode
                 0xDC => _alu.CallOnFlag(CpuFlags.CarryFlag, FetchWord(), true), // CALL C, a16
                 0xDD => 0, // Unused opcode - TODO - what actually happens on an unused opcode?
                 0xDE => _alu.Sub(ref Registers.A, FetchByte(), true) + 1, // SBC A, d8
                 0xDF => _alu.Rst(0x18), // RST 18
-                0xE0 => MMU.WriteByte((ushort)(0xFF00 + FetchByte()), Registers.A) + 1, // LDH (a8),A
+                0xE0 => _device.MMU.WriteByte((ushort)(0xFF00 + FetchByte()), Registers.A) + 1, // LDH (a8),A
                 0xE1 => _alu.PopFromStackIntoRegister(Register16Bit.HL), // POP HL
-                0xE2 => MMU.WriteByte((ushort)(0xFF00 + Registers.C), Registers.A), // LD (C), A
+                0xE2 => _device.MMU.WriteByte((ushort)(0xFF00 + Registers.C), Registers.A), // LD (C), A
                 0xE3 => 0, // Unused opcode
                 0xE4 => 0, // Unused opcode
                 0xE5 => _alu.PushToStack(Registers.HL), // PUSH HL
                 0xE6 => _alu.And(ref Registers.A, FetchByte()) + 1, // AND d8
                 0xE7 => _alu.Rst(0x20), // RST 20
                 0xE8 => _alu.Add(Register16Bit.SP, Registers.StackPointer, (sbyte)FetchByte()), // ADD SP, r8
-                0xE9 => _alu.Jump(MMU.ReadWord(Registers.HL)), // JP (HL)
-                0xEA => MMU.WriteByte(FetchWord(), Registers.A) + 2, // LD (a16), A
+                0xE9 => _alu.Jump(_device.MMU.ReadWord(Registers.HL)), // JP (HL)
+                0xEA => _device.MMU.WriteByte(FetchWord(), Registers.A) + 2, // LD (a16), A
                 0xEB => 0, // Unused opcode
                 0xEC => 0, // Unused opcode
                 0xED => 0, // Unused opcode
                 0xEE => _alu.Xor(ref Registers.A, FetchByte()) + 1, // XOR d8
                 0xEF => _alu.Rst(0x28), // RST 28
-                0xF0 => _alu.Load(ref Registers.A, MMU.ReadByte((ushort)(0xFF00 + FetchByte()))) + 2, // LDH A, (a8)
+                0xF0 => _alu.Load(ref Registers.A, _device.MMU.ReadByte((ushort)(0xFF00 + FetchByte()))) + 2, // LDH A, (a8)
                 0xF1 => _alu.PopFromStackIntoRegister(Register16Bit.AF), // POP AF
-                0xF2 => _alu.Load(ref Registers.A, MMU.ReadByte((ushort)(0xFF00 + Registers.C))) + 1, // LD A, (C)
+                0xF2 => _alu.Load(ref Registers.A, _device.MMU.ReadByte((ushort)(0xFF00 + Registers.C))) + 1, // LD A, (C)
                 0xF3 => DisableInterrupts(), // DI
                 0xF4 => 0, // Unused opcode
                 0xF5 => _alu.PushToStack(Registers.AF), // PUSH AF
                 0xF6 => _alu.And(ref Registers.A, FetchByte()) + 1, // OR d8
                 0xF7 => _alu.Rst(0x30), // RST 30
-                0xF8 => _alu.Load(Register16Bit.HL, MMU.ReadWord((ushort)((Registers.StackPointer + (sbyte)FetchByte()) & 0xFFFF))) + 1, // LD HL, SP+r8
+                0xF8 => _alu.Load(Register16Bit.HL, _device.MMU.ReadWord((ushort)((Registers.StackPointer + (sbyte)FetchByte()) & 0xFFFF))) + 1, // LD HL, SP+r8
                 0xF9 => _alu.Load(Register16Bit.SP, Registers.HL), // LD SP, HL
-                0xFA => _alu.Load(ref Registers.A, MMU.ReadByte(FetchWord())) + 2, // LD A, (a16)
+                0xFA => _alu.Load(ref Registers.A, _device.MMU.ReadByte(FetchWord())) + 2, // LD A, (a16)
                 0xFB => EnableInterrupts(), // EI
                 0xFC => 0, // Unused opcode
                 0xFD => 0, // Unused opcode
@@ -416,7 +407,7 @@ namespace Gameboy.VM.CPU
                 0x43 => _alu.Bit(Registers.E, 0), // BIT 0, E
                 0x44 => _alu.Bit(Registers.H, 0), // BIT 0, H
                 0x45 => _alu.Bit(Registers.L, 0), // BIT 0, L
-                0x46 => _alu.Bit(MMU.ReadByte(Registers.HL), 0) + 1, // BIT 0, (HL)
+                0x46 => _alu.Bit(_device.MMU.ReadByte(Registers.HL), 0) + 1, // BIT 0, (HL)
                 0x47 => _alu.Bit(Registers.A, 0), // BIT 0, A
                 0x48 => _alu.Bit(Registers.B, 1), // BIT 1, B
                 0x49 => _alu.Bit(Registers.C, 1), // BIT 1, C
@@ -424,7 +415,7 @@ namespace Gameboy.VM.CPU
                 0x4B => _alu.Bit(Registers.E, 1), // BIT 1, E
                 0x4C => _alu.Bit(Registers.H, 1), // BIT 1, H
                 0x4D => _alu.Bit(Registers.L, 1), // BIT 1, L
-                0x4E => _alu.Bit(MMU.ReadByte(Registers.HL), 1) + 1, // BIT 1, (HL)
+                0x4E => _alu.Bit(_device.MMU.ReadByte(Registers.HL), 1) + 1, // BIT 1, (HL)
                 0x4F => _alu.Bit(Registers.A, 1), // BIT 1, A
                 0x50 => _alu.Bit(Registers.B, 2), // BIT 2, B
                 0x51 => _alu.Bit(Registers.C, 2), // BIT 2, C
@@ -432,7 +423,7 @@ namespace Gameboy.VM.CPU
                 0x53 => _alu.Bit(Registers.E, 2), // BIT 2, E
                 0x54 => _alu.Bit(Registers.H, 2), // BIT 2, H
                 0x55 => _alu.Bit(Registers.L, 2), // BIT 2, L
-                0x56 => _alu.Bit(MMU.ReadByte(Registers.HL), 2) + 1, // BIT 2, (HL)
+                0x56 => _alu.Bit(_device.MMU.ReadByte(Registers.HL), 2) + 1, // BIT 2, (HL)
                 0x57 => _alu.Bit(Registers.A, 2), // BIT 2, A
                 0x58 => _alu.Bit(Registers.B, 3), // BIT 3, B
                 0x59 => _alu.Bit(Registers.C, 3), // BIT 3, C
@@ -440,7 +431,7 @@ namespace Gameboy.VM.CPU
                 0x5B => _alu.Bit(Registers.E, 3), // BIT 3, E
                 0x5C => _alu.Bit(Registers.H, 3), // BIT 3, H
                 0x5D => _alu.Bit(Registers.L, 3), // BIT 3, L
-                0x5E => _alu.Bit(MMU.ReadByte(Registers.HL), 3) + 1, // BIT 3, (HL)
+                0x5E => _alu.Bit(_device.MMU.ReadByte(Registers.HL), 3) + 1, // BIT 3, (HL)
                 0x5F => _alu.Bit(Registers.A, 3), // BIT 3, A
                 0x60 => _alu.Bit(Registers.B, 4), // BIT 4, B
                 0x61 => _alu.Bit(Registers.C, 4), // BIT 4, C
@@ -448,7 +439,7 @@ namespace Gameboy.VM.CPU
                 0x63 => _alu.Bit(Registers.E, 4), // BIT 4, E
                 0x64 => _alu.Bit(Registers.H, 4), // BIT 4, H
                 0x65 => _alu.Bit(Registers.L, 4), // BIT 4, L
-                0x66 => _alu.Bit(MMU.ReadByte(Registers.HL), 4) + 1, // BIT 4, (HL)
+                0x66 => _alu.Bit(_device.MMU.ReadByte(Registers.HL), 4) + 1, // BIT 4, (HL)
                 0x67 => _alu.Bit(Registers.A, 4), // BIT 4, A
                 0x68 => _alu.Bit(Registers.B, 5), // BIT 5, B
                 0x69 => _alu.Bit(Registers.C, 5), // BIT 5, C
@@ -456,7 +447,7 @@ namespace Gameboy.VM.CPU
                 0x6B => _alu.Bit(Registers.E, 5), // BIT 5, E
                 0x6C => _alu.Bit(Registers.H, 5), // BIT 5, H
                 0x6D => _alu.Bit(Registers.L, 5), // BIT 5, L
-                0x6E => _alu.Bit(MMU.ReadByte(Registers.HL), 5) + 1, // BIT 5, (HL)
+                0x6E => _alu.Bit(_device.MMU.ReadByte(Registers.HL), 5) + 1, // BIT 5, (HL)
                 0x6F => _alu.Bit(Registers.A, 5), // BIT 5, A
                 0x70 => _alu.Bit(Registers.B, 6), // BIT 6, B
                 0x71 => _alu.Bit(Registers.C, 6), // BIT 6, C
@@ -464,7 +455,7 @@ namespace Gameboy.VM.CPU
                 0x73 => _alu.Bit(Registers.E, 6), // BIT 6, E
                 0x74 => _alu.Bit(Registers.H, 6), // BIT 6, H
                 0x75 => _alu.Bit(Registers.L, 6), // BIT 6, L
-                0x76 => _alu.Bit(MMU.ReadByte(Registers.HL), 6) + 1, // BIT 6, (HL)
+                0x76 => _alu.Bit(_device.MMU.ReadByte(Registers.HL), 6) + 1, // BIT 6, (HL)
                 0x77 => _alu.Bit(Registers.A, 6), // BIT 6, A
                 0x78 => _alu.Bit(Registers.B, 7), // BIT 7, B
                 0x79 => _alu.Bit(Registers.C, 7), // BIT 7, C
@@ -472,7 +463,7 @@ namespace Gameboy.VM.CPU
                 0x7B => _alu.Bit(Registers.E, 7), // BIT 7, E
                 0x7C => _alu.Bit(Registers.H, 7), // BIT 7, H
                 0x7D => _alu.Bit(Registers.L, 7), // BIT 7, L
-                0x7E => _alu.Bit(MMU.ReadByte(Registers.HL), 7) + 1, // BIT 7, (HL)
+                0x7E => _alu.Bit(_device.MMU.ReadByte(Registers.HL), 7) + 1, // BIT 7, (HL)
                 0x7F => _alu.Bit(Registers.A, 7), // BIT 7, A
                 0x80 => _alu.Res(ref Registers.B, 0), // RES B, 0
                 0x81 => _alu.Res(ref Registers.C, 0), // RES C, 0
@@ -608,13 +599,13 @@ namespace Gameboy.VM.CPU
 
         private int EnableInterrupts()
         {
-            _interruptRegisters.AreInterruptsEnabledGlobally = true;
+            _device.InterruptRegisters.AreInterruptsEnabledGlobally = true;
             return 1;
         }
 
         private int DisableInterrupts()
         {
-            _interruptRegisters.AreInterruptsEnabledGlobally = false;
+            _device.InterruptRegisters.AreInterruptsEnabledGlobally = false;
             return 1;
         }
 
@@ -623,20 +614,19 @@ namespace Gameboy.VM.CPU
         /// </summary>
         internal void Reset()
         {
-            MMU.Clear();
             Registers.Clear();
         }
 
         private byte FetchByte()
         {
-            var b = MMU.ReadByte(Registers.ProgramCounter);
+            var b = _device.MMU.ReadByte(Registers.ProgramCounter);
             Registers.ProgramCounter = (ushort)((Registers.ProgramCounter + 1) & 0xFFFF);
             return b;
         }
 
         private ushort FetchWord()
         {
-            var w = MMU.ReadWord(Registers.ProgramCounter);
+            var w = _device.MMU.ReadWord(Registers.ProgramCounter);
             Registers.ProgramCounter = (ushort)((Registers.ProgramCounter + 2) & 0xFFFF);
             return w;
         }

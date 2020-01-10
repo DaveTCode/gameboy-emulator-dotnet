@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 
 namespace Gameboy.VM.Cartridge
@@ -15,22 +14,21 @@ namespace Gameboy.VM.Cartridge
             Contents = contents;
         }
 
-        internal virtual byte ReadRom(ushort address)
+        internal virtual byte ReadRom(in ushort address)
         {
             if (address >= Contents.Length)
             {
-                Trace.TraceWarning("Attempt to read address {0} from Cartridge ROM which is out of bounds", address);
                 return 0x0;
             }
 
             return Contents[address];
         }
 
-        internal abstract byte ReadRam(ushort address);
+        internal abstract byte ReadRam(in ushort address);
 
-        internal abstract void WriteRom(ushort address, byte value);
+        internal abstract void WriteRom(in ushort address, in byte value);
 
-        internal abstract void WriteRam(ushort address, byte value);
+        internal abstract void WriteRam(in ushort address, in byte value);
 
         public string GameTitle => Encoding.ASCII.GetString(Contents[0x134..0x13F]);
 

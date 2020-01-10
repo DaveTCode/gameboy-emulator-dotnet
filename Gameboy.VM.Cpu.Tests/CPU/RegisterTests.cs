@@ -1,7 +1,7 @@
 using Gameboy.VM.CPU;
 using Xunit;
 
-namespace Gameboy.VM.Cpu.Tests.CPU
+namespace Gameboy.VM.Tests.CPU
 {
     public class RegisterTests
     {

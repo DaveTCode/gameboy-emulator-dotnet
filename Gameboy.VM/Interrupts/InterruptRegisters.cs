@@ -15,7 +15,6 @@
         /// <param name="interrupt">The interrupt to request</param>
         internal void RequestInterrupt(in Interrupt interrupt)
         {
-            //Trace.TraceInformation("Requesting interrupt for {0}", interrupt.ToString());
             InterruptRequest = (byte)(InterruptRequest | interrupt.Mask());
         }
 
@@ -26,8 +25,12 @@
         /// <param name="interrupt">The interrupt to reset request for</param>
         internal void ResetInterrupt(in Interrupt interrupt)
         {
-            //Trace.TraceInformation("Resetting interrupt flag for {0}", interrupt.ToString());
             InterruptRequest = (byte)(InterruptRequest & ~interrupt.Mask());
+        }
+
+        public override string ToString()
+        {
+            return $"MIE:{AreInterruptsEnabledGlobally}, IF:{InterruptRequest:X1}, IE:{InterruptEnable:X1}";
         }
     }
 }

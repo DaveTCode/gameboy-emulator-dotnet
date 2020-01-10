@@ -1,8 +1,24 @@
 {
   "profiles": {
-    "Blarg CPU Tests": {
+    "Bootrom": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/cpu_instrs.gb --skipBootRom --debugFile log.txt -s 60 -p 2"
+      "commandLineArgs": "-f ../../../../Roms/DMG_ROM.bin --skipBootRom -s 60 -p 2"
+    },
+    "Blarg CPU Tests - All (MBC1)": {
+      "commandName": "Project",
+      "commandLineArgs": "-f ../../../../Roms/cpu_instrs.gb --skipBootRom -s 60 -p 2"
+    },
+    "Blarg CPU Tests - 01 Special (MBC0)": {
+      "commandName": "Project",
+      "commandLineArgs": "-f ../../../../Roms/01-special.gb --skipBootRom -s 60 -p 2"
+    },
+    "Tetris": {
+      "commandName": "Project",
+      "commandLineArgs": "-f \"../../../../Roms/Tetris (World) (Rev A).gb\" -s 60 -p 2"
+    },
+    "Dr Mario - no boot rom": {
+      "commandName": "Project",
+      "commandLineArgs": "-f \"../../../../Roms/Dr. Mario (World).gb\" -s 60 -p 2 --skipBootRom"
     }
   }
 }

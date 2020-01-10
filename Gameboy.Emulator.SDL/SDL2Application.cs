@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Gameboy.VM;
 using Gameboy.VM.LCD;
 
@@ -51,14 +52,27 @@ namespace Gameboy.Emulator.SDL
             var quit = false;
             while (!quit)
             {
+                // TODO - Checking for input once per frame seems a bit sketchy
                 while (SDL2.SDL_PollEvent(out var e) != 0)
                 {
                     switch (e.type)
                     {
                         case SDL2.SDL_EventType.SDL_QUIT:
                             quit = true;
+                            var frameBuffer = _device.GetCurrentFrame();
+                            using (var infile = System.IO.File.OpenWrite("framebuffer"))
+                            {
+                                infile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join(",", frameBuffer.Select(f => (int)f))));
+                            }
                             break;
-                            // TODO - Handle input here when joypad implementation complete
+                        // TODO - Handle input here when joypad implementation complete
+                        case SDL2.SDL_EventType.SDL_KEYUP:
+                            if (e.key.keysym.sym == SDL2.SDL_Keycode.SDLK_F2)
+                            {
+                                using var infile = System.IO.File.OpenWrite("VRAM.csv");
+                                infile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", _device.DumpVRAM())));
+                            }
+                            break;
                     }
                 }
 
@@ -78,7 +92,7 @@ namespace Gameboy.Emulator.SDL
                         SDL2.SDL_SetRenderDrawColor(_renderer, red, green, blue, 255);
 
                         var x = pixel % Device.ScreenWidth;
-                        var y = pixel / Device.ScreenHeight;
+                        var y = pixel / Device.ScreenWidth;
                         var rect = new SDL2.SDL_Rect
                         {
                             x = x * _pixelSize,
@@ -93,10 +107,12 @@ namespace Gameboy.Emulator.SDL
                 }
 
                 var msToSleep = msPerFrame - (stopwatch.ElapsedTicks / Stopwatch.Frequency) * 1000;
+                Console.WriteLine($"Frame took {stopwatch.ElapsedTicks * 1000 / Stopwatch.Frequency}ms, ms per frame should be {msPerFrame}");
                 if (msToSleep > 0)
                 {
                     SDL2.SDL_Delay((uint)msToSleep);
                 }
+                stopwatch.Restart();
             }
         }
 

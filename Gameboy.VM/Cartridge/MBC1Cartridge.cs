@@ -19,7 +19,7 @@ namespace Gameboy.VM.Cartridge
             _ramBanks = new byte[RAMSize.NumberBanks() * RAMSize.BankSizeBytes()];
         }
 
-        internal override byte ReadRom(ushort address)
+        internal override byte ReadRom(in ushort address)
         {
             if (address < RomBankSizeBytes) // Fixed bank 0
             {
@@ -34,38 +34,33 @@ namespace Gameboy.VM.Cartridge
                 return bankAddress >= Contents.Length ? (byte)0x0 : Contents[bankAddress];
             }
 
-            Trace.TraceWarning("Attempt to read address {0} from MBC ROM which isn't mapped", address);
             return 0x0;
         }
 
-        internal override byte ReadRam(ushort address)
+        internal override byte ReadRam(in ushort address)
         {
             if (!_isRamEnabled)
             {
-                Trace.TraceWarning("Attempt to access RAM at address {0} whilst it was disabled", address);
                 return 0x0;
             }
 
             if (address < 0xA000 || address >= 0xC000)
             {
-                Trace.TraceWarning("Attempt to access MBC RAM at address {0} which doesn't map to MBC RAM", address);
                 return 0x0;
             }
 
             return _ramBanks[address - 0xA0000 + _ramBank * RAMSize.BankSizeBytes()];
         }
 
-        internal override void WriteRom(ushort address, byte value)
+        internal override void WriteRom(in ushort address, in byte value)
         {
             if (address <= 0x1FFF)
             {
                 _isRamEnabled = (value & 0x0F) == 0x0A;
-                //Trace.TraceInformation("RAM enabled is now {0} by setting {1} to {2}", _isRamEnabled, value, address);
             }
             else if (address >= 0x2000 && address <= 0x3FFF)
             {
                 SetRomBank((_romBank & 0b11100000) | (value & 0x1F));
-                //Trace.TraceInformation("Selecting ROM Bank {0} by setting {1} to {2}", _romBank, value, address);
             }
             else if (address >= 0x4000 && address <= 0x5FFF)
             {
@@ -73,12 +68,10 @@ namespace Gameboy.VM.Cartridge
                 if (_mode == MBC1Mode.RAM)
                 {
                     _ramBank = highBits % RAMSize.NumberBanks();
-                    //Trace.TraceInformation("Switched RAM bank to {0} by setting {1} to {2}", _ramBank, value, address);
                 }
                 else
                 {
                     SetRomBank((_romBank & 0x31) | (value & 0xE0));
-                    //Trace.TraceInformation("Switched ROM bank to {0} by setting {1} to {2}", _ramBank, value, address);
                 }
             }
             else if (address >= 0x6000 && address <= 0x7FFF)
@@ -86,21 +79,15 @@ namespace Gameboy.VM.Cartridge
                 if (value == 0x0)
                 {
                     _mode = MBC1Mode.ROM;
-                    //Trace.TraceInformation("Switching MBC1 bank mode to RAM by write of {0} to {1}", value, address);
                 }
                 else if (value == 0x1)
                 {
                     _mode = MBC1Mode.RAM;
-                    //Trace.TraceInformation("Switching MBC1 bank mode to RAM by write of {0} to {1}", value, address);
-                }
-                else
-                {
-                    //Trace.TraceWarning("Value {0} at address {1} written to select MBC1 bank mode but only 0,1 are accepted", value, address);
                 }
             }
         }
 
-        internal override void WriteRam(ushort address, byte value)
+        internal override void WriteRam(in ushort address, in byte value)
         {
             var bankedAddress = address - 0xA000 + _ramBank * RAMSize.BankSizeBytes();
 
@@ -109,18 +96,18 @@ namespace Gameboy.VM.Cartridge
             Contents[bankedAddress] = value;
         }
 
-        private void SetRomBank(int romBank)
+        private void SetRomBank(in int romBank)
         {
             // Setting ROM bank which isn't present on the cartridge causes it to wrap.
-            romBank %= ROMSize.NumberBanks();
+            var bank = romBank % ROMSize.NumberBanks();
 
-            _romBank = romBank switch
+            _romBank = bank switch
             {
                 0 => 1,
                 0x20 => 0x21,
                 0x40 => 0x41,
                 0x60 => 0x61,
-                _ => romBank
+                _ => bank
             };
         }
 

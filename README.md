@@ -6,17 +6,14 @@ TODO - Description
 
 ### Fixes
 
-- Background tile rendering is broken
+- Off by 1 error whilst rendering background tiles
 
 ### Specific
 
-- LYLC interrupt
+- Thorough testing all opcodes through cartridges
 - Drawing sprites
-- Timer subsystem
 - Joypad subsystem/emulation
 - DMA operation
-- Testing overhaul to load all tests through cartridge rather than call ALU directly
-- LY=LYC interrupt triggering
 - Serial port support
 - Thorough testing of MBC function
 

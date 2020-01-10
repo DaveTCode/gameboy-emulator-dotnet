@@ -1,28 +1,27 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using Gameboy.VM.Cartridge;
-using Gameboy.VM.Interrupts;
-using Gameboy.VM.LCD;
-using Gameboy.VM.Sound;
 
-namespace Gameboy.VM.Cpu.Tests
+namespace Gameboy.VM.Tests
 {
     internal static class TestUtils
     {
-        internal static Cartridge.Cartridge CreateMBC0ROMCartridge()
+        /// <summary>
+        /// Create a device containing a base MBC0 ROM and some bytes
+        /// </summary>
+        /// <param name="additionalBytes">
+        /// Optional parameter to specify a set of bytes to append at 0x150 (starting PC)
+        /// </param>
+        /// <returns></returns>
+        internal static Device CreateTestDevice(byte[] additionalBytes = null)
         {
-            return CartridgeFactory.CreateCartridge(File.ReadAllBytes(Path.Join("ROMs", "base.gb")));
-        }
+            var l = new List<byte>(File.ReadAllBytes(Path.Join("ROMs", "base.gb")));
+            if (additionalBytes != null) l.AddRange(additionalBytes);
+            var cartridge = CartridgeFactory.CreateCartridge(l.ToArray());
 
-        internal static VM.CPU.CPU CreateCPU()
-        {
-            var interruptRegisters = new InterruptRegisters();
-
-            return new VM.CPU.CPU(CreateMMU(interruptRegisters), interruptRegisters);
-        }
-
-        internal static VM.MMU CreateMMU(InterruptRegisters interruptRegisters)
-        {
-            return new VM.MMU(Device.DmgRomContents, new ControlRegisters(), new SoundRegisters(), new LCDRegisters(), interruptRegisters, CreateMBC0ROMCartridge());
+            var device = new Device(cartridge);
+            device.SkipBootRom();
+            return device;
         }
     }
 }

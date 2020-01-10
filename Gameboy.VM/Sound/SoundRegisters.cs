@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace Gameboy.VM.Sound
 {
@@ -94,8 +95,7 @@ namespace Gameboy.VM.Sound
                 case 0xFF14:
                     NR14 = value;
                     break;
-                case 0xFF15:
-                    Trace.TraceWarning("Write to 0xFF15 in sound registers which is an unused address, ignoring write");
+                case 0xFF15: // Unused address
                     break;
                 case 0xFF16:
                     NR21 = value;
@@ -124,8 +124,7 @@ namespace Gameboy.VM.Sound
                 case 0xFF1E:
                     NR34 = value;
                     break;
-                case 0xFF1F:
-                    Trace.TraceWarning("Write to 0xFF1F in sound registers which is an unused address, ignoring write");
+                case 0xFF1F:// Unused address
                     break;
                 case 0xFF20:
                     NR41 = value;
@@ -148,9 +147,8 @@ namespace Gameboy.VM.Sound
                 case 0xFF26:
                     NR52 = value;
                     break;
-                default:
-                    Trace.TraceError("Invalid address {0} write to sound registers (value was {1})", address, value);
-                    break;
+                default: // Unmapped address
+                    throw new ArgumentOutOfRangeException(nameof(address), address, "Sound register doesn't exist at address");
             }
         }
 

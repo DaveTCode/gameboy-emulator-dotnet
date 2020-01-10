@@ -1,7 +1,7 @@
 ﻿using Gameboy.VM.CPU;
 using Xunit;
 
-namespace Gameboy.VM.Cpu.Tests.CPU
+namespace Gameboy.VM.Tests.CPU
 {
     public class Alu16BitArithmeticTests
     {
@@ -12,8 +12,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData((ushort)0x235F, (ushort)0x2360, true, true, true, true)]
         public void Test16BitIncrement(ushort bc, ushort result, bool c, bool h, bool n, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             cpu.Registers.BC = bc;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);
             cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, h);
@@ -34,8 +35,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData((ushort)0x235F, (ushort)0x235E, true, true, true, true)]
         public void Test16BitDecrement(ushort bc, ushort result, bool c, bool h, bool n, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             cpu.Registers.BC = bc;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);
             cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, h);
@@ -55,8 +57,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0xFFF8, 0x0002, 0xFFFA, false, false, false, false)]
         public void Test16BitAdd(ushort a, ushort b, ushort result, bool c, bool h, bool n, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             cpu.Registers.BC = a;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);
             cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, h);

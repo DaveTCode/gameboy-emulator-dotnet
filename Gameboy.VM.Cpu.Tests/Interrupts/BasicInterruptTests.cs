@@ -3,7 +3,7 @@ using System.Linq;
 using Gameboy.VM.Interrupts;
 using Xunit;
 
-namespace Gameboy.VM.Cpu.Tests.Interrupts
+namespace Gameboy.VM.Tests.Interrupts
 {
     public class BasicInterruptTests
     {

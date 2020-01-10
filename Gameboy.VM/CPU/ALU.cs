@@ -6,10 +6,12 @@ namespace Gameboy.VM.CPU
     internal class ALU
     {
         private readonly CPU _cpu;
+        private readonly MMU _mmu;
 
-        internal ALU(CPU cpu)
+        internal ALU(in CPU cpu, in MMU mmu)
         {
             _cpu = cpu;
+            _mmu = mmu;
         }
 
 
@@ -18,17 +20,17 @@ namespace Gameboy.VM.CPU
 
         internal int ActOnMemoryAddress(ushort address, ActOnByteReference func)
         {
-            var a = _cpu.MMU.ReadByte(address);
+            var a = _mmu.ReadByte(address);
             var result = func(ref a);
-            result += _cpu.MMU.WriteByte(address, a);
+            result += _mmu.WriteByte(address, a);
             return result;
         }
 
         internal int ActOnMemoryAddressOneParam(ushort address, ActOnByteReferenceOneParam func, int param)
         {
-            var a = _cpu.MMU.ReadByte(address);
+            var a = _mmu.ReadByte(address);
             var result = func(ref a, param);
-            result += _cpu.MMU.WriteByte(address, a);
+            result += _mmu.WriteByte(address, a);
             return result;
         }
 
@@ -434,14 +436,12 @@ namespace Gameboy.VM.CPU
 
         internal int Jump(ushort address)
         {
-            //Trace.TraceInformation("Jumping to address {0:X4}", address);
             _cpu.Registers.ProgramCounter = address;
             return 4;
         }
 
         internal int JumpRight(sbyte distance)
         {
-            //Trace.TraceInformation("Jumping right by {0} to address {1:X4}", distance, (ushort)((_cpu.Registers.ProgramCounter + distance) & 0xFFFF));
             _cpu.Registers.ProgramCounter = (ushort)((_cpu.Registers.ProgramCounter + distance) & 0xFFFF);
             return 3;
         }
@@ -479,13 +479,13 @@ namespace Gameboy.VM.CPU
         internal int PushToStack(ushort value)
         {
             _cpu.Registers.StackPointer = (ushort)((_cpu.Registers.StackPointer - 2) & 0xFFFF);
-            _cpu.MMU.WriteWord(_cpu.Registers.StackPointer, value);
+            _mmu.WriteWord(_cpu.Registers.StackPointer, value);
             return 4;
         }
 
         private ushort PopFromStack()
         {
-            var w = _cpu.MMU.ReadWord(_cpu.Registers.StackPointer);
+            var w = _mmu.ReadWord(_cpu.Registers.StackPointer);
             _cpu.Registers.StackPointer = (ushort)((_cpu.Registers.StackPointer + 2) & 0xFFFF);
             return w;
         }

@@ -32,22 +32,14 @@ namespace Gameboy.Headless.Console
 
         private static int RunProgram(CommandLineOptions options)
         {
-            using var logFile = File.OpenWrite("log.txt");
-            var fileTracer = new TextWriterTraceListener(logFile);
-            Trace.Listeners.Add(fileTracer);
-
             var device = new Device(CartridgeFactory.CreateCartridge(File.ReadAllBytes(options.RomFilePath)));
 
             if (options.SkipBootRom) device.SkipBootRom();
 
-            for (var i = 0; i < 1000; i++)
+            for (var i = 0; i < 10000; i++)
             {
                 device.Step();
             }
-
-            Trace.Flush();
-            fileTracer.Close();
-            Trace.Close();
 
             return 0;
         }

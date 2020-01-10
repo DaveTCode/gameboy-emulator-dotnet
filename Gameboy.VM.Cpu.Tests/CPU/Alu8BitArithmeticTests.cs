@@ -1,7 +1,7 @@
 ﻿using Gameboy.VM.CPU;
 using Xunit;
 
-namespace Gameboy.VM.Cpu.Tests.CPU
+namespace Gameboy.VM.Tests.CPU
 {
     public class Alu8BitArithmeticTests
     {
@@ -10,8 +10,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0x50, 0x51, false, false)]
         public void TestIncrement(byte a, byte result, bool h, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             var cycles = alu.Increment(ref a);
             Assert.Equal(1, cycles);
             Assert.Equal(result, a);
@@ -25,8 +26,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0x00, 0xFF, true, false)]
         public void TestDecrement(byte a, byte result, bool h, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             var cycles = alu.Decrement(ref a);
             Assert.Equal(1, cycles);
             Assert.Equal(result, a);
@@ -41,8 +43,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0x3C, 0x12, 0x4E, false, false, false)]
         public void TestAdd(byte a, byte b, byte result, bool c, bool h, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             var cycles = alu.Add(ref a, b, false);
             Assert.Equal(1, cycles);
             Assert.Equal(result, a);
@@ -58,9 +61,10 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0xE1, 0x1E, 0x00, true, true, true, true)]
         public void TestAdc(byte a, byte b, byte result, bool currentCarry, bool c, bool h, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, currentCarry);
-            var alu = new ALU(cpu);
+            var alu = new ALU(cpu, device.MMU);
             var cycles = alu.Add(ref a, b, true);
             Assert.Equal(1, cycles);
             Assert.Equal(result, a);
@@ -77,8 +81,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0x00, 0x01, 0xFF, true, true, false)]
         public void TestSub(byte a, byte b, byte result, bool c, bool h, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             var cycles = alu.Sub(ref a, b, false);
             Assert.Equal(1, cycles);
             Assert.Equal(result, a);
@@ -94,9 +99,10 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0x3B, 0x4F, 0xEB, true, true, true, false)]
         public void TestSbc(byte a, byte b, byte result, bool currentCarry, bool c, bool h, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, currentCarry);
-            var alu = new ALU(cpu);
+            var alu = new ALU(cpu, device.MMU);
             var cycles = alu.Sub(ref a, b, true);
             Assert.Equal(1, cycles);
             Assert.Equal(result, a);
@@ -112,8 +118,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0x5A, 0x00, 0x00, true)]
         public void TestAnd(byte a, byte b, byte result, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             var cycles = alu.And(ref a, b);
             Assert.Equal(1, cycles);
             Assert.Equal(result, a);
@@ -129,8 +136,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0x00, 0x00, 0x00, true)]
         public void TestOr(byte a, byte b, byte result, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             var cycles = alu.Or(ref a, b);
             Assert.Equal(1, cycles);
             Assert.Equal(result, a);
@@ -146,8 +154,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0xFF, 0x8A, 0x75, false)]
         public void TestXor(byte a, byte b, byte result, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             var cycles = alu.Xor(ref a, b);
             Assert.Equal(1, cycles);
             Assert.Equal(result, a);
@@ -163,8 +172,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0x3C, 0x40, true, false, false)]
         public void TestCp(byte a, byte b, bool c, bool h, bool z)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             var cycles = alu.Cp(a, b);
             Assert.Equal(1, cycles);
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
@@ -176,8 +186,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [Fact]
         public void TestDecimalAdjustRegister()
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             cpu.Registers.A = 0x45;
             cpu.Registers.B = 0x38;
             alu.Add(ref cpu.Registers.A, cpu.Registers.B, false);
@@ -197,19 +208,22 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [Fact]
         public void TestCCF()
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
-            alu.CCF();
-            Assert.True(cpu.Registers.GetFlag(CpuFlags.CarryFlag));
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
+            Assert.True(cpu.Registers.GetFlag(CpuFlags.CarryFlag)); // Carry flag starts off set
             alu.CCF();
             Assert.False(cpu.Registers.GetFlag(CpuFlags.CarryFlag));
+            alu.CCF();
+            Assert.True(cpu.Registers.GetFlag(CpuFlags.CarryFlag));
         }
 
         [Fact]
         public void TestSCF()
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             alu.SCF();
             Assert.True(cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             alu.SCF();
@@ -220,8 +234,9 @@ namespace Gameboy.VM.Cpu.Tests.CPU
         [InlineData(0x35, 0xCA)]
         public void TestCPL(byte a, byte result)
         {
-            var cpu = TestUtils.CreateCPU();
-            var alu = new ALU(cpu);
+            var device = TestUtils.CreateTestDevice();
+            var cpu = device.CPU;
+            var alu = new ALU(cpu, device.MMU);
             cpu.Registers.A = a;
             alu.CPL();
             Assert.Equal(result, cpu.Registers.A);
