@@ -59,18 +59,16 @@ namespace Gameboy.Emulator.SDL
                     {
                         case SDL2.SDL_EventType.SDL_QUIT:
                             quit = true;
-                            var frameBuffer = _device.GetCurrentFrame();
-                            using (var infile = System.IO.File.OpenWrite("framebuffer"))
-                            {
-                                infile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(f => (int)f))));
-                            }
                             break;
                         // TODO - Handle input here when joypad implementation complete
                         case SDL2.SDL_EventType.SDL_KEYUP:
                             if (e.key.keysym.sym == SDL2.SDL_Keycode.SDLK_F2)
                             {
-                                using var infile = System.IO.File.OpenWrite("VRAM.csv");
-                                infile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", _device.DumpVRAM())));
+                                var frameBuffer = _device.GetCurrentFrame();
+                                using var fbfile = System.IO.File.OpenWrite("framebuffer");
+                                using var vramfile = System.IO.File.OpenWrite("VRAM.csv");
+                                vramfile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", _device.DumpVRAM())));
+                                fbfile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(f => (int)f))));
                             }
                             break;
                     }
