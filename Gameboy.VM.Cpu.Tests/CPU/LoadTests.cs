@@ -261,5 +261,32 @@ namespace Gameboy.VM.Tests.CPU
             Assert.Equal(0xC005, device.CPU.Registers.HL);
             Assert.Equal(0x07, device.CPU.Registers.A);
         }
+
+        [Theory]
+        [InlineData(0xFFF8, -2, 0xFFF6, 0x20)]
+        [InlineData(0xFFF8, 2, 0xFFFA, 0x0)]
+        public void TestLoadHlSpPlusR8(ushort stackPointer, sbyte r8, ushort result, byte flagValues)
+        {
+            var device = TestUtils.CreateTestDevice(new byte[]
+            {
+                0x31, (byte)(stackPointer & 0xFF), (byte)(stackPointer >> 8), // Set SP
+                0x21, 0x05, 0xC0, // LD HL, 0xC005
+                0xF8, (byte)r8, // LD HL, SP+r8
+            });
+
+            for (var ii = 0; ii < 4; ii++) // 2 to move to 0x150 and 2 to set up
+            {
+                device.Step();
+            }
+
+            Assert.Equal(stackPointer, device.CPU.Registers.StackPointer);
+            Assert.Equal(0xC005, device.CPU.Registers.HL);
+
+            device.Step();
+
+            Assert.Equal(stackPointer, device.CPU.Registers.StackPointer); // Doesn't modify SP
+            Assert.Equal(result, device.CPU.Registers.HL);
+            Assert.Equal(flagValues, device.CPU.Registers.F); // All flags unset
+        }
     }
 }
