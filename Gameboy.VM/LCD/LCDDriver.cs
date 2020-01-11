@@ -5,7 +5,7 @@ namespace Gameboy.VM.LCD
 {
     internal class LCDDriver
     {
-        private const int VRAMSize = 0x1FFFF;
+        private const int VRAMSize = 0x2000;
         private const int OAMRAMSize = 0xA0;
 
         public const int ClockCyclesForScanline = 456;
