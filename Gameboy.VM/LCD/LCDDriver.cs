@@ -123,8 +123,12 @@ namespace Gameboy.VM.LCD
             // First figure out which bit of memory we need for the tilemap (pixel X -> tile Y),
             // which bit of memory for the tileset itself (tile Y -> data Z),
             // and which y coordinate (both in tiles and raw pixels) we're talking about
-            var tileMapAddress = UsingWindowForScanline ? _device.LCDRegisters.WindowTileMapOffset : _device.LCDRegisters.BackgroundTileMapOffset;
-            var yPosition = UsingWindowForScanline ? _device.LCDRegisters.LCDCurrentScanline - _device.LCDRegisters.WindowY : _device.LCDRegisters.LCDCurrentScanline + _device.LCDRegisters.ScrollY;
+            var tileMapAddress = UsingWindowForScanline 
+                ? _device.LCDRegisters.WindowTileMapOffset 
+                : _device.LCDRegisters.BackgroundTileMapOffset;
+            var yPosition = UsingWindowForScanline 
+                ? ((_device.LCDRegisters.LCDCurrentScanline - _device.LCDRegisters.WindowY) & 0xFF) 
+                : ((_device.LCDRegisters.LCDCurrentScanline + _device.LCDRegisters.ScrollY) & 0xFF);
             var tileRow = (yPosition / 8) * 32;
             var tileLine = (yPosition % 8) * 2;
 
@@ -133,8 +137,8 @@ namespace Gameboy.VM.LCD
                 // Determine the x position relative to whether we're in the window or the background
                 // taking into account scrolling.
                 var xPos = (UsingWindowForScanline && pixel >= _device.LCDRegisters.WindowX) ?
-                    pixel - _device.LCDRegisters.WindowX :
-                    pixel + _device.LCDRegisters.ScrollX;
+                    ((pixel - _device.LCDRegisters.WindowX) & 0xFF) :
+                    ((pixel + _device.LCDRegisters.ScrollX) & 0xFF);
 
                 var tileCol = xPos / 8;
 
