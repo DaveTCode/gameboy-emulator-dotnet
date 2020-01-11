@@ -1,7 +1,4 @@
 ﻿using Gameboy.VM.LCD;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Gameboy.VM.Tests.LCD
@@ -12,9 +9,9 @@ namespace Gameboy.VM.Tests.LCD
     public class LCDRegisterTests
     {
         [Theory]
-        [InlineData(0x0, 0x80, false, false, false, false, 0x0)]
-        [InlineData(0x1, 0x80, false, false, false, false, 0x0)] // Can't set mode through stat register writes
-        [InlineData(0xFF, 0xF8, true, true, true, true, 0x0)] // Can't set mode or LY=LYC through stat register writes
+        [InlineData(0x0, 0x80, false, false, false, false, (int)StatMode.HBlankPeriod)]
+        [InlineData(0x1, 0x80, false, false, false, false, (int)StatMode.HBlankPeriod)] // Can't set mode through stat register writes
+        [InlineData(0xFF, 0xF8, true, true, true, true, (int)StatMode.HBlankPeriod)] // Can't set mode or LY=LYC through stat register writes
         public void TestSTATRegisterChanges(byte statRegisterSet, byte statRegisterActual, bool hblankEnabled, bool vblankEnabled, bool oamEnabled, bool lylcEnabled, int statModeValue)
         {
             var statMode = (StatMode) statModeValue;
@@ -31,10 +28,10 @@ namespace Gameboy.VM.Tests.LCD
         }
 
         [Theory]
-        [InlineData(0x0, 0x80)]
-        [InlineData(0x1, 0x81)]
-        [InlineData(0x2, 0x82)]
-        [InlineData(0x3, 0x83)]
+        [InlineData((int)StatMode.HBlankPeriod, 0x80)]
+        [InlineData((int)StatMode.VBlankPeriod, 0x81)]
+        [InlineData((int)StatMode.OAMRAMPeriod, 0x82)]
+        [InlineData((int)StatMode.TransferringDataToDriver, 0x83)]
         public void TestSTATRegisterAfterModeChanges(int statModeValue, byte expectedStatRegisterValue)
         {
             var statMode = (StatMode)statModeValue;

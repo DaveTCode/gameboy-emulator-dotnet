@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Gameboy.VM.Cartridge
+﻿namespace Gameboy.VM.Cartridge
 {
     internal class MBC1Cartridge : Cartridge
     {

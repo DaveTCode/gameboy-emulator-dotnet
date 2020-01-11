@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
-using Gameboy.VM.Interrupts;
 using Gameboy.VM.LCD;
-using Gameboy.VM.Sound;
 
 namespace Gameboy.VM
 {

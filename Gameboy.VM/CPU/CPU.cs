@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using Gameboy.VM.Interrupts;
 
 namespace Gameboy.VM.CPU
