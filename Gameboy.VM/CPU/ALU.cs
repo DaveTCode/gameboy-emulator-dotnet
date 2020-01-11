@@ -401,6 +401,17 @@ namespace Gameboy.VM.CPU
             return 2;
         }
 
+        internal int LoadHLSpPlusR8(in sbyte operand)
+        {
+            var result = _cpu.Registers.StackPointer + operand;
+            _cpu.Registers.SetFlag(CpuFlags.SubtractFlag | CpuFlags.ZeroFlag, false);
+            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, (operand & 0xFFF) > (result & 0xFFF));
+            _cpu.Registers.SetFlag(CpuFlags.CarryFlag, result > 0xFFFF);
+            _cpu.Registers.HL = (ushort)(result & 0xFFFF);
+
+            return 3;
+        }
+
         #endregion
 
         #region Jumps/Calls
@@ -446,7 +457,7 @@ namespace Gameboy.VM.CPU
             return 3;
         }
 
-        internal int JumpRightOnFlag(CpuFlags flag, sbyte distance, bool isSet)
+        internal int JumpRightOnFlag(in CpuFlags flag, in sbyte distance, in bool isSet)
         {
             return _cpu.Registers.GetFlag(flag) == isSet ? JumpRight(distance) : 2;
         }

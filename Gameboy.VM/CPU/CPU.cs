@@ -320,7 +320,7 @@ namespace Gameboy.VM.CPU
                 0xF5 => _alu.PushToStack(Registers.AF), // PUSH AF
                 0xF6 => _alu.And(ref Registers.A, FetchByte()) + 1, // OR d8
                 0xF7 => _alu.Rst(0x30), // RST 30
-                0xF8 => _alu.Load(Register16Bit.HL, _device.MMU.ReadWord((ushort)((Registers.StackPointer + (sbyte)FetchByte()) & 0xFFFF))) + 1, // LD HL, SP+r8
+                0xF8 => _alu.LoadHLSpPlusR8((sbyte)FetchByte()), // LD HL, SP+r8
                 0xF9 => _alu.Load(Register16Bit.SP, Registers.HL), // LD SP, HL
                 0xFA => _alu.Load(ref Registers.A, _device.MMU.ReadByte(FetchWord())) + 2, // LD A, (a16)
                 0xFB => EnableInterrupts(), // EI
