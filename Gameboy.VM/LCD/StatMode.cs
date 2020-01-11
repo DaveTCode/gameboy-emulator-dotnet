@@ -5,9 +5,9 @@ namespace Gameboy.VM.LCD
     [Flags]
     internal enum StatMode
     {
-        HBlankPeriod = 0xFC,
-        VBlankPeriod = 0xFD,
-        OAMRAMPeriod = 0xFE,
-        TransferringDataToDriver = 0xFF
+        HBlankPeriod = 0x00,
+        VBlankPeriod = 0x01,
+        OAMRAMPeriod = 0x02,
+        TransferringDataToDriver = 0x03
     }
 }

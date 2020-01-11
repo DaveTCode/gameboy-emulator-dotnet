@@ -92,7 +92,7 @@ namespace Gameboy.VM.LCD
             {
                 _currentCycle -= ClockCyclesForScanline;
 
-                // Update the LY register - TODO might trigger an LY==LYC interrupt
+                // Update the LY register
                 currentScanLine = _device.LCDRegisters.IncrementLineBeingProcessed();
             }
 
@@ -175,15 +175,16 @@ namespace Gameboy.VM.LCD
             if (currentScanLine >= Device.ScreenHeight)
             {
                 _device.LCDRegisters.StatMode = StatMode.VBlankPeriod;
-                return false;
             }
-
-            _device.LCDRegisters.StatMode = _currentCycle switch
+            else
             {
-                _ when _currentCycle < 80 => StatMode.OAMRAMPeriod,
-                _ when _currentCycle < 252 => StatMode.TransferringDataToDriver, // TODO - Not strictly true, depends on #sprites
-                _ => StatMode.HBlankPeriod
-            };
+                _device.LCDRegisters.StatMode = _currentCycle switch
+                {
+                    _ when _currentCycle < 80 => StatMode.OAMRAMPeriod,
+                    _ when _currentCycle < 252 => StatMode.TransferringDataToDriver, // TODO - Not strictly true, depends on #sprites
+                    _ => StatMode.HBlankPeriod
+                };
+            }
 
             if (oldMode != _device.LCDRegisters.StatMode)
             {
