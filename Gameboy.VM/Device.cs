@@ -172,7 +172,7 @@ namespace Gameboy.VM
             // Step 3: Update the LCD subsystem to sync with the new number of cycles
             LCDDriver.Step(cycles);
 
-            Log.Information(ToString());
+            //Log.Information(ToString());
 
             return cycles; // Machine cycles translation
         }

@@ -108,7 +108,7 @@ namespace Gameboy.VM.LCD
         #endregion
 
         #region STAT Register
-        private byte _statRegister;
+        private byte _statRegister = 0x80; // Default top bit to set
 
         internal byte StatRegister
         {
@@ -117,13 +117,12 @@ namespace Gameboy.VM.LCD
             {
                 var s = value | 0x80; // Bit 7 is always set
                 s &= 0xF8; // Unset bits 0-2 as we shouldn't touch those
-                _statRegister = (byte)(value | s);
+                _statRegister = (byte)s;
                 IsLYLCCheckEnabled = (value & 0x40) == 0x40; // Is bit 6 of STAT register on?
                 Mode2OAMCheckEnabled = (value & 0x20) == 0x20; // Is bit 5 of STAT register on?
                 Mode1VBlankCheckEnabled = (value & 0x10) == 0x10; // Is bit 4 of STAT register on?
                 Mode0HBlankCheckEnabled = (value & 0x8) == 0x8; // Is bit 3 of STAT register on?
 
-                // TODO - Shold we trigger interrupts if the checks change here? Probably yes.
                 CheckLYLCInterrupt();
             }
         }
@@ -161,7 +160,7 @@ namespace Gameboy.VM.LCD
             set
             {
                 _statMode = value;
-                _statRegister &= (byte)value;
+                _statRegister = (byte)((_statRegister & 0xFC) | (int)value);
             }
         }
         #endregion
