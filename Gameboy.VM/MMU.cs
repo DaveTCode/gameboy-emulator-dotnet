@@ -223,7 +223,8 @@ namespace Gameboy.VM
             else if (address == 0xFF43)
                 _device.LCDRegisters.ScrollX = value;
             else if (address == 0xFF44)
-                _device.Log.Information("Can't write directly to LY register from MMU");
+                // Note that this
+                _device.LCDRegisters.LCDCurrentScanline = value;
             else if (address == 0xFF45)
                 _device.LCDRegisters.LYCompare = value;
             else if (address == 0xFF46) // DMA register

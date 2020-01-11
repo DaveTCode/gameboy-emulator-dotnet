@@ -25,11 +25,12 @@ namespace Gameboy.VM.LCD
 
         internal byte ObjectPaletteData1 { get; set; }
 
+        // TODO - This can be set by the program during normal operation when the LCD is off
         private byte _lcdCurrentScanline;
         internal byte LCDCurrentScanline
         {
             get => _lcdCurrentScanline;
-            private set
+            set
             {
                 _lcdCurrentScanline = value;
                 _coincidenceFlag = value == LYCompare;
