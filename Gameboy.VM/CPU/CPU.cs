@@ -39,6 +39,7 @@ namespace Gameboy.VM.CPU
                 if ((_device.InterruptRegisters.InterruptEnable & _device.InterruptRegisters.InterruptRequest & mask) == mask)
                 {
                     var interrupt = (Interrupt)bit;
+                    _device.Log.Information("Handling interrupt {0}", interrupt);
 
                     // First disable the master interrupt flag
                     _device.InterruptRegisters.AreInterruptsEnabledGlobally = false;
@@ -304,7 +305,7 @@ namespace Gameboy.VM.CPU
                 0xE6 => _alu.And(ref Registers.A, FetchByte()) + 1, // AND d8
                 0xE7 => _alu.Rst(0x20), // RST 20
                 0xE8 => _alu.Add(Register16Bit.SP, Registers.StackPointer, (sbyte)FetchByte()), // ADD SP, r8
-                0xE9 => _alu.Jump(_device.MMU.ReadWord(Registers.HL)), // JP (HL)
+                0xE9 => _alu.Jump(Registers.HL) - 3, // JP HL
                 0xEA => _device.MMU.WriteByte(FetchWord(), Registers.A) + 2, // LD (a16), A
                 0xEB => 0, // Unused opcode
                 0xEC => 0, // Unused opcode

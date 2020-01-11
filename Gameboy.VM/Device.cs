@@ -68,7 +68,7 @@ namespace Gameboy.VM
             Timer = new Timer(this);
             DMAController = new DMAController(this);
             Log = new LoggerConfiguration()
-                .MinimumLevel.Warning()
+                .MinimumLevel.Information()
                 .WriteTo.File("log.txt", buffered: true)
                 .CreateLogger();
         }
@@ -171,6 +171,8 @@ namespace Gameboy.VM
 
             // Step 3: Update the LCD subsystem to sync with the new number of cycles
             LCDDriver.Step(cycles);
+
+            Log.Information(ToString());
 
             return cycles; // Machine cycles translation
         }
