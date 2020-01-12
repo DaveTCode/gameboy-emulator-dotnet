@@ -6,15 +6,17 @@ TODO - Description
 
 ### Fixes
 
-- Off by 1 error whilst rendering background tiles
+- Post boot rom doesn't work? Fails checksum
+- Blargg tests all run but apparently _all_ fail (one bad opcode somewhere?)
+- Tetris just display single line at the bottom
 
 ### Specific
 
 - Thorough testing all opcodes through cartridges
 - Drawing sprites
-- Joypad subsystem/emulation
-- DMA operation
-- Serial port support
+- Joypad testing
+- DMA testing
+- Proper configurable serial port support
 - Thorough testing of MBC function
 
 ### Ideas/Future
