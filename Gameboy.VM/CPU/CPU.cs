@@ -78,7 +78,7 @@ namespace Gameboy.VM.CPU
                 0x04 => _alu.Increment(ref Registers.B), // Increment B
                 0x05 => _alu.Decrement(ref Registers.B), // Decrement B
                 0x06 => (_alu.Load(ref Registers.B, FetchByte()) + 1), // LD B, d8
-                0x07 => _alu.RotateLeftWithCarry(ref Registers.A), // RLCA
+                0x07 => _alu.RotateLeftWithCarryA(), // RLCA
                 0x08 => (_device.MMU.WriteWord(FetchWord(), Registers.StackPointer) + 1), // LD (a16), SP
                 0x09 => _alu.Add(Register16Bit.HL, Registers.HL, Registers.BC), // ADD HL, BC
                 0x0A => (_alu.Load(ref Registers.A, _device.MMU.ReadByte(Registers.BC)) + 1), // LD A, (BC)
@@ -86,7 +86,7 @@ namespace Gameboy.VM.CPU
                 0x0C => _alu.Increment(ref Registers.C), // INC C
                 0x0D => _alu.Decrement(ref Registers.C), // DEC C
                 0x0E => (_alu.Load(ref Registers.C, FetchByte()) + 1), // LD C, d8
-                0x0F => _alu.RotateRightWithCarry(ref Registers.A), // RRCA
+                0x0F => _alu.RotateRightWithCarryA(), // RRCA
                 0x10 => Stop(), // STOP 0
                 0x11 => _alu.Load(Register16Bit.DE, FetchWord()), // LD DE, d16
                 0x12 => _device.MMU.WriteByte(Registers.DE, Registers.A), // LD (DE), A
@@ -94,7 +94,7 @@ namespace Gameboy.VM.CPU
                 0x14 => _alu.Increment(ref Registers.D), // INC D
                 0x15 => _alu.Decrement(ref Registers.D), // DEC D
                 0x16 => (_alu.Load(ref Registers.D, FetchByte()) + 1), // LD D, d8
-                0x17 => _alu.RotateLeftNoCarry(ref Registers.A), // RLA
+                0x17 => _alu.RotateLeftNoCarryA(), // RLA
                 0x18 => _alu.JumpRight((sbyte)FetchByte()), // JR r8
                 0x19 => _alu.Add(Register16Bit.HL, Registers.HL, Registers.DE), // ADD HL, DE
                 0x1A => _alu.Load(ref Registers.A, _device.MMU.ReadByte(Registers.DE)), // LD A, (DE)
@@ -102,7 +102,7 @@ namespace Gameboy.VM.CPU
                 0x1C => _alu.Increment(ref Registers.E), // INC E
                 0x1D => _alu.Decrement(ref Registers.E), // DEC E
                 0x1E => (_alu.Load(ref Registers.E, FetchByte()) + 1), // LD E, d8
-                0x1F => _alu.RotateRightNoCarry(ref Registers.A), // RRA
+                0x1F => _alu.RotateRightNoCarryA(), // RRA
                 0x20 => _alu.JumpRightOnFlag(CpuFlags.ZeroFlag, (sbyte)FetchByte(), false), // JR NZ, r8
                 0x21 => (_alu.Load(Register16Bit.HL, FetchWord()) + 1), // LD HL, d16
                 0x22 => _device.MMU.WriteByte(Registers.HLI(), Registers.A), // LD (HL+), A
