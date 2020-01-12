@@ -116,6 +116,116 @@ namespace Gameboy.VM.Tests.CPU
         }
 
         [Theory]
+        [InlineData(0x0, 0x0, 0x8, 0x06, 0x78, false, false, true)] // Test zero flag set on RRC B
+        [InlineData(0x0, 0x0, 0x9, 0x0E, 0x79, false, false, true)] // Test zero flag set on RRC C
+        [InlineData(0x0, 0x0, 0xA, 0x16, 0x7A, false, false, true)] // Test zero flag set on RRC D
+        [InlineData(0x0, 0x0, 0xB, 0x1E, 0x7B, false, false, true)] // Test zero flag set on RRC E
+        [InlineData(0x0, 0x0, 0xC, 0x26, 0x7C, false, false, true)] // Test zero flag set on RRC H
+        [InlineData(0x0, 0x0, 0xD, 0x2E, 0x7D, false, false, true)] // Test zero flag set on RRC L
+        [InlineData(0x0, 0x0, 0xE, 0x36, 0x7E, false, false, true)] // Test zero flag set on RRC (HL)
+        [InlineData(0x0, 0x0, 0xF, 0x3E, 0x7F, false, false, true)] // Test zero flag set on RRC A
+        [InlineData(0x0, 0x0, 0x8, 0x06, 0x78, true, false, true)] // Test carry flag not doing anything on RRC B
+        [InlineData(0x0, 0x0, 0x9, 0x0E, 0x79, true, false, true)] // Test carry flag not doing anything on RRC C
+        [InlineData(0x0, 0x0, 0xA, 0x16, 0x7A, true, false, true)] // Test carry flag not doing anything on RRC D
+        [InlineData(0x0, 0x0, 0xB, 0x1E, 0x7B, true, false, true)] // Test carry flag not doing anything on RRC E
+        [InlineData(0x0, 0x0, 0xC, 0x26, 0x7C, true, false, true)] // Test carry flag not doing anything on RRC H
+        [InlineData(0x0, 0x0, 0xD, 0x2E, 0x7D, true, false, true)] // Test carry flag not doing anything on RRC L
+        [InlineData(0x0, 0x0, 0xE, 0x36, 0x7E, true, false, true)] // Test carry flag not doing anything on RRC (HL)
+        [InlineData(0x0, 0x0, 0xF, 0x3E, 0x7F, true, false, true)] // Test carry flag not doing anything on RRC A
+        [InlineData(0x1, 0x80, 0x8, 0x06, 0x78, false, true, false)] // Test bit carried on RRC B
+        [InlineData(0x1, 0x80, 0x9, 0x0E, 0x79, false, true, false)] // Test bit carried on RRC C
+        [InlineData(0x1, 0x80, 0xA, 0x16, 0x7A, false, true, false)] // Test bit carried on RRC D
+        [InlineData(0x1, 0x80, 0xB, 0x1E, 0x7B, false, true, false)] // Test bit carried on RRC E
+        [InlineData(0x1, 0x80, 0xC, 0x26, 0x7C, false, true, false)] // Test bit carried on RRC H
+        [InlineData(0x1, 0x80, 0xD, 0x2E, 0x7D, false, true, false)] // Test bit carried on RRC L
+        [InlineData(0x1, 0x80, 0xE, 0x36, 0x7E, false, true, false)] // Test bit carried on RRC (HL)
+        [InlineData(0x1, 0x80, 0xF, 0x3E, 0x7F, false, true, false)] // Test bit carried on RRC A
+        public void TestRRC(byte initialValue, byte expectedValue, byte rotateOpcode, byte loadOpcode, byte loadRegIntoA, bool preC, bool c, bool z)
+        {
+            var device = TestUtils.CreateTestDevice(new byte[]
+            {
+                0x21, 0x00, 0xC0, // Load 0xC000 into HL
+                loadOpcode, initialValue, // Load into reg
+                0x37, // Set carry flag to 1
+                (byte)((preC) ? 0x00 : 0x3F), // CCF to unset carry flag if starting from unset
+                0xCB, rotateOpcode, // Rotate reg (opcode under test)
+                loadRegIntoA, // Move result to A for evaluation
+            });
+
+            for (var ii = 0; ii < 8; ii++) // 2 to get to PC 0x150 then 6 to setup and act
+            {
+                device.Step();
+            }
+
+            Assert.Equal(expectedValue, device.CPU.Registers.A);
+            Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.Equal(z, device.CPU.Registers.GetFlag(CpuFlags.ZeroFlag));
+
+            device.Step();
+        }
+
+        [Theory]
+        [InlineData(0x0, 0x0, 0x18, 0x06, 0x78, false, false, true)] // Test zero flag set on RR B
+        [InlineData(0x0, 0x0, 0x19, 0x0E, 0x79, false, false, true)] // Test zero flag set on RR C
+        [InlineData(0x0, 0x0, 0x1A, 0x16, 0x7A, false, false, true)] // Test zero flag set on RR D
+        [InlineData(0x0, 0x0, 0x1B, 0x1E, 0x7B, false, false, true)] // Test zero flag set on RR E
+        [InlineData(0x0, 0x0, 0x1C, 0x26, 0x7C, false, false, true)] // Test zero flag set on RR H
+        [InlineData(0x0, 0x0, 0x1D, 0x2E, 0x7D, false, false, true)] // Test zero flag set on RR L
+        [InlineData(0x0, 0x0, 0x1E, 0x36, 0x7E, false, false, true)] // Test zero flag set on RR (HL)
+        [InlineData(0x0, 0x0, 0x1F, 0x3E, 0x7F, false, false, true)] // Test zero flag set on RR A
+        [InlineData(0x0, 0x80, 0x18, 0x06, 0x78, true, false, false)] // Test carry flag used on RR B
+        [InlineData(0x0, 0x80, 0x19, 0x0E, 0x79, true, false, false)] // Test carry flag used on RR C
+        [InlineData(0x0, 0x80, 0x1A, 0x16, 0x7A, true, false, false)] // Test carry flag used on RR D
+        [InlineData(0x0, 0x80, 0x1B, 0x1E, 0x7B, true, false, false)] // Test carry flag used on RR E
+        [InlineData(0x0, 0x80, 0x1C, 0x26, 0x7C, true, false, false)] // Test carry flag used on RR H
+        [InlineData(0x0, 0x80, 0x1D, 0x2E, 0x7D, true, false, false)] // Test carry flag used on RR L
+        [InlineData(0x0, 0x80, 0x1E, 0x36, 0x7E, true, false, false)] // Test carry flag used on RR (HL)
+        [InlineData(0x0, 0x80, 0x1F, 0x3E, 0x7F, true, false, false)] // Test carry flag used on RR A
+        [InlineData(0x1, 0x0, 0x18, 0x06, 0x78, false, true, true)] // Test bit not carried on RR B
+        [InlineData(0x1, 0x0, 0x19, 0x0E, 0x79, false, true, true)] // Test bit not carried on RR C
+        [InlineData(0x1, 0x0, 0x1A, 0x16, 0x7A, false, true, true)] // Test bit not carried on RR D
+        [InlineData(0x1, 0x0, 0x1B, 0x1E, 0x7B, false, true, true)] // Test bit not carried on RR E
+        [InlineData(0x1, 0x0, 0x1C, 0x26, 0x7C, false, true, true)] // Test bit not carried on RR H
+        [InlineData(0x1, 0x0, 0x1D, 0x2E, 0x7D, false, true, true)] // Test bit not carried on RR L
+        [InlineData(0x1, 0x0, 0x1E, 0x36, 0x7E, false, true, true)] // Test bit not carried on RR (HL)
+        [InlineData(0x1, 0x0, 0x1F, 0x3E, 0x7F, false, true, true)] // Test bit not carried on RR A
+        [InlineData(0x1, 0x80, 0x18, 0x06, 0x78, true, true, false)] // Test bit not carried on RR B
+        [InlineData(0x1, 0x80, 0x19, 0x0E, 0x79, true, true, false)] // Test bit not carried on RR C
+        [InlineData(0x1, 0x80, 0x1A, 0x16, 0x7A, true, true, false)] // Test bit not carried on RR D
+        [InlineData(0x1, 0x80, 0x1B, 0x1E, 0x7B, true, true, false)] // Test bit not carried on RR E
+        [InlineData(0x1, 0x80, 0x1C, 0x26, 0x7C, true, true, false)] // Test bit not carried on RR H
+        [InlineData(0x1, 0x80, 0x1D, 0x2E, 0x7D, true, true, false)] // Test bit not carried on RR L
+        [InlineData(0x1, 0x80, 0x1E, 0x36, 0x7E, true, true, false)] // Test bit not carried on RR (HL)
+        [InlineData(0x1, 0x80, 0x1F, 0x3E, 0x7F, true, true, false)] // Test bit not carried on RR A
+        public void TestRR(byte initialValue, byte expectedValue, byte rotateOpcode, byte loadOpcode, byte loadRegIntoA, bool preC, bool c, bool z)
+        {
+            var device = TestUtils.CreateTestDevice(new byte[]
+            {
+                0x21, 0x00, 0xC0, // Load 0xC000 into HL
+                loadOpcode, initialValue, // Load into reg
+                0x37, // Set carry flag to 1
+                (byte)((preC) ? 0x00 : 0x3F), // CCF to unset carry flag if starting from unset
+                0xCB, rotateOpcode, // Rotate reg (opcode under test)
+                loadRegIntoA, // Move result to A for evaluation
+            });
+
+            for (var ii = 0; ii < 8; ii++) // 2 to get to PC 0x150 then 6 to setup and act
+            {
+                device.Step();
+            }
+
+            Assert.Equal(expectedValue, device.CPU.Registers.A);
+            Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.Equal(z, device.CPU.Registers.GetFlag(CpuFlags.ZeroFlag));
+
+            device.Step();
+        }
+
+        [Theory]
         [InlineData(0x85, 0x0B, false, true, false, false, false)] // Note that the example in the official manual says 0x0A but think that's incorrect
         public void TestRLCA(byte a, byte result, bool cBefore, bool c, bool h, bool z, bool n)
         {
