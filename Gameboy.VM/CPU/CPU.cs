@@ -317,7 +317,7 @@ namespace Gameboy.VM.CPU
                 0xF3 => DisableInterrupts(), // DI
                 0xF4 => 0, // Unused opcode
                 0xF5 => _alu.PushToStack(Registers.AF), // PUSH AF
-                0xF6 => _alu.And(ref Registers.A, FetchByte()) + 1, // OR d8
+                0xF6 => _alu.Or(ref Registers.A, FetchByte()) + 1, // OR d8
                 0xF7 => _alu.Rst(0x30), // RST 30
                 0xF8 => _alu.LoadHLSpPlusR8((sbyte)FetchByte()), // LD HL, SP+r8
                 0xF9 => _alu.Load(Register16Bit.SP, Registers.HL), // LD SP, HL
@@ -326,7 +326,7 @@ namespace Gameboy.VM.CPU
                 0xFC => 0, // Unused opcode
                 0xFD => 0, // Unused opcode
                 0xFE => _alu.Cp(Registers.A, FetchByte()) + 1, // CP d8
-                0xFF => _alu.Rst(0x28), // RST 38
+                0xFF => _alu.Rst(0x38), // RST 38
                 _ => throw new ArgumentException($"Opcode {opcode} not implemented", nameof(opcode))
             };
         }

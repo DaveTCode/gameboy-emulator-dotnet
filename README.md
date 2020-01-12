@@ -6,7 +6,9 @@ TODO - Description
 
 ### Fixes
 
-- Post boot rom doesn't work? Fails checksum
+- ###IMPORTANT### Joypad uses 1 to indicate key down instead of 0
+- Blargg test all locks up on test 01, maybe MBC1 bank switch bug?
+- Can't exit bootrom? Fails checksum?
 - Blargg tests all run but apparently _all_ fail (one bad opcode somewhere?)
 - Tetris just display single line at the bottom
 
