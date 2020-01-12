@@ -52,8 +52,6 @@ namespace Gameboy.VM.Tests.CPU
             Assert.False(device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
             Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
             Assert.Equal(z, device.CPU.Registers.GetFlag(CpuFlags.ZeroFlag));
-
-            device.Step();
         }
 
         [Theory]
@@ -111,8 +109,6 @@ namespace Gameboy.VM.Tests.CPU
             Assert.False(device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
             Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
             Assert.Equal(z, device.CPU.Registers.GetFlag(CpuFlags.ZeroFlag));
-
-            device.Step();
         }
 
         [Theory]
@@ -162,8 +158,6 @@ namespace Gameboy.VM.Tests.CPU
             Assert.False(device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
             Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
             Assert.Equal(z, device.CPU.Registers.GetFlag(CpuFlags.ZeroFlag));
-
-            device.Step();
         }
 
         [Theory]
@@ -221,8 +215,6 @@ namespace Gameboy.VM.Tests.CPU
             Assert.False(device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
             Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
             Assert.Equal(z, device.CPU.Registers.GetFlag(CpuFlags.ZeroFlag));
-
-            device.Step();
         }
 
         [Theory]
@@ -294,39 +286,101 @@ namespace Gameboy.VM.Tests.CPU
         }
 
         [Theory]
-        [InlineData(0x80, 0x00, false, true, false, true, false)]
-        [InlineData(0xFF, 0xFE, false, true, false, false, false)]
-        public void TestSLA(byte a, byte result, bool cBefore, bool c, bool h, bool z, bool n)
+        [InlineData(0x0, 0x0, 0x20, 0x06, 0x78, false, true)] // SLA B - check zero flag
+        [InlineData(0x0, 0x0, 0x21, 0x0E, 0x79, false, true)] // SLA C - check zero flag
+        [InlineData(0x0, 0x0, 0x22, 0x16, 0x7A, false, true)] // SLA D - check zero flag
+        [InlineData(0x0, 0x0, 0x23, 0x1E, 0x7B, false, true)] // SLA E - check zero flag
+        [InlineData(0x0, 0x0, 0x24, 0x26, 0x7C, false, true)] // SLA H - check zero flag
+        [InlineData(0x0, 0x0, 0x25, 0x2E, 0x7D, false, true)] // SLA L - check zero flag
+        [InlineData(0x0, 0x0, 0x26, 0x36, 0x7E, false, true)] // SLA (HL) - check zero flag
+        [InlineData(0x0, 0x0, 0x27, 0x3E, 0x7F, false, true)] // SLA A - check zero flag
+        [InlineData(0x80, 0x0, 0x20, 0x06, 0x78, true, true)] // SLA B - check carry & zero flag
+        [InlineData(0x80, 0x0, 0x21, 0x0E, 0x79, true, true)] // SLA C - check zero flag & zero flag
+        [InlineData(0x80, 0x0, 0x22, 0x16, 0x7A, true, true)] // SLA D - check zero flag & zero flag
+        [InlineData(0x80, 0x0, 0x23, 0x1E, 0x7B, true, true)] // SLA E - check zero flag & zero flag
+        [InlineData(0x80, 0x0, 0x24, 0x26, 0x7C, true, true)] // SLA H - check zero flag & zero flag
+        [InlineData(0x80, 0x0, 0x25, 0x2E, 0x7D, true, true)] // SLA L - check zero flag & zero flag
+        [InlineData(0x80, 0x0, 0x26, 0x36, 0x7E, true, true)] // SLA (HL) - check zero flag & zero flag
+        [InlineData(0x80, 0x0, 0x27, 0x3E, 0x7F, true, true)] // SLA A - check zero flag & zero flag
+        [InlineData(0xFF, 0xFE, 0x20, 0x06, 0x78, true, false)] // SLA B - check not zero but carry
+        [InlineData(0xFF, 0xFE, 0x21, 0x0E, 0x79, true, false)] // SLA C - check zero flag & zero flag
+        [InlineData(0xFF, 0xFE, 0x22, 0x16, 0x7A, true, false)] // SLA D - check zero flag & zero flag
+        [InlineData(0xFF, 0xFE, 0x23, 0x1E, 0x7B, true, false)] // SLA E - check zero flag & zero flag
+        [InlineData(0xFF, 0xFE, 0x24, 0x26, 0x7C, true, false)] // SLA H - check zero flag & zero flag
+        [InlineData(0xFF, 0xFE, 0x25, 0x2E, 0x7D, true, false)] // SLA L - check zero flag & zero flag
+        [InlineData(0xFF, 0xFE, 0x26, 0x36, 0x7E, true, false)] // SLA (HL) - check zero flag & zero flag
+        [InlineData(0xFF, 0xFE, 0x27, 0x3E, 0x7F, true, false)] // SLA A - check zero flag & zero flag
+        public void TestSLA(byte initialValue, byte expectedValue, byte shiftOpcode, byte loadOpcode, byte loadRegIntoA, bool c, bool z)
         {
-            var device = TestUtils.CreateTestDevice();
-            var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
-            cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
-            var cycles = alu.ShiftLeft(ref a);
-            Assert.Equal(1, cycles);
-            Assert.Equal(result, a);
-            Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
-            Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
-            Assert.Equal(n, cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
-            Assert.Equal(z, cpu.Registers.GetFlag(CpuFlags.ZeroFlag));
+            var device = TestUtils.CreateTestDevice(new byte[]
+            {
+                0x21, 0x00, 0xC0, // Load 0xC000 into HL
+                loadOpcode, initialValue, // Load into reg
+                0x37, // Set carry flag to 1
+                0x3F, // CCF to unset carry flag so we know if it's been set properly
+                0xCB, shiftOpcode, // Shift reg (opcode under test)
+                loadRegIntoA, // Move result to A for evaluation
+            });
+
+            for (var ii = 0; ii < 8; ii++) // 2 to get to PC 0x150 then 6 to setup and act
+            {
+                device.Step();
+            }
+
+            Assert.Equal(expectedValue, device.CPU.Registers.A);
+            Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.Equal(z, device.CPU.Registers.GetFlag(CpuFlags.ZeroFlag));
         }
 
         [Theory]
-        [InlineData(0x8A, 0xC5, false, false, false, false, false)]
-        [InlineData(0x01, 0x00, false, true, false, true, false)]
-        public void TestSRA(byte a, byte result, bool cBefore, bool c, bool h, bool z, bool n)
+        [InlineData(0x0, 0x0, 0x28, 0x06, 0x78, false, true)] // SRA B - check zero flag
+        [InlineData(0x0, 0x0, 0x29, 0x0E, 0x79, false, true)] // SRA C - check zero flag
+        [InlineData(0x0, 0x0, 0x2A, 0x16, 0x7A, false, true)] // SRA D - check zero flag
+        [InlineData(0x0, 0x0, 0x2B, 0x1E, 0x7B, false, true)] // SRA E - check zero flag
+        [InlineData(0x0, 0x0, 0x2C, 0x26, 0x7C, false, true)] // SRA H - check zero flag
+        [InlineData(0x0, 0x0, 0x2D, 0x2E, 0x7D, false, true)] // SRA L - check zero flag
+        [InlineData(0x0, 0x0, 0x2E, 0x36, 0x7E, false, true)] // SRA (HL) - check zero flag
+        [InlineData(0x0, 0x0, 0x2F, 0x3E, 0x7F, false, true)] // SRA A - check zero flag
+        [InlineData(0x1, 0x0, 0x28, 0x06, 0x78, true, true)] // SLA B - check carry & zero flag
+        [InlineData(0x1, 0x0, 0x29, 0x0E, 0x79, true, true)] // SLA C - check zero flag & zero flag
+        [InlineData(0x1, 0x0, 0x2A, 0x16, 0x7A, true, true)] // SLA D - check zero flag & zero flag
+        [InlineData(0x1, 0x0, 0x2B, 0x1E, 0x7B, true, true)] // SLA E - check zero flag & zero flag
+        [InlineData(0x1, 0x0, 0x2C, 0x26, 0x7C, true, true)] // SLA H - check zero flag & zero flag
+        [InlineData(0x1, 0x0, 0x2D, 0x2E, 0x7D, true, true)] // SLA L - check zero flag & zero flag
+        [InlineData(0x1, 0x0, 0x2E, 0x36, 0x7E, true, true)] // SLA (HL) - check zero flag & zero flag
+        [InlineData(0x1, 0x0, 0x2F, 0x3E, 0x7F, true, true)] // SLA A - check zero flag & zero flag
+        [InlineData(0xFF, 0xFF, 0x28, 0x06, 0x78, true, false)] // SLA B - check not zero but carry
+        [InlineData(0xFF, 0xFF, 0x29, 0x0E, 0x79, true, false)] // SLA C - check not zero but carry
+        [InlineData(0xFF, 0xFF, 0x2A, 0x16, 0x7A, true, false)] // SLA D - check not zero but carry
+        [InlineData(0xFF, 0xFF, 0x2B, 0x1E, 0x7B, true, false)] // SLA E - check not zero but carry
+        [InlineData(0xFF, 0xFF, 0x2C, 0x26, 0x7C, true, false)] // SLA H - check not zero but carry
+        [InlineData(0xFF, 0xFF, 0x2D, 0x2E, 0x7D, true, false)] // SLA L - check not zero but carry
+        [InlineData(0xFF, 0xFF, 0x2E, 0x36, 0x7E, true, false)] // SLA (HL) - check not zero but carry
+        [InlineData(0xFF, 0xFF, 0x2F, 0x3E, 0x7F, true, false)] // SLA A - check not zero but carry
+        public void TestSRA(byte initialValue, byte expectedValue, byte shiftOpcode, byte loadOpcode, byte loadRegIntoA, bool c, bool z)
         {
-            var device = TestUtils.CreateTestDevice();
-            var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
-            cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
-            var cycles = alu.ShiftRightAdjust(ref a);
-            Assert.Equal(1, cycles);
-            Assert.Equal(result, a);
-            Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
-            Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
-            Assert.Equal(n, cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
-            Assert.Equal(z, cpu.Registers.GetFlag(CpuFlags.ZeroFlag));
+            var device = TestUtils.CreateTestDevice(new byte[]
+            {
+                0x21, 0x00, 0xC0, // Load 0xC000 into HL
+                loadOpcode, initialValue, // Load into reg
+                0x37, // Set carry flag to 1
+                0x3F, // CCF to unset carry flag so we know if it's been set properly
+                0xCB, shiftOpcode, // Shift reg (opcode under test)
+                loadRegIntoA, // Move result to A for evaluation
+            });
+
+            for (var ii = 0; ii < 8; ii++) // 2 to get to PC 0x150 then 6 to setup and act
+            {
+                device.Step();
+            }
+
+            Assert.Equal(expectedValue, device.CPU.Registers.A);
+            Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.Equal(z, device.CPU.Registers.GetFlag(CpuFlags.ZeroFlag));
         }
 
         [Theory]
