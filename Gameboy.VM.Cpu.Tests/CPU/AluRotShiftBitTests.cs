@@ -57,6 +57,65 @@ namespace Gameboy.VM.Tests.CPU
         }
 
         [Theory]
+        [InlineData(0x0, 0x0, 0x10, 0x06, 0x78, false, false, true)] // Test zero flag set on RL B
+        [InlineData(0x0, 0x0, 0x11, 0x0E, 0x79, false, false, true)] // Test zero flag set on RL C
+        [InlineData(0x0, 0x0, 0x12, 0x16, 0x7A, false, false, true)] // Test zero flag set on RL D
+        [InlineData(0x0, 0x0, 0x13, 0x1E, 0x7B, false, false, true)] // Test zero flag set on RL E
+        [InlineData(0x0, 0x0, 0x14, 0x26, 0x7C, false, false, true)] // Test zero flag set on RL H
+        [InlineData(0x0, 0x0, 0x15, 0x2E, 0x7D, false, false, true)] // Test zero flag set on RL L
+        [InlineData(0x0, 0x0, 0x16, 0x36, 0x7E, false, false, true)] // Test zero flag set on RL (HL)
+        [InlineData(0x0, 0x0, 0x17, 0x3E, 0x7F, false, false, true)] // Test zero flag set on RL A
+        [InlineData(0x0, 0x1, 0x10, 0x06, 0x78, true, false, false)] // Test carry flag used on RL B
+        [InlineData(0x0, 0x1, 0x11, 0x0E, 0x79, true, false, false)] // Test carry flag used on RL C
+        [InlineData(0x0, 0x1, 0x12, 0x16, 0x7A, true, false, false)] // Test carry flag used on RL D
+        [InlineData(0x0, 0x1, 0x13, 0x1E, 0x7B, true, false, false)] // Test carry flag used on RL E
+        [InlineData(0x0, 0x1, 0x14, 0x26, 0x7C, true, false, false)] // Test carry flag used on RL H
+        [InlineData(0x0, 0x1, 0x15, 0x2E, 0x7D, true, false, false)] // Test carry flag used on RL L
+        [InlineData(0x0, 0x1, 0x16, 0x36, 0x7E, true, false, false)] // Test carry flag used on RL (HL)
+        [InlineData(0x0, 0x1, 0x17, 0x3E, 0x7F, true, false, false)] // Test carry flag used on RL A
+        [InlineData(0x80, 0x0, 0x10, 0x06, 0x78, false, true, true)] // Test bit not carried on RL B
+        [InlineData(0x80, 0x0, 0x11, 0x0E, 0x79, false, true, true)] // Test bit not carried on RL C
+        [InlineData(0x80, 0x0, 0x12, 0x16, 0x7A, false, true, true)] // Test bit not carried on RL D
+        [InlineData(0x80, 0x0, 0x13, 0x1E, 0x7B, false, true, true)] // Test bit not carried on RL E
+        [InlineData(0x80, 0x0, 0x14, 0x26, 0x7C, false, true, true)] // Test bit not carried on RL H
+        [InlineData(0x80, 0x0, 0x15, 0x2E, 0x7D, false, true, true)] // Test bit not carried on RL L
+        [InlineData(0x80, 0x0, 0x16, 0x36, 0x7E, false, true, true)] // Test bit not carried on RL (HL)
+        [InlineData(0x80, 0x0, 0x17, 0x3E, 0x7F, false, true, true)] // Test bit not carried on RL A
+        [InlineData(0x80, 0x1, 0x10, 0x06, 0x78, true, true, false)] // Test bit not carried on RL B
+        [InlineData(0x80, 0x1, 0x11, 0x0E, 0x79, true, true, false)] // Test bit not carried on RL C
+        [InlineData(0x80, 0x1, 0x12, 0x16, 0x7A, true, true, false)] // Test bit not carried on RL D
+        [InlineData(0x80, 0x1, 0x13, 0x1E, 0x7B, true, true, false)] // Test bit not carried on RL E
+        [InlineData(0x80, 0x1, 0x14, 0x26, 0x7C, true, true, false)] // Test bit not carried on RL H
+        [InlineData(0x80, 0x1, 0x15, 0x2E, 0x7D, true, true, false)] // Test bit not carried on RL L
+        [InlineData(0x80, 0x1, 0x16, 0x36, 0x7E, true, true, false)] // Test bit not carried on RL (HL)
+        [InlineData(0x80, 0x1, 0x17, 0x3E, 0x7F, true, true, false)] // Test bit not carried on RL A
+        public void TestRL(byte initialValue, byte expectedValue, byte rotateOpcode, byte loadOpcode, byte loadRegIntoA, bool preC, bool c, bool z)
+        {
+            var device = TestUtils.CreateTestDevice(new byte[]
+            {
+                0x21, 0x00, 0xC0, // Load 0xC000 into HL
+                loadOpcode, initialValue, // Load into reg
+                0x37, // Set carry flag to 1
+                (byte)((preC) ? 0x00 : 0x3F), // CCF to unset carry flag if starting from unset
+                0xCB, rotateOpcode, // Rotate reg (opcode under test)
+                loadRegIntoA, // Move result to A for evaluation
+            });
+
+            for (var ii = 0; ii < 8; ii++) // 2 to get to PC 0x150 then 6 to setup and act
+            {
+                device.Step();
+            }
+
+            Assert.Equal(expectedValue, device.CPU.Registers.A);
+            Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.Equal(z, device.CPU.Registers.GetFlag(CpuFlags.ZeroFlag));
+
+            device.Step();
+        }
+
+        [Theory]
         [InlineData(0x85, 0x0B, false, true, false, false, false)] // Note that the example in the official manual says 0x0A but think that's incorrect
         public void TestRLCA(byte a, byte result, bool cBefore, bool c, bool h, bool z, bool n)
         {

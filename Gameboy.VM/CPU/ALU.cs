@@ -74,8 +74,9 @@ namespace Gameboy.VM.CPU
         {
             var setCarry = (a & 0x80) == 0x80;
             a = (byte)((a << 1) | (_cpu.Registers.GetFlag(CpuFlags.CarryFlag) ? 0x1 : 0x0));
-            _cpu.Registers.SetFlag(CpuFlags.ZeroFlag | CpuFlags.HalfCarryFlag | CpuFlags.SubtractFlag, false);
+            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag | CpuFlags.SubtractFlag, false);
             _cpu.Registers.SetFlag(CpuFlags.CarryFlag, setCarry);
+            _cpu.Registers.SetFlag(CpuFlags.ZeroFlag, a == 0x0);
             return 1;
         }
 
@@ -88,9 +89,10 @@ namespace Gameboy.VM.CPU
 
         internal int RotateRightWithCarry(ref byte a)
         {
-            _cpu.Registers.SetFlag(CpuFlags.ZeroFlag | CpuFlags.HalfCarryFlag | CpuFlags.SubtractFlag, false);
+            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag | CpuFlags.SubtractFlag, false);
             _cpu.Registers.SetFlag(CpuFlags.CarryFlag, (a & 0x1) == 0x1);
             a = (byte)((a >> 1) | ((a & 1) << 7));
+            _cpu.Registers.SetFlag(CpuFlags.ZeroFlag, a == 0x0);
             return 1;
         }
 
@@ -105,8 +107,9 @@ namespace Gameboy.VM.CPU
         {
             var setCarry = (a & 0x1) == 0x1;
             a = (byte)((a >> 1) | (_cpu.Registers.GetFlag(CpuFlags.CarryFlag) ? 0x80 : 0x0));
-            _cpu.Registers.SetFlag(CpuFlags.ZeroFlag | CpuFlags.HalfCarryFlag | CpuFlags.SubtractFlag, false);
+            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag | CpuFlags.SubtractFlag, false);
             _cpu.Registers.SetFlag(CpuFlags.CarryFlag, setCarry);
+            _cpu.Registers.SetFlag(CpuFlags.ZeroFlag, a == 0x0);
             return 1;
         }
 
