@@ -56,6 +56,10 @@
       "commandName": "Project",
       "commandLineArgs": "-f ../../../../Roms/daa_test.gbc --skipBootRom -s 60 -p 2"
     },
+    "Tetris w/ boot rom": {
+      "commandName": "Project",
+      "commandLineArgs": "-f \"../../../../Roms/real/Tetris (World) (Rev A).gb\" -s 60 -p 2"
+    },
     "Tetris": {
       "commandName": "Project",
       "commandLineArgs": "-f \"../../../../Roms/real/Tetris (World) (Rev A).gb\" -s 60 -p 2 --skipBootRom"

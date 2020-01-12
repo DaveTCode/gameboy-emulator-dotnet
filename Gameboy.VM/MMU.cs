@@ -70,11 +70,8 @@ namespace Gameboy.VM
             }
             if (address >= 0xFEA0 && address <= 0xFEFF) // Unusable addresses
                 return ReadUnusedAddress(address);
-            if (address == 0xFF00) // P1 Register - TODO
-            {
-                _device.Log.Error("Port (P1) register not yet implemented");
-                return 0x0;
-            }
+            if (address == 0xFF00) // P1 Register - Joypad input
+                return _device.JoypadHandler.P1Register;
             if (address == 0xFF01) // SB register
                 return _device.ControlRegisters.SerialTransferData;
             if (address == 0xFF02) // SC register
@@ -156,7 +153,7 @@ namespace Gameboy.VM
         /// <returns>The number of cpu cycles taken to write</returns>
         internal int WriteByte(in ushort address, in byte value)
         {
-            _device.Log.Information("Writing {0:X2} to {1:X4}", value, address);
+            //_device.Log.Information("Writing {0:X2} to {1:X4}", value, address);
 
             if (address <= 0x7FFF) // Write to the 8kB ROM on the cartridge
                 _device.Cartridge.WriteRom(address, value);
@@ -182,8 +179,8 @@ namespace Gameboy.VM
             }
             else if (address >= 0xFEA0 && address <= 0xFEFF) // Unusable addresses - writes explicitly ignored
                 _device.Log.Information("Unusable address {0:X4} for write", address);
-            else if (address == 0xFF00) // IO Ports Register - TODO
-                _device.Log.Error("IO Ports register not implemented", address);
+            else if (address == 0xFF00) // IO Ports Register
+                _device.JoypadHandler.P1Register = value;
             else if (address == 0xFF01)
             {
                 // TODO - Replace with proper implementation of serial port
@@ -223,7 +220,6 @@ namespace Gameboy.VM
             else if (address == 0xFF43)
                 _device.LCDRegisters.ScrollX = value;
             else if (address == 0xFF44)
-                // Note that this
                 _device.LCDRegisters.LCDCurrentScanline = value;
             else if (address == 0xFF45)
                 _device.LCDRegisters.LYCompare = value;

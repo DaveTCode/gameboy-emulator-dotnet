@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using Gameboy.VM.Timers;
 using Serilog;
 using Serilog.Core;
+using Gameboy.VM.Joypad;
 
 [assembly: InternalsVisibleTo("Gameboy.VM.Tests")]
 namespace Gameboy.VM
@@ -52,6 +53,7 @@ namespace Gameboy.VM
         internal readonly LCDDriver LCDDriver;
         internal readonly Timer Timer;
         internal readonly DMAController DMAController;
+        internal readonly JoypadHandler JoypadHandler;
 
         internal readonly Logger Log;
 
@@ -67,8 +69,9 @@ namespace Gameboy.VM
             LCDDriver = new LCDDriver(this);
             Timer = new Timer(this);
             DMAController = new DMAController(this);
+            JoypadHandler = new JoypadHandler(this);
             Log = new LoggerConfiguration()
-                .MinimumLevel.Information()
+                .MinimumLevel.Warning()
                 .WriteTo.File("log.txt", buffered: true)
                 .CreateLogger();
         }
@@ -179,7 +182,7 @@ namespace Gameboy.VM
 
         public override string ToString()
         {
-            return $"{ControlRegisters} {CPU.Registers} {LCDRegisters}";
+            return $"{ControlRegisters} {CPU.Registers} {LCDRegisters} {Timer}";
         }
     }
 }
