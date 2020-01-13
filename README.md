@@ -13,7 +13,9 @@ TODO - Description
 
 ### Specific
 
+- HALT/STOP instruction implementation
 - Thorough testing all opcodes through cartridges
+- Test timer subsystem
 - Drawing sprites
 - Joypad testing
 - DMA testing

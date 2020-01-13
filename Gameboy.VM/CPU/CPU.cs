@@ -8,6 +8,8 @@ namespace Gameboy.VM.CPU
         private readonly ALU _alu;
         private readonly Device _device;
 
+        private bool _isHalted;
+
         internal Registers Registers { get; }
 
         internal CPU(in Device device)
@@ -37,20 +39,25 @@ namespace Gameboy.VM.CPU
                 var mask = 1 << bit;
                 if ((_device.InterruptRegisters.InterruptEnable & _device.InterruptRegisters.InterruptRequest & mask) == mask)
                 {
-                    var interrupt = (Interrupt)bit;
-                    _device.Log.Information("Handling interrupt {0}", interrupt);
+                    _isHalted = false; // Disable halt mode even if interrupts are disabled globally
 
-                    // First disable the master interrupt flag
-                    _device.InterruptRegisters.AreInterruptsEnabledGlobally = false;
+                    if (_device.InterruptRegisters.AreInterruptsEnabledGlobally)
+                    {
+                        var interrupt = (Interrupt)bit;
+                        _device.Log.Information("Handling interrupt {0}", interrupt);
 
-                    // Then reset the interrupt request
-                    _device.InterruptRegisters.ResetInterrupt(interrupt);
+                        // First disable the master interrupt flag
+                        _device.InterruptRegisters.AreInterruptsEnabledGlobally = false;
 
-                    // Finally push the PC to the stack and call the interrupt address
-                    // Note that we only handle one interrupt at a time, the
-                    // next won't be handled until the previous one completes
-                    // and that's done through normal opcode cycles.
-                    return _alu.Call(interrupt.StartingAddress());
+                        // Then reset the interrupt request
+                        _device.InterruptRegisters.ResetInterrupt(interrupt);
+
+                        // Finally push the PC to the stack and call the interrupt address
+                        // Note that we only handle one interrupt at a time, the
+                        // next won't be handled until the previous one completes
+                        // and that's done through normal opcode cycles.
+                        return _alu.Call(interrupt.StartingAddress());
+                    }
                 }
             }
 
@@ -67,6 +74,8 @@ namespace Gameboy.VM.CPU
         /// </returns>
         internal int Step()
         {
+            if (_isHalted) return 0; // TODO - Right number of cycles? Or do we still count cycles in HALT
+
             var opcode = FetchByte();
 
             return opcode switch
@@ -615,6 +624,7 @@ namespace Gameboy.VM.CPU
         internal void Reset()
         {
             Registers.Clear();
+            _isHalted = false;
         }
 
         private byte FetchByte()
@@ -634,6 +644,7 @@ namespace Gameboy.VM.CPU
         private int Halt()
         {
             // TODO
+            _isHalted = true;
             return 1;
         }
 

@@ -58,12 +58,16 @@ namespace Gameboy.VM
 
         internal readonly Logger Log;
 
+        private long tCycles;
+
         public Device(in Cartridge.Cartridge cartridge)
         {
             Log = new LoggerConfiguration()
-                .MinimumLevel.Warning()
+                .MinimumLevel.Information()
                 .WriteTo.File("log.txt", buffered: true)
                 .CreateLogger();
+
+            tCycles = 0;
 
             InterruptRegisters = new InterruptRegisters();
             ControlRegisters = new ControlRegisters();
@@ -177,7 +181,12 @@ namespace Gameboy.VM
             // Step 3: Update the LCD subsystem to sync with the new number of cycles
             LCDDriver.Step(cycles);
 
-            //Log.Information(ToString());
+            // Step 4: Update the timer controller with new cycle count
+            Timer.Step(cycles);
+
+            Log.Information(ToString());
+
+            tCycles += cycles;
 
             return cycles; // Machine cycles translation
         }
@@ -202,7 +211,7 @@ namespace Gameboy.VM
 
         public override string ToString()
         {
-            return $"{ControlRegisters} {CPU.Registers} {LCDRegisters} {Timer}";
+            return $"{ControlRegisters} {CPU.Registers} {LCDRegisters} {Timer} {InterruptRegisters} Cyc:{tCycles}";
         }
     }
 }

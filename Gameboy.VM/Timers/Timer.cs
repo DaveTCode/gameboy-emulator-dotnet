@@ -23,22 +23,21 @@
             }
 
             // Handle standard timer
-            if (_isTimerEnabled)
+            if (!_isTimerEnabled) return;
+
+            _internalCount += cycles;
+
+            while (_internalCount > _timerClockSelect.Step())
             {
-                _internalCount += cycles;
+                TimerCounter = (byte)((TimerCounter + 1) & 0xFF);
 
-                while (_internalCount > _timerClockSelect.Step())
+                if (TimerCounter == 0x0)
                 {
-                    TimerCounter = (byte)((TimerCounter + 1) & 0xFF);
-
-                    if (TimerCounter == 0x0)
-                    {
-                        TimerCounter = TimerModulo;
-                        _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.Timer);
-                    }
-
-                    _internalCount -= _timerClockSelect.Step();
+                    TimerCounter = TimerModulo;
+                    _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.Timer);
                 }
+
+                _internalCount -= _timerClockSelect.Step();
             }
         }
 
@@ -65,7 +64,7 @@
 
         public override string ToString()
         {
-            return $"DIV:{Divider:X2}, TAC:{TimerCounter}, TIM:{TimerModulo}, TC:{TimerController}";
+            return $"DIV:{Divider:X2}, TAC:{TimerCounter:X2}, TIM:{TimerModulo:X2}, TC:{TimerController:X2}";
         }
     }
 }
