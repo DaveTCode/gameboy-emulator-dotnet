@@ -6,14 +6,14 @@ TODO - Description
 
 ### Fixes
 
-- Blargg test failures
+- Blargg test failures (down to 4 failing tests)
+- Sprites don't render to the right portion of the screen
 
 ![Blargg CPU Instr Failures](./blargg_cpu_instr_output.png)
 
 ### Specific
 
-- Drawing sprites
-- HALT/STOP instruction implementation
+- STOP instruction implementation
 - Thorough testing all opcodes through cartridges
 - Test timer subsystem
 - DMA testing
