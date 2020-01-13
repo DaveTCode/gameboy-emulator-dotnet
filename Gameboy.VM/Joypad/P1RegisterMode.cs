@@ -2,9 +2,9 @@
 {
     public enum P1RegisterMode
     {
-        None = 0x0,
-        Directions = 0x1,
-        ABSelectStart = 0x2,
-        Both = 0x3
+        None = 0x3,
+        Directions = 0x2,
+        ABSelectStart = 0x1,
+        Both = 0x0
     }
 }

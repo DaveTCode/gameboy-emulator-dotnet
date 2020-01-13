@@ -6,7 +6,6 @@ TODO - Description
 
 ### Fixes
 
-- ###IMPORTANT### Joypad uses 1 to indicate key down instead of 0
 - Blargg test failures
 - Tetris just display single line at the bottom
 
@@ -20,6 +19,7 @@ TODO - Description
 - DMA testing
 - Proper configurable serial port support
 - Thorough testing of MBC function
+- Prevent pressing multiple buttons (just direction keys?) at a time
 
 ### Ideas/Future
 

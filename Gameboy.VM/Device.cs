@@ -186,6 +186,24 @@ namespace Gameboy.VM
             return CPU.OpcodesUsed;
         }
 
+        /// <summary>
+        /// Called whenever a key down event is handled by the calling code
+        /// </summary>
+        /// <param name="key">The key pressed</param>
+        public void HandleKeyDown(in DeviceKey key)
+        {
+            JoypadHandler.Keydown(key);
+        }
+
+        /// <summary>
+        /// Called whenever a key up event is handled by the calling code
+        /// </summary>
+        /// <param name="key">The key lifted</param>
+        public void HandleKeyUp(in DeviceKey key)
+        {
+            JoypadHandler.Keyup(key);
+        }
+
         public override string ToString()
         {
             return $"{ControlRegisters} {CPU.Registers} {LCDRegisters} {Timer}";

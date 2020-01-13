@@ -18,10 +18,10 @@ namespace Gameboy.VM.Joypad
     {
         public static byte BitMask(this DeviceKey key) => key switch
         {
-            _ when key == DeviceKey.Right || key == DeviceKey.A => 0x1,
-            _ when key == DeviceKey.Left || key == DeviceKey.B => 0x2,
-            _ when key == DeviceKey.Up || key == DeviceKey.Select => 0x4,
-            _ when key == DeviceKey.Down || key == DeviceKey.Start => 0x8,
+            _ when key == DeviceKey.Right || key == DeviceKey.A => 0b11111110,
+            _ when key == DeviceKey.Left || key == DeviceKey.B => 0b11111101,
+            _ when key == DeviceKey.Up || key == DeviceKey.Select => 0b11111011,
+            _ when key == DeviceKey.Down || key == DeviceKey.Start => 0b11110111,
             _ => throw new ArgumentOutOfRangeException(nameof(key), key, "DeviceKey not mapped")
         };
 
