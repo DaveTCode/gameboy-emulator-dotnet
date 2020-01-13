@@ -6,6 +6,7 @@ using Gameboy.VM.Timers;
 using Serilog;
 using Serilog.Core;
 using Gameboy.VM.Joypad;
+using System.Collections.Generic;
 
 [assembly: InternalsVisibleTo("Gameboy.VM.Tests")]
 namespace Gameboy.VM
@@ -178,6 +179,11 @@ namespace Gameboy.VM
             //Log.Information(ToString());
 
             return cycles; // Machine cycles translation
+        }
+
+        public HashSet<byte> OpcodesUsed()
+        {
+            return CPU.OpcodesUsed;
         }
 
         public override string ToString()

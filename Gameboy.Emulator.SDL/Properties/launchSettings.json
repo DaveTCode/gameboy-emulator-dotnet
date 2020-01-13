@@ -52,6 +52,10 @@
       "commandName": "Project",
       "commandLineArgs": "-f \"../../../../Roms/gb-test-roms-master/cpu_instrs/individual/11-op a,(hl).gb\" --skipBootRom -s 60 -p 2"
     },
+    "Mooneye-MBC1-Bitsbank1 (MBC1)": {
+      "commandName": "Project",
+      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/mbc1/bits_bank1.gb --skipBootRom -s 60 -p 2"
+    },
     "DAA Test": {
       "commandName": "Project",
       "commandLineArgs": "-f ../../../../Roms/daa_test.gbc --skipBootRom -s 60 -p 2"

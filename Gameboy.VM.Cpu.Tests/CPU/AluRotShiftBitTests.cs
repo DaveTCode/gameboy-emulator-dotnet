@@ -269,20 +269,31 @@ namespace Gameboy.VM.Tests.CPU
         }
 
         [Theory]
-        [InlineData(0x81, 0x40, false, true, false, false, false)]
-        public void TestRRA(byte a, byte result, bool cBefore, bool c, bool h, bool z, bool n)
+        [InlineData(0x0, 0x0, false, false)] // RRA 0 is still 0 
+        [InlineData(0x1, 0x0, false, true)] // RRA 1 is 0 with carry set
+        [InlineData(0x0, 0x80, true, false)] // RRA carry bit applied
+        [InlineData(0x1, 0x80, true, true)] // RRA carry bit applied and also stored
+        [InlineData(0x81, 0x40, false, true)]
+        public void TestRRA(byte a, byte result, bool cBefore, bool c)
         {
-            var device = TestUtils.CreateTestDevice();
-            var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
-            cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
-            var cycles = alu.RotateRightNoCarry(ref a);
-            Assert.Equal(1, cycles);
-            Assert.Equal(result, a);
-            Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
-            Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
-            Assert.Equal(n, cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
-            Assert.Equal(z, cpu.Registers.GetFlag(CpuFlags.ZeroFlag));
+            var device = TestUtils.CreateTestDevice(new byte[] 
+            {
+                0x3E, a, // LD A, a
+                0x37, // SCF to set carry flag
+                (byte)((cBefore) ? 0x00 : 0x3F), // Unset carry flag with CCF as required by test
+                0x1F, // RRA
+            });
+
+            for (var ii = 0; ii < 6; ii++) // 2 to get into PC 150 then 4 to act
+            {
+                device.Step();
+            }
+
+            Assert.Equal(result, device.CPU.Registers.A);
+            Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.ZeroFlag));
         }
 
         [Theory]

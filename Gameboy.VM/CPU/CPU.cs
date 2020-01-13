@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Gameboy.VM.Interrupts;
 
 namespace Gameboy.VM.CPU
@@ -9,6 +10,8 @@ namespace Gameboy.VM.CPU
         private readonly Device _device;
 
         internal Registers Registers { get; }
+
+        internal HashSet<byte> OpcodesUsed = new HashSet<byte>();
 
         internal CPU(in Device device)
         {
@@ -68,6 +71,7 @@ namespace Gameboy.VM.CPU
         internal int Step()
         {
             var opcode = FetchByte();
+            OpcodesUsed.Add(opcode);
 
             return opcode switch
             {
@@ -238,7 +242,7 @@ namespace Gameboy.VM.CPU
                 0xA4 => _alu.And(ref Registers.A, Registers.H), // AND H
                 0xA5 => _alu.And(ref Registers.A, Registers.L), // AND L
                 0xA6 => _alu.And(ref Registers.A, _device.MMU.ReadByte(Registers.HL)), // AND (HL)
-                0xA7 => _alu.And(ref Registers.A, Registers.B), // AND A
+                0xA7 => _alu.And(ref Registers.A, Registers.A), // AND A
                 0xA8 => _alu.Xor(ref Registers.A, Registers.B), // XOR B
                 0xA9 => _alu.Xor(ref Registers.A, Registers.C), // XOR C
                 0xAA => _alu.Xor(ref Registers.A, Registers.D), // XOR D
@@ -246,7 +250,7 @@ namespace Gameboy.VM.CPU
                 0xAC => _alu.Xor(ref Registers.A, Registers.H), // XOR H
                 0xAD => _alu.Xor(ref Registers.A, Registers.L), // XOR L
                 0xAE => _alu.Xor(ref Registers.A, _device.MMU.ReadByte(Registers.HL)), // XOR (HL)
-                0xAF => _alu.Xor(ref Registers.A, Registers.B), // XOR A
+                0xAF => _alu.Xor(ref Registers.A, Registers.A), // XOR A
                 0xB0 => _alu.Or(ref Registers.A, Registers.B), // OR B
                 0xB1 => _alu.Or(ref Registers.A, Registers.C), // OR C
                 0xB2 => _alu.Or(ref Registers.A, Registers.D), // OR D
@@ -254,7 +258,7 @@ namespace Gameboy.VM.CPU
                 0xB4 => _alu.Or(ref Registers.A, Registers.H), // OR H
                 0xB5 => _alu.Or(ref Registers.A, Registers.L), // OR L
                 0xB6 => _alu.Or(ref Registers.A, _device.MMU.ReadByte(Registers.HL)), // OR (HL)
-                0xB7 => _alu.Or(ref Registers.A, Registers.B), // OR A
+                0xB7 => _alu.Or(ref Registers.A, Registers.A), // OR A
                 0xB8 => _alu.Cp(Registers.A, Registers.B), // CP B
                 0xB9 => _alu.Cp(Registers.A, Registers.C), // CP C
                 0xBA => _alu.Cp(Registers.A, Registers.D), // CP D

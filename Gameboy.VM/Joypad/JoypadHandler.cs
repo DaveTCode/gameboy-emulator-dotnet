@@ -57,7 +57,7 @@ namespace Gameboy.VM.Joypad
             }
             set
             {
-                _p1RegisterMode = (P1RegisterMode) (((value & 0x20) << 1) | (value & 0x10));
+                _p1RegisterMode = (P1RegisterMode) (((value & 0x20) | (value & 0x10)) >> 4);
                 switch (_p1RegisterMode)
                 {
                     case P1RegisterMode.None: // Do nothing apart from set the mode

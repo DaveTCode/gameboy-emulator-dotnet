@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gameboy.VM", "Gameboy.VM\Ga
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0D0273B8-1C2D-4C19-949B-6A6D10EF2542}"
 	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		blargg_cpu_instr_output.png = blargg_cpu_instr_output.png
+		Frame Debugger.xlsx = Frame Debugger.xlsx
 		README.md = README.md
 	EndProjectSection
 EndProject

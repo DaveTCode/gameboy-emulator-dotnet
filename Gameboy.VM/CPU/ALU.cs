@@ -448,14 +448,14 @@ namespace Gameboy.VM.CPU
 
         #region Jumps/Calls
 
-        internal int Call(ushort address)
+        internal int Call(in ushort address)
         {
             PushToStack(_cpu.Registers.ProgramCounter);
             Jump(address);
             return 6;
         }
 
-        internal int CallOnFlag(CpuFlags flag, ushort address, bool isSet)
+        internal int CallOnFlag(in CpuFlags flag, in ushort address, in bool isSet)
         {
             return _cpu.Registers.GetFlag(flag) == isSet ? Call(address) : 3;
         }
@@ -467,7 +467,7 @@ namespace Gameboy.VM.CPU
             return 4;
         }
 
-        internal int ReturnOnFlag(CpuFlags flag, bool isSet)
+        internal int ReturnOnFlag(in CpuFlags flag, in bool isSet)
         {
             if (_cpu.Registers.GetFlag(flag) == isSet)
             {
@@ -477,13 +477,13 @@ namespace Gameboy.VM.CPU
             return 2;
         }
 
-        internal int Jump(ushort address)
+        internal int Jump(in ushort address)
         {
             _cpu.Registers.ProgramCounter = address;
             return 4;
         }
 
-        internal int JumpRight(sbyte distance)
+        internal int JumpRight(in sbyte distance)
         {
             _cpu.Registers.ProgramCounter = (ushort)((_cpu.Registers.ProgramCounter + distance) & 0xFFFF);
             return 3;

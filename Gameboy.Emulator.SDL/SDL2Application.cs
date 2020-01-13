@@ -67,8 +67,10 @@ namespace Gameboy.Emulator.SDL
                                 var frameBuffer = _device.GetCurrentFrame();
                                 using var fbfile = System.IO.File.OpenWrite("framebuffer");
                                 using var vramfile = System.IO.File.OpenWrite("VRAM.csv");
+                                using var opcodesFile = System.IO.File.OpenWrite("opcodes.csv");
                                 vramfile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", _device.DumpVRAM())));
                                 fbfile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(f => (int)f))));
+                                opcodesFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", _device.OpcodesUsed().OrderBy(o => o).Select(o => o.ToString("X2")))));
                             }
                             break;
                     }
