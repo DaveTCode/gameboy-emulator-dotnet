@@ -4,7 +4,15 @@
     {
         internal bool AreInterruptsEnabledGlobally { get; set; }
 
-        internal byte InterruptRequest { get; set; }
+        /// <summary>
+        /// Top 3 bits of the IF flag (0xff0f) always return 1. Other bits are settable
+        /// </summary>
+        private byte _interruptFlags = 0b11100000;
+        internal byte InterruptFlags
+        {
+            get => _interruptFlags;
+            set => _interruptFlags = (byte) (0b11100000 | value);
+        }
 
         internal byte InterruptEnable { get; set; }
 
@@ -15,7 +23,7 @@
         /// <param name="interrupt">The interrupt to request</param>
         internal void RequestInterrupt(in Interrupt interrupt)
         {
-            InterruptRequest = (byte)(InterruptRequest | interrupt.Mask());
+            _interruptFlags = (byte)(_interruptFlags | interrupt.Mask());
         }
 
         /// <summary>
@@ -25,12 +33,12 @@
         /// <param name="interrupt">The interrupt to reset request for</param>
         internal void ResetInterrupt(in Interrupt interrupt)
         {
-            InterruptRequest = (byte)(InterruptRequest & ~interrupt.Mask());
+            _interruptFlags = (byte)(_interruptFlags & ~interrupt.Mask());
         }
 
         public override string ToString()
         {
-            return $"MIE:{AreInterruptsEnabledGlobally}, IF:{InterruptRequest:X1}, IE:{InterruptEnable:X1}";
+            return $"MIE:{AreInterruptsEnabledGlobally}, IF:{InterruptFlags:X1}, IE:{InterruptEnable:X1}";
         }
     }
 }

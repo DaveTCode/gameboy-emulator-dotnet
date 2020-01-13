@@ -117,14 +117,7 @@ namespace Gameboy.VM.Tests.CPU
                 device.Step();
             }
 
-            if (opcodeLoadReg1 == opcodeLoadReg2) // LD A,A et al
-            {
-                Assert.Equal(0xA, GetRegisterFromOpcode(device.CPU.Registers, opcode));
-            }
-            else
-            {
-                Assert.Equal(0x5, GetRegisterFromOpcode(device.CPU.Registers, opcode));
-            }
+            Assert.Equal(opcodeLoadReg1 == opcodeLoadReg2 ? 0xA : 0x5, GetRegisterFromOpcode(device.CPU.Registers, opcode));
 
             device.Step();
             Assert.Equal(0xA, GetRegisterFromOpcode(device.CPU.Registers, opcode));
@@ -207,7 +200,6 @@ namespace Gameboy.VM.Tests.CPU
                 0x7E => device.CPU.Registers.A,
                 _ => throw new ArgumentOutOfRangeException(nameof(memLoadOpcode), memLoadOpcode, "Opcode not mapped")
             });
-            // TODO - Check memory lifted into register
         }
 
         [Fact]

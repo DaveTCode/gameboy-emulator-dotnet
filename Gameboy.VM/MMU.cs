@@ -11,7 +11,7 @@ namespace Gameboy.VM
 
         private readonly Device _device;
 
-        private readonly byte[] _rom = new byte[0x100];
+        private readonly byte[] _rom;
 
         private readonly byte[] _workingRam = new byte[WRAMSize];
         private readonly byte[] _hRam = new byte[HRAMSize];
@@ -89,7 +89,7 @@ namespace Gameboy.VM
             if (address >= 0xFF08 && address <= 0xFF0E) // Unused addresses - all reads return 0
                 return ReadUnusedAddress(address);
             if (address == 0xFF0F) // IF Register
-                return _device.InterruptRegisters.InterruptRequest;
+                return _device.InterruptRegisters.InterruptFlags;
             if (address >= 0xFF10 && address <= 0xFF26) // Sound registers
                 return _device.SoundRegisters.ReadFromRegister(address);
             if (address >= 0xFF27 && address <= 0xFF2F) // Unused addresses - all reads return 0
@@ -206,7 +206,7 @@ namespace Gameboy.VM
             else if (address >= 0xFF08 && address <= 0xFF0E) // Unused addresses
                 _device.Log.Information("Unusable address {0:X4} for write", address);
             else if (address == 0xFF0F)
-                _device.InterruptRegisters.InterruptRequest = value;
+                _device.InterruptRegisters.InterruptFlags = value;
             else if (address >= 0xFF10 && address <= 0xFF26)
                 _device.SoundRegisters.WriteToRegister(address, value);
             else if (address >= 0xFF27 && address <= 0xFF2F) // Unused addresses

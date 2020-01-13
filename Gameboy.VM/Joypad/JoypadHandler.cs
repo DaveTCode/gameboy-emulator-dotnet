@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Gameboy.VM.Joypad
 {
-    internal partial class JoypadHandler
+    internal class JoypadHandler
     {
         private readonly Device _device;
 
@@ -58,27 +58,10 @@ namespace Gameboy.VM.Joypad
             set
             {
                 _p1RegisterMode = (P1RegisterMode) (((value & 0x20) | (value & 0x10)) >> 4);
-                switch (_p1RegisterMode)
-                {
-                    case P1RegisterMode.None: // Do nothing apart from set the mode
-                        break;
-                    case P1RegisterMode.Directions:
-                        _keyStates[DeviceKey.Right] = (value & ~DeviceKey.Right.BitMask()) == ~DeviceKey.Right.BitMask();
-                        _keyStates[DeviceKey.Left] = (value & ~DeviceKey.Left.BitMask()) == DeviceKey.Left.BitMask();
-                        _keyStates[DeviceKey.Up] = (value & ~DeviceKey.Up.BitMask()) == ~DeviceKey.Up.BitMask();
-                        _keyStates[DeviceKey.Down] = (value & ~DeviceKey.Down.BitMask()) == ~DeviceKey.Down.BitMask();
-                        break;
-                    case P1RegisterMode.ABSelectStart:
-                        _keyStates[DeviceKey.A] = (value & ~DeviceKey.A.BitMask()) == ~DeviceKey.A.BitMask();
-                        _keyStates[DeviceKey.B] = (value & ~DeviceKey.B.BitMask()) == ~DeviceKey.B.BitMask();
-                        _keyStates[DeviceKey.Select] = (value & ~DeviceKey.Select.BitMask()) == ~DeviceKey.Select.BitMask();
-                        _keyStates[DeviceKey.Start] = (value & ~DeviceKey.Start.BitMask()) == ~DeviceKey.Start.BitMask();
-                        break;
-                    case P1RegisterMode.Both:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(_p1RegisterMode), _p1RegisterMode, "Unknown P1 register mode");
-                }
+
+                // TODO - Do we really ignore setting the key values here? Doing so means we never catch key interrupts so presumably...
+
+                CheckForInterrupts();
             }
         }
 
@@ -91,10 +74,7 @@ namespace Gameboy.VM.Joypad
         {
             _keyStates[key] = true;
 
-            if (_p1RegisterMode == key.RegisterMode())
-            {
-                _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.Joypad);
-            }
+            CheckForInterrupts();
         }
 
         internal void Keyup(in DeviceKey key)
@@ -102,10 +82,18 @@ namespace Gameboy.VM.Joypad
             _keyStates[key] = false;
 
             // TODO - Handle interrupts on key up? Some docs say true.
-            //if (_p1RegisterMode == key.RegisterMode())
-            //{
-            //    _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.Joypad);
-            //}
+        }
+
+        private void CheckForInterrupts()
+        {
+            foreach (var (key, state) in _keyStates)
+            {
+                if (state && _p1RegisterMode == key.RegisterMode())
+                {
+                    _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.Joypad);
+                    break;
+                }
+            }
         }
 
         internal void Clear()

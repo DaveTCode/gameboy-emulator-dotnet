@@ -1,5 +1,4 @@
 ﻿using Gameboy.VM.CPU;
-using Serilog;
 using Xunit;
 
 namespace Gameboy.VM.Tests.CPU

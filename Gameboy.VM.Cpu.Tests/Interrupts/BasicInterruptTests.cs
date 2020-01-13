@@ -18,7 +18,7 @@ namespace Gameboy.VM.Tests.Interrupts
             var interruptRegisters = new InterruptRegisters();
             interruptRegisters.RequestInterrupt((Interrupt)interrupt);
 
-            Assert.Equal(expectedValue, interruptRegisters.InterruptRequest);
+            Assert.Equal(expectedValue, interruptRegisters.InterruptFlags);
         }
 
         [Fact]
@@ -27,14 +27,14 @@ namespace Gameboy.VM.Tests.Interrupts
             var interruptRegisters = new InterruptRegisters();
             interruptRegisters.RequestInterrupt(Interrupt.VerticalBlank);
             interruptRegisters.RequestInterrupt(Interrupt.LCDSTAT);
-            Assert.Equal(0b00000011, interruptRegisters.InterruptRequest);
+            Assert.Equal(0b00000011, interruptRegisters.InterruptFlags);
 
             interruptRegisters.RequestInterrupt(Interrupt.Timer);
             interruptRegisters.RequestInterrupt(Interrupt.Serial);
-            Assert.Equal(0b00001111, interruptRegisters.InterruptRequest);
+            Assert.Equal(0b00001111, interruptRegisters.InterruptFlags);
 
             interruptRegisters.RequestInterrupt(Interrupt.Joypad);
-            Assert.Equal(0b00011111, interruptRegisters.InterruptRequest);
+            Assert.Equal(0b00011111, interruptRegisters.InterruptFlags);
         }
 
         [Fact]
@@ -44,9 +44,9 @@ namespace Gameboy.VM.Tests.Interrupts
             foreach (var interrupt in Enum.GetValues(typeof(Interrupt)).Cast<Interrupt>())
             {
                 interruptRegisters.RequestInterrupt(interrupt);
-                Assert.Equal(interrupt.Mask(), interruptRegisters.InterruptRequest);
+                Assert.Equal(interrupt.Mask(), interruptRegisters.InterruptFlags);
                 interruptRegisters.ResetInterrupt(interrupt);
-                Assert.Equal(0x0, interruptRegisters.InterruptRequest);
+                Assert.Equal(0x0, interruptRegisters.InterruptFlags);
             }
         }
     }

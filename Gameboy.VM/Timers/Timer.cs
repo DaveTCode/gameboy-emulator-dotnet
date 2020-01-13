@@ -27,7 +27,7 @@
 
             _internalCount += cycles;
 
-            while (_internalCount > _timerClockSelect.Step())
+            while (_internalCount >= _timerClockSelect.Step())
             {
                 TimerCounter = (byte)((TimerCounter + 1) & 0xFF);
 
@@ -51,7 +51,7 @@
             get => _timerController;
             set
             {
-                _timerController = (byte)(value & 0x7); // TODO - Are the remaining bits 0 or 1?
+                _timerController = (byte)((value & 0x7) | 0b11111000); // TODO - Are the remaining bits 0 or 1?
                 _isTimerEnabled = (value & 0x4) == 0x4;
                 _timerClockSelect = (TimerClockSelect)(value & 0x3);
             }

@@ -64,16 +64,18 @@ namespace Gameboy.VM.LCD
             }
         }
 
-        #region BackgroundPaletteData Utilities
+        #region PaletteData Utilities
 
-        internal Grayscale GetColorFromNumber(int colorNumber) => colorNumber switch
-        {
-            0 => (Grayscale)(BackgroundPaletteData & 0x3),
-            1 => (Grayscale)((BackgroundPaletteData >> 2) & 0x3),
-            2 => (Grayscale)((BackgroundPaletteData >> 4) & 0x3),
-            3 => (Grayscale)((BackgroundPaletteData >> 6) & 0x3),
-            _ => throw new ArgumentOutOfRangeException(nameof(colorNumber), colorNumber, "Color number out of range (0-3)")
-        };
+        internal Grayscale GetColorFromNumberPalette(in int colorNumber, in byte paletteData) =>
+            colorNumber switch
+            {
+                0 => (Grayscale) (paletteData & 0x3),
+                1 => (Grayscale) ((paletteData >> 2) & 0x3),
+                2 => (Grayscale) ((paletteData >> 4) & 0x3),
+                3 => (Grayscale) ((paletteData >> 6) & 0x3),
+                _ => throw new ArgumentOutOfRangeException(nameof(colorNumber), colorNumber,
+                    "Color number out of range (0-3)")
+            };
 
         #endregion
 

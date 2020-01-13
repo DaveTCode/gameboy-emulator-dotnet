@@ -9,6 +9,7 @@ namespace Gameboy.VM.CPU
         private readonly Device _device;
 
         private bool _isHalted;
+        private bool _enableInterruptsAfterNextCpuInstruction;
 
         internal Registers Registers { get; }
 
@@ -26,19 +27,26 @@ namespace Gameboy.VM.CPU
         /// </summary>
         /// <returns>
         /// The total number of cycles taken to check for interrupts.
-        /// 0 if no interrupts to handle, 6 (one CALL) if there _are_
+        /// 0 if no interrupts to handle, 5 (one CALL) if there _are_
         /// interrupts to handle regardless of the number.
         ///
         /// TODO - This is guesswork not evidenced 
         /// </returns>
         internal int CheckForInterrupts()
         {
+            var cycles = 0;
+
             // Note that the priority ordering is the same as the bit ordering so this works
             for (var bit = 0; bit < 6; bit++)
             {
                 var mask = 1 << bit;
-                if ((_device.InterruptRegisters.InterruptEnable & _device.InterruptRegisters.InterruptRequest & mask) == mask)
+                if ((_device.InterruptRegisters.InterruptEnable & _device.InterruptRegisters.InterruptFlags & mask) == mask)
                 {
+                    if (_isHalted)
+                    {
+                        _isHalted = false;
+                        cycles += 1;
+                    }
                     _isHalted = false; // Disable halt mode even if interrupts are disabled globally
 
                     if (_device.InterruptRegisters.AreInterruptsEnabledGlobally)
@@ -56,12 +64,14 @@ namespace Gameboy.VM.CPU
                         // Note that we only handle one interrupt at a time, the
                         // next won't be handled until the previous one completes
                         // and that's done through normal opcode cycles.
-                        return _alu.Call(interrupt.StartingAddress());
+                        _alu.Call(interrupt.StartingAddress());
+
+                        cycles += 5;
                     }
                 }
             }
 
-            return 0;
+            return cycles;
         }
 
         /// <summary>
@@ -75,6 +85,13 @@ namespace Gameboy.VM.CPU
         internal int Step()
         {
             if (_isHalted) return 0; // TODO - Right number of cycles? Or do we still count cycles in HALT
+
+            // EI instruction doesn't enable interrupts until after the _next_ instruction, quirk of hardware
+            if (_enableInterruptsAfterNextCpuInstruction)
+            {
+                _device.InterruptRegisters.AreInterruptsEnabledGlobally = true;
+                _enableInterruptsAfterNextCpuInstruction = false;
+            }
 
             var opcode = FetchByte();
 
@@ -608,7 +625,8 @@ namespace Gameboy.VM.CPU
 
         private int EnableInterrupts()
         {
-            _device.InterruptRegisters.AreInterruptsEnabledGlobally = true;
+            _enableInterruptsAfterNextCpuInstruction = true;
+            
             return 1;
         }
 
@@ -625,6 +643,7 @@ namespace Gameboy.VM.CPU
         {
             Registers.Clear();
             _isHalted = false;
+            _enableInterruptsAfterNextCpuInstruction = false;
         }
 
         private byte FetchByte()
@@ -643,7 +662,6 @@ namespace Gameboy.VM.CPU
 
         private int Halt()
         {
-            // TODO
             _isHalted = true;
             return 1;
         }

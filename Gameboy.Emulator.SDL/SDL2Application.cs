@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Gameboy.VM;
+using Gameboy.VM.Joypad;
 using Gameboy.VM.LCD;
 
 namespace Gameboy.Emulator.SDL
 {
     internal class SDL2Application : IDisposable
     {
-        private readonly Dictionary<Grayscale, (byte, byte, byte)> GrayscaleColorMap = new Dictionary<Grayscale, (byte, byte, byte)>
+        private readonly Dictionary<Grayscale, (byte, byte, byte)> _grayscaleColorMap = new Dictionary<Grayscale, (byte, byte, byte)>
         {
             { Grayscale.White, (0xFF, 0xFF, 0xFF) },
             { Grayscale.LightGray, (0xCC, 0xCC, 0xCC) },
@@ -17,25 +18,35 @@ namespace Gameboy.Emulator.SDL
             { Grayscale.Black, (0x00, 0x00, 0x00) },
         };
 
+        private readonly Dictionary<SDL2.SDL_Keycode, DeviceKey> _keyMap = new Dictionary<SDL2.SDL_Keycode, DeviceKey>
+        {
+            {SDL2.SDL_Keycode.SDLK_RIGHT, DeviceKey.Right},
+            {SDL2.SDL_Keycode.SDLK_LEFT, DeviceKey.Left},
+            {SDL2.SDL_Keycode.SDLK_UP, DeviceKey.Up},
+            {SDL2.SDL_Keycode.SDLK_DOWN, DeviceKey.Down},
+            {SDL2.SDL_Keycode.SDLK_z, DeviceKey.A},
+            {SDL2.SDL_Keycode.SDLK_x, DeviceKey.B},
+            {SDL2.SDL_Keycode.SDLK_RETURN, DeviceKey.Start},
+            {SDL2.SDL_Keycode.SDLK_RSHIFT, DeviceKey.Select}
+        };
+
         private readonly IntPtr _window;
         private readonly IntPtr _renderer;
         private readonly int _pixelSize;
-        private readonly int _screenWidth;
-        private readonly int _screenHeight;
         private readonly Device _device;
 
         internal SDL2Application(in Device device, in int pixelSize)
         {
             _device = device;
             _pixelSize = pixelSize;
-            _screenWidth = Device.ScreenWidth * pixelSize;
-            _screenHeight = Device.ScreenHeight * pixelSize;
+            var screenWidth = Device.ScreenWidth * pixelSize;
+            var screenHeight = Device.ScreenHeight * pixelSize;
 
             SDL2.SDL_Init(SDL2.SDL_INIT_VIDEO);
 
             SDL2.SDL_CreateWindowAndRenderer(
-                _screenWidth,
-                _screenHeight,
+                screenWidth,
+                screenHeight,
                 0,
                 out _window,
                 out _renderer);
@@ -65,10 +76,23 @@ namespace Gameboy.Emulator.SDL
                             if (e.key.keysym.sym == SDL2.SDL_Keycode.SDLK_F2)
                             {
                                 var frameBuffer = _device.GetCurrentFrame();
-                                using var fbfile = System.IO.File.OpenWrite("framebuffer");
-                                using var vramfile = System.IO.File.OpenWrite("VRAM.csv");
-                                vramfile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", _device.DumpVRAM())));
-                                fbfile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(f => (int)f))));
+                                var (vram, oamram) = _device.DumpVRAM();
+                                using var fbFile = System.IO.File.OpenWrite("framebuffer");
+                                using var vramFile = System.IO.File.OpenWrite("VRAM.csv");
+                                using var oamFile = System.IO.File.OpenWrite("OAMRAM.csv");
+                                vramFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", vram)));
+                                oamFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", vram)));
+                                fbFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(f => (int)f))));
+                            }
+                            else if (_keyMap.ContainsKey(e.key.keysym.sym))
+                            {
+                                _device.HandleKeyUp(_keyMap[e.key.keysym.sym]);
+                            }
+                            break;
+                        case SDL2.SDL_EventType.SDL_KEYDOWN:
+                            if (_keyMap.ContainsKey(e.key.keysym.sym))
+                            {
+                                _device.HandleKeyDown(_keyMap[e.key.keysym.sym]);
                             }
                             break;
                     }
@@ -86,7 +110,7 @@ namespace Gameboy.Emulator.SDL
 
                     for (var pixel = 0; pixel < frameBuffer.Length; pixel++)
                     {
-                        var (red, green, blue) = GrayscaleColorMap[frameBuffer[pixel]];
+                        var (red, green, blue) = _grayscaleColorMap[frameBuffer[pixel]];
                         SDL2.SDL_SetRenderDrawColor(_renderer, red, green, blue, 255);
 
                         var x = pixel % Device.ScreenWidth;

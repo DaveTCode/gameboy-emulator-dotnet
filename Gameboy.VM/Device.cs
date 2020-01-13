@@ -6,7 +6,6 @@ using Gameboy.VM.Timers;
 using Serilog;
 using Serilog.Core;
 using Gameboy.VM.Joypad;
-using System.Collections.Generic;
 
 [assembly: InternalsVisibleTo("Gameboy.VM.Tests")]
 namespace Gameboy.VM
@@ -82,7 +81,7 @@ namespace Gameboy.VM
             JoypadHandler = new JoypadHandler(this);
         }
 
-        public byte[] DumpVRAM()
+        public (byte[], byte[]) DumpVRAM()
         {
             return LCDDriver.DumpVRAM();
         }
@@ -168,12 +167,6 @@ namespace Gameboy.VM
         {
             // Step 1: Check for interrupts
             var cycles = CPU.CheckForInterrupts() * 4;
-
-            if (cycles > 0)
-            {
-                // Step 1.5: Update the LCD subsystem to sync with the new number of cycles if an interrupt occurred
-                LCDDriver.Step(cycles);
-            }
 
             // Step 2: Atomically run the next operation
             cycles += CPU.Step() * 4;
