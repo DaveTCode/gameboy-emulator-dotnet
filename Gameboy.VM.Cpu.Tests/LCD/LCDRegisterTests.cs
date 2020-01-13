@@ -40,5 +40,32 @@ namespace Gameboy.VM.Tests.LCD
             Assert.Equal(statMode, device.LCDRegisters.StatMode);
             Assert.Equal(expectedStatRegisterValue, device.LCDRegisters.StatRegister);
         }
+
+        [Theory]
+        [InlineData(0xFF, true, 0x9C00, true, 0x8000, 0x9C00, true, true, true)]
+        [InlineData(0x00, false, 0x9800, false, 0x8800, 0x9800, false, false, false)]
+        [InlineData(0x01, false, 0x9800, false, 0x8800, 0x9800, false, false, true)]
+        [InlineData(0x02, false, 0x9800, false, 0x8800, 0x9800, false, true, false)]
+        [InlineData(0x04, false, 0x9800, false, 0x8800, 0x9800, true, false, false)]
+        [InlineData(0x08, false, 0x9800, false, 0x8800, 0x9C00, false, false, false)]
+        [InlineData(0x10, false, 0x9800, false, 0x8000, 0x9800, false, false, false)]
+        [InlineData(0x20, false, 0x9800, true, 0x8800, 0x9800, false, false, false)]
+        [InlineData(0x40, false, 0x9c00, false, 0x8800, 0x9800, false, false, false)]
+        [InlineData(0x80, true, 0x9800, false, 0x8800, 0x9800, false, false, false)]
+        public void TestLCDCRegisterChanges(byte lcdcValue, bool isLcdOn, ushort windowTileMap, bool isWindowEnabled,
+            ushort bgWindowTileData, ushort bgTileMap, bool largeSprites, bool spritesEnabled, bool bgEnabled)
+        {
+            var device = TestUtils.CreateTestDevice();
+            device.LCDRegisters.LCDControlRegister = lcdcValue;
+
+            Assert.Equal(isLcdOn, device.LCDRegisters.IsLcdOn); // Bit 7
+            Assert.Equal(windowTileMap, device.LCDRegisters.WindowTileMapOffset); // Bit 6
+            Assert.Equal(isWindowEnabled, device.LCDRegisters.IsWindowEnabled); // Bit 5
+            Assert.Equal(bgWindowTileData, device.LCDRegisters.BackgroundAndWindowTilesetOffset); // Bit 4
+            Assert.Equal(bgTileMap, device.LCDRegisters.BackgroundTileMapOffset); // Bit 3
+            Assert.Equal(largeSprites, device.LCDRegisters.LargeSprites); // Bit 2
+            Assert.Equal(spritesEnabled, device.LCDRegisters.AreSpritesEnabled); // Bit 1
+            Assert.Equal(bgEnabled, device.LCDRegisters.IsBackgroundEnabled); // Bit 0
+        }
     }
 }

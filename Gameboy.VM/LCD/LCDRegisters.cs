@@ -33,7 +33,7 @@ namespace Gameboy.VM.LCD
             set
             {
                 _lcdCurrentScanline = value;
-                _coincidenceFlag = value == LYCompare;
+                CoincidenceFlag = value == LYCompare;
 
                 CheckLYLCInterrupt();
             }
@@ -58,7 +58,7 @@ namespace Gameboy.VM.LCD
             set
             {
                 _lyCompare = value;
-                _coincidenceFlag = _lyCompare == _lcdCurrentScanline;
+                CoincidenceFlag = _lyCompare == _lcdCurrentScanline;
 
                 CheckLYLCInterrupt();
             }
@@ -84,7 +84,7 @@ namespace Gameboy.VM.LCD
         internal int BackgroundAndWindowTilesetOffset { get; private set; }
         internal bool UsingSignedByteForTileData { get; private set; }
         internal int BackgroundTileMapOffset { get; private set; }
-        internal int SpriteHeight { get; private set; }
+        internal bool LargeSprites { get; private set; }
         internal bool AreSpritesEnabled { get; private set; }
         internal bool IsBackgroundEnabled { get; private set; }
 
@@ -101,7 +101,7 @@ namespace Gameboy.VM.LCD
                 BackgroundAndWindowTilesetOffset = (value & 0x10) == 0x10 ? 0x8000 : 0x8800; // Bit 4 on LCDC register controls which memory location contains the background and window tileset
                 UsingSignedByteForTileData = BackgroundAndWindowTilesetOffset == 0x8800; // Bit 4 also determines whether the tile relative address is signed or unsigned
                 BackgroundTileMapOffset = (value & 0x8) == 0x8 ? 0x9C00 : 0x9800; // Bit 3 on LCDC register controls which memory location contains the background tilemap
-                SpriteHeight = (value & 0x4) == 0x4 ? 16 : 8; // Bit 2 on LCDC register controls how large sprites are
+                LargeSprites = (value & 0x4) == 0x4; // Bit 2 on LCDC register controls how large sprites are
                 AreSpritesEnabled = (value & 0x2) == 0x2; // Bit 1 on LCDC register controls whether to display sprites
                 IsBackgroundEnabled = (value & 0x1) == 0x1; // Bit 0 on LCDC register controls whether to display the background
             }
