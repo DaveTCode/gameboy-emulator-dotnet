@@ -1,15 +1,18 @@
 ﻿using System;
 using Gameboy.VM.Interrupts;
+using Serilog;
 
 namespace Gameboy.VM.CPU
 {
     internal class ALU
     {
+        private readonly ILogger _log;
         private readonly CPU _cpu;
         private readonly MMU _mmu;
 
-        internal ALU(in CPU cpu, in MMU mmu)
+        internal ALU(in ILogger log, in CPU cpu, in MMU mmu)
         {
+            _log = log;
             _cpu = cpu;
             _mmu = mmu;
         }
@@ -275,8 +278,8 @@ namespace Gameboy.VM.CPU
 
             a = (byte)(tmp & 0xFF);
             _cpu.Registers.SetFlag(CpuFlags.ZeroFlag, a == 0x0);
-            _cpu.Registers.SetFlag(CpuFlags.CarryFlag, tmp > 0xFF);
-            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, false);
+            if (tmp > 0xFF) _cpu.Registers.SetFlag(CpuFlags.CarryFlag, true); // Note that we don't unset Carry, only ever set it
+                _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, false);
 
             return 1;
         }
@@ -372,33 +375,24 @@ namespace Gameboy.VM.CPU
             return 2;
         }
 
-        internal int Add(Register16Bit outputRegister, ushort a, int b)
+        internal int AddHL(int b)
         {
-            var result = a + b;
+            var result = _cpu.Registers.HL + b;
             _cpu.Registers.SetFlag(CpuFlags.SubtractFlag, false);
-            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, (a & 0xFFF) > (result & 0xFFF));
+            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, (_cpu.Registers.HL & 0xFFF) > (result & 0xFFF));
             _cpu.Registers.SetFlag(CpuFlags.CarryFlag, result > 0xFFFF);
+            _cpu.Registers.HL = (ushort)(result & 0xFFFF);
 
-            switch (outputRegister)
-            {
-                case Register16Bit.AF:
-                    _cpu.Registers.AF = (ushort)(result & 0xFFFF);
-                    break;
-                case Register16Bit.BC:
-                    _cpu.Registers.BC = (ushort)(result & 0xFFFF);
-                    break;
-                case Register16Bit.DE:
-                    _cpu.Registers.DE = (ushort)(result & 0xFFFF);
-                    break;
-                case Register16Bit.HL:
-                    _cpu.Registers.HL = (ushort)(result & 0xFFFF);
-                    break;
-                case Register16Bit.SP:
-                    _cpu.Registers.StackPointer = (ushort)(result & 0xFFFF);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(outputRegister), outputRegister, null);
-            }
+            return 4;
+        }
+
+        internal int AddSP(sbyte relative)
+        {
+            var result = _cpu.Registers.StackPointer + relative;
+            _cpu.Registers.SetFlag(CpuFlags.SubtractFlag | CpuFlags.ZeroFlag, false);
+            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, (_cpu.Registers.HL & 0xFFF) > (result & 0xFFF));
+            _cpu.Registers.SetFlag(CpuFlags.CarryFlag, result > 0xFFFF);
+            _cpu.Registers.StackPointer = (ushort)(result & 0xFFFF);
 
             return 4;
         }

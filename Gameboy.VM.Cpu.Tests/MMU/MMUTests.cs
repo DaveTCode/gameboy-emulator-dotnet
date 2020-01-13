@@ -32,5 +32,42 @@ namespace Gameboy.VM.Tests.MMU
                 device.MMU.WriteByte((ushort)address, 0x1);
             }
         }
+
+        [Fact]
+        public void TestAllHRAMAddressesWriteable()
+        {
+            var device = TestUtils.CreateTestDevice();
+
+            foreach (var address in Enumerable.Range(0xFF80, 0x7F))
+            {
+                device.MMU.WriteByte((ushort)address, 0x5);
+                Assert.Equal(0x5, device.MMU.ReadByte((ushort)address));
+            }
+        }
+
+        [Fact]
+        public void TestAllWRAMAddressesWriteable()
+        {
+            var device = TestUtils.CreateTestDevice();
+
+            foreach (var address in Enumerable.Range(0xC000, 0x2000))
+            {
+                device.MMU.WriteByte((ushort)address, 0x5);
+                Assert.Equal(0x5, device.MMU.ReadByte((ushort)address));
+            }
+        }
+
+        [Fact]
+        public void TestAllWRAMMirrorAddressesWriteable()
+        {
+            var device = TestUtils.CreateTestDevice();
+
+            foreach (var address in Enumerable.Range(0xE000, 0x1E00))
+            {
+                device.MMU.WriteByte((ushort)address, 0x5);
+                Assert.Equal(0x5, device.MMU.ReadByte((ushort)(address)));
+                Assert.Equal(0x5, device.MMU.ReadByte((ushort)(address - 0x2000))); // Should get the same value in the non-mirrored portion of WRAM
+            }
+        }
     }
 }

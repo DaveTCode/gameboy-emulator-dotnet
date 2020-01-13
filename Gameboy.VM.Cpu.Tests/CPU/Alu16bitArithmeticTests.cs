@@ -1,4 +1,5 @@
 ﻿using Gameboy.VM.CPU;
+using Serilog;
 using Xunit;
 
 namespace Gameboy.VM.Tests.CPU
@@ -6,71 +7,131 @@ namespace Gameboy.VM.Tests.CPU
     public class Alu16BitArithmeticTests
     {
         [Theory]
-        [InlineData((ushort)0xFFFF, (ushort)0x0000, false, false, false, false)]
-        [InlineData((ushort)0xFFFF, (ushort)0x0000, true, true, true, true)]
-        [InlineData((ushort)0x235F, (ushort)0x2360, false, false, false, false)]
-        [InlineData((ushort)0x235F, (ushort)0x2360, true, true, true, true)]
-        public void Test16BitIncrement(ushort bc, ushort result, bool c, bool h, bool n, bool z)
+        [InlineData(0x01, 0x00, 0x00, 0x00, 0x01, 0x03, 0x78, 0x79)] // INC BC[0]
+        [InlineData(0x01, 0xFF, 0xFF, 0x00, 0x00, 0x03, 0x78, 0x79)] // INC BC[FFFF]
+        [InlineData(0x01, 0x23, 0x5F, 0x23, 0x60, 0x03, 0x78, 0x79)] // INC BC[235F]
+        [InlineData(0x11, 0x00, 0x00, 0x00, 0x01, 0x13, 0x7A, 0x7B)] // INC DE[0]
+        [InlineData(0x11, 0xFF, 0xFF, 0x00, 0x00, 0x13, 0x7A, 0x7B)] // INC DE[FFFF]
+        [InlineData(0x11, 0x23, 0x5F, 0x23, 0x60, 0x13, 0x7A, 0x7B)] // INC DE[235F]
+        [InlineData(0x21, 0x00, 0x00, 0x00, 0x01, 0x23, 0x7C, 0x7D)] // INC HL[0]
+        [InlineData(0x21, 0xFF, 0xFF, 0x00, 0x00, 0x23, 0x7C, 0x7D)] // INC HL[FFFF]
+        [InlineData(0x21, 0x23, 0x5F, 0x23, 0x60, 0x23, 0x7C, 0x7D)] // INC HL[235F]
+        [InlineData(0x31, 0x00, 0x00, 0x00, 0x01, 0x33, 0x78, 0x79)] // INC SP[0]
+        [InlineData(0x31, 0xFF, 0xFF, 0x00, 0x00, 0x33, 0x78, 0x79)] // INC SP[FFFF]
+        [InlineData(0x31, 0x23, 0x5F, 0x23, 0x60, 0x33, 0x78, 0x79)] // INC SP[235F]
+        public void Test16BitIncrement(byte regPairLoadOpcode, byte inHighByte, byte inLowByte, byte outHighByte,
+            byte outLowByte, byte incOpcode, byte loadHighByteIntoA, byte loadLowByteIntoA)
         {
-            var device = TestUtils.CreateTestDevice();
-            var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
-            cpu.Registers.BC = bc;
-            cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);
-            cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, h);
-            cpu.Registers.SetFlag(CpuFlags.SubtractFlag, n);
-            cpu.Registers.SetFlag(CpuFlags.ZeroFlag, z);
-            Assert.Equal(2, alu.Increment(Register16Bit.BC));
-            Assert.Equal(result, cpu.Registers.BC);
-            Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
-            Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
-            Assert.Equal(n, cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
-            Assert.Equal(z, cpu.Registers.GetFlag(CpuFlags.ZeroFlag));
+            var device = TestUtils.CreateTestDevice(new[]
+            {
+                regPairLoadOpcode, inLowByte, inHighByte, // LD reg pair from d16
+                incOpcode, // INC regpair
+                loadHighByteIntoA, // LD high byte of pair into A for checking
+                loadLowByteIntoA, // LD low byte of pair into A for checking
+            });
+
+            for (var ii = 0; ii < 5; ii++) device.Step();
+
+            if (regPairLoadOpcode == 0x31) // Can't move SP to A so checking a different way
+            {
+                Assert.Equal(outHighByte << 8 | outLowByte, device.CPU.Registers.StackPointer);
+            }
+            else
+            {
+                Assert.Equal(outHighByte, device.CPU.Registers.A);
+                device.Step();
+                Assert.Equal(outLowByte, device.CPU.Registers.A);   
+            }
         }
 
         [Theory]
-        [InlineData((ushort)0x0000, (ushort)0xFFFF, false, false, false, false)]
-        [InlineData((ushort)0x0000, (ushort)0xFFFF, true, true, true, true)]
-        [InlineData((ushort)0x235F, (ushort)0x235E, false, false, false, false)]
-        [InlineData((ushort)0x235F, (ushort)0x235E, true, true, true, true)]
-        public void Test16BitDecrement(ushort bc, ushort result, bool c, bool h, bool n, bool z)
+        [InlineData(0x01, 0x00, 0x00, 0xFF, 0xFF, 0x0B, 0x78, 0x79)] // DEC BC[0]
+        [InlineData(0x01, 0xFF, 0xFF, 0xFF, 0xFE, 0x0B, 0x78, 0x79)] // DEC BC[FFFF]
+        [InlineData(0x01, 0x23, 0x5F, 0x23, 0x5E, 0x0B, 0x78, 0x79)] // DEC BC[235F]
+        [InlineData(0x11, 0x00, 0x00, 0xFF, 0xFF, 0x1B, 0x7A, 0x7B)] // DEC DE[0]
+        [InlineData(0x11, 0xFF, 0xFF, 0xFF, 0xFE, 0x1B, 0x7A, 0x7B)] // DEC DE[FFFF]
+        [InlineData(0x11, 0x23, 0x5F, 0x23, 0x5E, 0x1B, 0x7A, 0x7B)] // DEC DE[235F]
+        [InlineData(0x21, 0x00, 0x00, 0xFF, 0xFF, 0x2B, 0x7C, 0x7D)] // DEC HL[0]
+        [InlineData(0x21, 0xFF, 0xFF, 0xFF, 0xFE, 0x2B, 0x7C, 0x7D)] // DEC HL[FFFF]
+        [InlineData(0x21, 0x23, 0x5F, 0x23, 0x5E, 0x2B, 0x7C, 0x7D)] // DEC HL[235F]
+        [InlineData(0x31, 0x00, 0x00, 0xFF, 0xFF, 0x3B, 0x78, 0x79)] // DEC SP[0]
+        [InlineData(0x31, 0xFF, 0xFF, 0xFF, 0xFE, 0x3B, 0x78, 0x79)] // DEC SP[FFFF]
+        [InlineData(0x31, 0x23, 0x5F, 0x23, 0x5E, 0x3B, 0x78, 0x79)] // DEC SP[235F]
+        public void Test16BitDecrement(byte regPairLoadOpcode, byte inHighByte, byte inLowByte, byte outHighByte,
+            byte outLowByte, byte decOpcode, byte loadHighByteIntoA, byte loadLowByteIntoA)
         {
-            var device = TestUtils.CreateTestDevice();
-            var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
-            cpu.Registers.BC = bc;
-            cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);
-            cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, h);
-            cpu.Registers.SetFlag(CpuFlags.SubtractFlag, n);
-            cpu.Registers.SetFlag(CpuFlags.ZeroFlag, z);
-            Assert.Equal(2, alu.Decrement(Register16Bit.BC));
-            Assert.Equal(result, cpu.Registers.BC);
-            Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
-            Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
-            Assert.Equal(n, cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
-            Assert.Equal(z, cpu.Registers.GetFlag(CpuFlags.ZeroFlag));
+            var device = TestUtils.CreateTestDevice(new[]
+            {
+                regPairLoadOpcode, inLowByte, inHighByte, // LD reg pair from d16
+                decOpcode, // DEC regpair
+                loadHighByteIntoA, // LD high byte of pair into A for checking
+                loadLowByteIntoA, // LD low byte of pair into A for checking
+            });
+
+            for (var ii = 0; ii < 5; ii++) device.Step();
+
+            if (regPairLoadOpcode == 0x31) // Can't move SP to A so checking a different way
+            {
+                Assert.Equal(outHighByte << 8 | outLowByte, device.CPU.Registers.StackPointer);
+            }
+            else
+            {
+                Assert.Equal(outHighByte, device.CPU.Registers.A);
+                device.Step();
+                Assert.Equal(outLowByte, device.CPU.Registers.A);   
+            }
         }
 
         [Theory]
-        [InlineData(0x8A23, 0x0605, 0x9028, false, true, false, false)]
-        [InlineData(0x8A23, 0x8A23, 0x1446, true, true, false, false)]
-        [InlineData(0xFFF8, 0x0002, 0xFFFA, false, false, false, false)]
-        public void Test16BitAdd(ushort a, ushort b, ushort result, bool c, bool h, bool n, bool z)
+        [InlineData(0x01, 0x06, 0x05, 0x8A, 0x23, 0x90, 0x28, 0x09, false, true)] // ADD HL[8a23], BC[0605]
+        [InlineData(0x01, 0x8A, 0x23, 0x8A, 0x23, 0x14, 0x46, 0x09, true, true)] // ADD HL[8a23], BC[8A23]
+        [InlineData(0x01, 0x00, 0x02, 0xFF, 0xF8, 0xFF, 0xFA, 0x09, false, false)] // ADD HL[FFF8], BC[0002]
+        [InlineData(0x11, 0x06, 0x05, 0x8A, 0x23, 0x90, 0x28, 0x19, false, true)] // ADD HL[8a23], DE[0605]
+        [InlineData(0x11, 0x8A, 0x23, 0x8A, 0x23, 0x14, 0x46, 0x19, true, true)] // ADD HL[8a23], DE[8A23]
+        [InlineData(0x11, 0x00, 0x02, 0xFF, 0xF8, 0xFF, 0xFA, 0x19, false, false)] // ADD HL[FFF8], DE[0002]
+        [InlineData(0x31, 0x06, 0x05, 0x8A, 0x23, 0x90, 0x28, 0x39, false, true)] // ADD HL[8a23], SP[0605]
+        [InlineData(0x31, 0x8A, 0x23, 0x8A, 0x23, 0x14, 0x46, 0x39, true, true)] // ADD HL[8a23], SP[8A23]
+        [InlineData(0x31, 0x00, 0x02, 0xFF, 0xF8, 0xFF, 0xFA, 0x39, false, false)] // ADD HL[8a23], SP[8A23]
+        public void Test16BitAdd(byte regPairLoadOpcode, byte inHighByte, byte inLowByte, byte hlHighByte, byte hlLowByte, byte outHighByte,
+            byte outLowByte, byte addOpcode, bool c, bool h)
         {
-            var device = TestUtils.CreateTestDevice();
-            var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
-            cpu.Registers.BC = a;
-            cpu.Registers.SetFlag(CpuFlags.CarryFlag, c);
-            cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, h);
-            cpu.Registers.SetFlag(CpuFlags.SubtractFlag, n);
-            cpu.Registers.SetFlag(CpuFlags.ZeroFlag, z);
-            Assert.Equal(4, alu.Add(Register16Bit.BC, a, b));
-            Assert.Equal(result, cpu.Registers.BC);
-            Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
-            Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
-            Assert.Equal(n, cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
-            Assert.Equal(z, cpu.Registers.GetFlag(CpuFlags.ZeroFlag));
+            var device = TestUtils.CreateTestDevice(new byte[]
+            {
+                0x21, hlLowByte, hlHighByte, // Set up HL as accumulator
+                regPairLoadOpcode, inLowByte, inHighByte, // LD reg pair from d16
+                addOpcode, // ADD HL,regpair
+                0x7C, // LD A,H check high byte
+                0x7D, // LD A,L check low byte
+            });
+
+            for (var ii = 0; ii < 6; ii++) device.Step();
+
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.Equal(h, device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+
+            Assert.Equal(outHighByte, device.CPU.Registers.A);
+            device.Step();
+            Assert.Equal(outLowByte, device.CPU.Registers.A);
+        }
+
+        [Theory]
+        [InlineData(0x8A, 0x23, 0x14, 0x46, true, true)]
+        public void Test16BitAddHLHL(byte hlHighByte, byte hlLowByte, byte outHighByte, byte outLowByte, bool c, bool h)
+        {
+            var device = TestUtils.CreateTestDevice(new byte[]
+            {
+                0x21, hlLowByte, hlHighByte, // Set up HL
+                0x29, // ADD HL,HL
+            });
+
+            for (var ii = 0; ii < 4; ii++) device.Step();
+
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.Equal(h, device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+            Assert.Equal(device.CPU.Registers.H, outHighByte);
+            Assert.Equal(device.CPU.Registers.L, outLowByte);
         }
     }
 }

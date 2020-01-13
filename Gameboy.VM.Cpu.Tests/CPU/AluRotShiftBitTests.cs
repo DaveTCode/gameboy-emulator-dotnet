@@ -1,4 +1,5 @@
 ﻿using Gameboy.VM.CPU;
+using Serilog;
 using Xunit;
 
 namespace Gameboy.VM.Tests.CPU
@@ -223,7 +224,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
+            var alu = new ALU(Log.Logger, cpu, device.MMU);
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
             var cycles = alu.RotateLeftWithCarry(ref a);
             Assert.Equal(1, cycles);
@@ -240,7 +241,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
+            var alu = new ALU(Log.Logger, cpu, device.MMU);
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
             var cycles = alu.RotateLeftNoCarry(ref a);
             Assert.Equal(1, cycles);
@@ -257,7 +258,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
+            var alu = new ALU(Log.Logger, cpu, device.MMU);
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
             var cycles = alu.RotateRightWithCarry(ref a);
             Assert.Equal(1, cycles);

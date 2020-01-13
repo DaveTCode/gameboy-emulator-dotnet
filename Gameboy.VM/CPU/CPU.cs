@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Gameboy.VM.Interrupts;
 
 namespace Gameboy.VM.CPU
@@ -11,12 +10,10 @@ namespace Gameboy.VM.CPU
 
         internal Registers Registers { get; }
 
-        internal HashSet<byte> OpcodesUsed = new HashSet<byte>();
-
         internal CPU(in Device device)
         {
             Registers = new Registers();
-            _alu = new ALU(this, device.MMU);
+            _alu = new ALU(device.Log, this, device.MMU);
             _device = device;
             Reset();
         }
@@ -71,7 +68,6 @@ namespace Gameboy.VM.CPU
         internal int Step()
         {
             var opcode = FetchByte();
-            OpcodesUsed.Add(opcode);
 
             return opcode switch
             {
@@ -84,7 +80,7 @@ namespace Gameboy.VM.CPU
                 0x06 => (_alu.Load(ref Registers.B, FetchByte()) + 1), // LD B, d8
                 0x07 => _alu.RotateLeftWithCarryA(), // RLCA
                 0x08 => (_device.MMU.WriteWord(FetchWord(), Registers.StackPointer) + 1), // LD (a16), SP
-                0x09 => _alu.Add(Register16Bit.HL, Registers.HL, Registers.BC), // ADD HL, BC
+                0x09 => _alu.AddHL(Registers.BC), // ADD HL, BC
                 0x0A => (_alu.Load(ref Registers.A, _device.MMU.ReadByte(Registers.BC)) + 1), // LD A, (BC)
                 0x0B => _alu.Decrement(Register16Bit.BC), // DEC BC - Done on 16 bit inc/dec/ld unit, no flag updates
                 0x0C => _alu.Increment(ref Registers.C), // INC C
@@ -100,7 +96,7 @@ namespace Gameboy.VM.CPU
                 0x16 => (_alu.Load(ref Registers.D, FetchByte()) + 1), // LD D, d8
                 0x17 => _alu.RotateLeftNoCarryA(), // RLA
                 0x18 => _alu.JumpRight((sbyte)FetchByte()), // JR r8
-                0x19 => _alu.Add(Register16Bit.HL, Registers.HL, Registers.DE), // ADD HL, DE
+                0x19 => _alu.AddHL(Registers.DE), // ADD HL, DE
                 0x1A => _alu.Load(ref Registers.A, _device.MMU.ReadByte(Registers.DE)), // LD A, (DE)
                 0x1B => _alu.Decrement(Register16Bit.DE), // DEC DE
                 0x1C => _alu.Increment(ref Registers.E), // INC E
@@ -116,7 +112,7 @@ namespace Gameboy.VM.CPU
                 0x26 => (_alu.Load(ref Registers.H, FetchByte()) + 1), // LD H, d8
                 0x27 => _alu.DecimalAdjustRegister(ref Registers.A), // DAA
                 0x28 => _alu.JumpRightOnFlag(CpuFlags.ZeroFlag, (sbyte)FetchByte(), true), // JR Z, r8
-                0x29 => _alu.Add(Register16Bit.HL, Registers.HL, Registers.HL), // ADD HL, HL
+                0x29 => _alu.AddHL(Registers.HL), // ADD HL, HL
                 0x2A => _alu.Load(ref Registers.A, _device.MMU.ReadByte(Registers.HLI())), // LD A, (HL+)
                 0x2B => _alu.Decrement(Register16Bit.HL), // DEC HL
                 0x2C => _alu.Increment(ref Registers.L), // INC L
@@ -132,7 +128,7 @@ namespace Gameboy.VM.CPU
                 0x36 => (_device.MMU.WriteByte(Registers.HL, FetchByte()) + 1), // LD (HL), d8
                 0x37 => _alu.SCF(), // SCF
                 0x38 => _alu.JumpRightOnFlag(CpuFlags.CarryFlag, (sbyte)FetchByte(), true), // JR C, d8
-                0x39 => _alu.Add(Register16Bit.HL, Registers.HL, Registers.StackPointer), // ADD HL, SP
+                0x39 => _alu.AddHL(Registers.StackPointer), // ADD HL, SP
                 0x3A => _alu.Load(ref Registers.A, _device.MMU.ReadByte(Registers.HLD())), // LD A, (HL-)
                 0x3B => _alu.Decrement(Register16Bit.SP), // DEC SP
                 0x3C => _alu.Increment(ref Registers.A), // INC A
@@ -307,7 +303,7 @@ namespace Gameboy.VM.CPU
                 0xE5 => _alu.PushToStack(Registers.HL), // PUSH HL
                 0xE6 => _alu.And(ref Registers.A, FetchByte()) + 1, // AND d8
                 0xE7 => _alu.Rst(0x20), // RST 20
-                0xE8 => _alu.Add(Register16Bit.SP, Registers.StackPointer, (sbyte)FetchByte()), // ADD SP, r8
+                0xE8 => _alu.AddSP((sbyte)FetchByte()), // ADD SP, r8
                 0xE9 => _alu.Jump(Registers.HL) - 3, // JP HL
                 0xEA => _device.MMU.WriteByte(FetchWord(), Registers.A) + 2, // LD (a16), A
                 0xEB => 0, // Unused opcode

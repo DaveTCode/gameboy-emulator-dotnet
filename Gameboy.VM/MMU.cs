@@ -138,7 +138,7 @@ namespace Gameboy.VM
 
         private byte ReadUnusedAddress(in ushort address)
         {
-            _device.Log.Information("Attempt to read from unused memory location {0:X4}", address);
+            _device.Log.Warning("Attempt to read from unused memory location {0:X4}", address);
             return 0x0;
         }
 
@@ -187,6 +187,8 @@ namespace Gameboy.VM
                 if (_device.ControlRegisters.SerialTransferControl == 0x81)
                 {
                     Console.Write(Convert.ToChar(value));
+                    _device.ControlRegisters.SerialTransferData = value;
+                    _device.Log.Information("Wrote character `{0}` to serial port", Convert.ToChar(value));
                 }
             }
             else if (address == 0xFF02)

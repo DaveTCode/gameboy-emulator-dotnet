@@ -60,6 +60,11 @@ namespace Gameboy.VM
 
         public Device(in Cartridge.Cartridge cartridge)
         {
+            Log = new LoggerConfiguration()
+                .MinimumLevel.Warning()
+                .WriteTo.File("log.txt", buffered: true)
+                .CreateLogger();
+
             InterruptRegisters = new InterruptRegisters();
             ControlRegisters = new ControlRegisters();
             SoundRegisters = new SoundRegisters();
@@ -71,10 +76,6 @@ namespace Gameboy.VM
             Timer = new Timer(this);
             DMAController = new DMAController(this);
             JoypadHandler = new JoypadHandler(this);
-            Log = new LoggerConfiguration()
-                .MinimumLevel.Warning()
-                .WriteTo.File("log.txt", buffered: true)
-                .CreateLogger();
         }
 
         public byte[] DumpVRAM()
@@ -179,11 +180,6 @@ namespace Gameboy.VM
             //Log.Information(ToString());
 
             return cycles; // Machine cycles translation
-        }
-
-        public HashSet<byte> OpcodesUsed()
-        {
-            return CPU.OpcodesUsed;
         }
 
         /// <summary>
