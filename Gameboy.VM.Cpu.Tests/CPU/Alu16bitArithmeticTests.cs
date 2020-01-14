@@ -132,5 +132,25 @@ namespace Gameboy.VM.Tests.CPU
             Assert.Equal(device.CPU.Registers.H, outHighByte);
             Assert.Equal(device.CPU.Registers.L, outLowByte);
         }
+
+        [Theory]
+        [InlineData(0xFF, 0xF8, 0x2, 0xFFFA, false, false)]
+        [InlineData(0xFF, 0xF8, 0xFF, 0xFFF7, true, true)]
+        public void TestLDHLSPr8(byte spHighByte, byte spLowByte, byte relative, ushort expected, bool c, bool h)
+        {
+            var device = TestUtils.CreateTestDevice(new byte[]
+            {
+                0x31, spLowByte, spHighByte, // Set up SP
+                0xF8, relative, // LD HL, SP + r8
+            });
+
+            for (var ii = 0; ii < 4; ii++) device.Step(); // 4 steps to set up and run test
+
+            Assert.Equal(expected, device.CPU.Registers.HL);
+            Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));
+            Assert.Equal(h, device.CPU.Registers.GetFlag(CpuFlags.HalfCarryFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
+            Assert.False(device.CPU.Registers.GetFlag(CpuFlags.ZeroFlag));
+        }
     }
 }

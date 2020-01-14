@@ -349,7 +349,7 @@ namespace Gameboy.VM.CPU
         /// <remarks>
         /// This is horrific because we can't pass a ref to a property (obvs).
         /// </remarks>
-        internal int Decrement(Register16Bit register)
+        internal int Decrement(in Register16Bit register)
         {
             switch (register)
             {
@@ -375,25 +375,25 @@ namespace Gameboy.VM.CPU
             return 2;
         }
 
-        internal int AddHL(int b)
+        internal int AddHL(in ushort b)
         {
             var result = _cpu.Registers.HL + b;
             _cpu.Registers.SetFlag(CpuFlags.SubtractFlag, false);
-            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, (_cpu.Registers.HL & 0xFFF) > (result & 0xFFF));
+            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, (_cpu.Registers.HL & 0xFFF) + (b & 0xFFF) > 0xFFF);
             _cpu.Registers.SetFlag(CpuFlags.CarryFlag, result > 0xFFFF);
             _cpu.Registers.HL = (ushort)(result & 0xFFFF);
 
             return 4;
         }
 
-        internal int AddSP(sbyte relative)
+        internal int AddSP(in sbyte operand)
         {
-            var result = _cpu.Registers.StackPointer + relative;
+            var result = _cpu.Registers.StackPointer + operand;
             _cpu.Registers.SetFlag(CpuFlags.SubtractFlag | CpuFlags.ZeroFlag, false);
-            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, (_cpu.Registers.HL & 0xFFF) > (result & 0xFFF));
-            _cpu.Registers.SetFlag(CpuFlags.CarryFlag, result > 0xFFFF);
+            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, ((_cpu.Registers.StackPointer ^ operand ^ (result & 0xFFFF)) & 0x10) == 0x10);
+            _cpu.Registers.SetFlag(CpuFlags.CarryFlag, ((_cpu.Registers.StackPointer ^ operand ^ (result & 0xFFFF)) & 0x100) == 0x100);
             _cpu.Registers.StackPointer = (ushort)(result & 0xFFFF);
-
+            
             return 4;
         }
 
@@ -431,8 +431,8 @@ namespace Gameboy.VM.CPU
         {
             var result = _cpu.Registers.StackPointer + operand;
             _cpu.Registers.SetFlag(CpuFlags.SubtractFlag | CpuFlags.ZeroFlag, false);
-            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, (operand & 0xFFF) > (result & 0xFFF));
-            _cpu.Registers.SetFlag(CpuFlags.CarryFlag, result > 0xFFFF);
+            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, ((_cpu.Registers.StackPointer ^ operand ^ (result & 0xFFFF)) & 0x10) == 0x10);
+            _cpu.Registers.SetFlag(CpuFlags.CarryFlag, ((_cpu.Registers.StackPointer ^ operand ^ (result & 0xFFFF)) & 0x100) == 0x100);
             _cpu.Registers.HL = (ushort)(result & 0xFFFF);
 
             return 3;
