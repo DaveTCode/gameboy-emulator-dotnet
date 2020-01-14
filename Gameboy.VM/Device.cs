@@ -57,16 +57,12 @@ namespace Gameboy.VM
 
         internal readonly Logger Log;
 
-        private long _tCycles;
-
         public Device(in Cartridge.Cartridge cartridge)
         {
             Log = new LoggerConfiguration()
                 .MinimumLevel.Warning()
                 .WriteTo.File("log.txt", buffered: true)
                 .CreateLogger();
-
-            _tCycles = 0;
 
             InterruptRegisters = new InterruptRegisters();
             ControlRegisters = new ControlRegisters();
@@ -154,6 +150,8 @@ namespace Gameboy.VM
             MMU.WriteByte(0xFF4A, 0);
             MMU.WriteByte(0xFF4B, 0);
             MMU.WriteByte(0xFF50, 0x1); // Turn off boot ROM
+
+            Timer.Reset(true); // Set up system counter (aka DIV register)
         }
 
         /// <summary>
@@ -166,22 +164,20 @@ namespace Gameboy.VM
         public int Step()
         {
             // Step 1: Check for interrupts
-            var cycles = CPU.CheckForInterrupts() * 4;
+            var tCycles = CPU.CheckForInterrupts();
 
             // Step 2: Atomically run the next operation
-            cycles += CPU.Step() * 4;
+            tCycles += CPU.Step();
 
             // Step 3: Update the LCD subsystem to sync with the new number of cycles
-            LCDDriver.Step(cycles);
+            LCDDriver.Step(tCycles);
 
-            // Step 4: Update the timer controller with new cycle count
-            Timer.Step(cycles);
+            // Step 4: Update the timer controller with the number of cycles
+            Timer.Step(tCycles);
 
             //Log.Information(ToString());
 
-            _tCycles += cycles;
-
-            return cycles; // Machine cycles translation
+            return tCycles; // Machine cycles translation
         }
 
         /// <summary>
@@ -204,7 +200,7 @@ namespace Gameboy.VM
 
         public override string ToString()
         {
-            return $"{ControlRegisters} {CPU.Registers} {LCDRegisters} {Timer} {InterruptRegisters} Cyc:{_tCycles}";
+            return $"{ControlRegisters} {CPU.Registers} {LCDRegisters} {Timer} {InterruptRegisters} Cyc:{Timer.SystemCounter}";
         }
     }
 }

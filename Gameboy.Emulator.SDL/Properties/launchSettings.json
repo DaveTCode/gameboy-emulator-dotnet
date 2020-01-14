@@ -16,6 +16,10 @@
       "commandName": "Project",
       "commandLineArgs": "-f ../../../../Roms/tests/blargg/instr_timing/instr_timing.gb --skipBootRom -s 60 -p 2"
     },
+	"Blarg Interrupt Timing": {
+      "commandName": "Project",
+      "commandLineArgs": "-f ../../../../Roms/tests/blargg/interrupt_time/interrupt_time.gb --skipBootRom -s 60 -p 2"
+    },
     "Mooneye IE Push": {
       "commandName": "Project",
       "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/interrupts/ie_push.gb --skipBootRom -s 60 -p 2"

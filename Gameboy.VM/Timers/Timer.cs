@@ -2,8 +2,9 @@
 {
     internal class Timer
     {
+        internal ushort SystemCounter { get; private set; }
+
         private readonly Device _device;
-        private int _internalDiv;
         private int _internalCount;
 
 
@@ -12,29 +13,31 @@
             _device = device;
         }
 
-        internal void Step(in int cycles)
+        internal void Reset(in bool skipBootrom)
+        {
+            SystemCounter = (ushort)(skipBootrom ? 0xABCC : 0x0000);
+        }
+
+        internal void Step(in int tCycles)
         {
             // Handle divider register - note that it happens regardless of whether timer is turned on
-            _internalDiv += cycles;
-            if (_internalDiv >= 256)
-            {
-                Divider = (byte)((Divider + 1) & 0xFF);
-                _internalDiv -= 256;
-            }
+            SystemCounter = (ushort)((SystemCounter + tCycles) & 0xFFFF);
 
             // Handle standard timer
             if (!_isTimerEnabled) return;
 
-            _internalCount += cycles;
+            _internalCount += tCycles;
 
             while (_internalCount >= _timerClockSelect.Step())
             {
-                TimerCounter = (byte)((TimerCounter + 1) & 0xFF);
-
-                if (TimerCounter == 0x0)
+                if (TimerCounter == 0xFF)
                 {
                     TimerCounter = TimerModulo;
                     _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.Timer);
+                }
+                else
+                {
+                    TimerCounter = (byte)((TimerCounter + 1) & 0xFF);
                 }
 
                 _internalCount -= _timerClockSelect.Step();
@@ -45,19 +48,26 @@
         private bool _isTimerEnabled;
         private TimerClockSelect _timerClockSelect;
 
-        private byte _timerController;
+        private byte _timerController = 0b11111000;
         internal byte TimerController
         {
             get => _timerController;
             set
             {
-                _timerController = (byte)((value & 0x7) | 0b11111000); // TODO - Are the remaining bits 0 or 1?
+                _timerController = (byte)((value & 0x7) | 0b11111000); // Unused bits always return 1
                 _isTimerEnabled = (value & 0x4) == 0x4;
                 _timerClockSelect = (TimerClockSelect)(value & 0x3);
             }
         }
 
-        internal byte Divider { get; set; }
+        internal byte Divider
+        { 
+            get => (byte)(SystemCounter >> 8); // DIV is just 8MSB of system counter
+            set
+            {
+                SystemCounter = 0;
+            }
+        }
         internal byte TimerCounter { get; set; }
         internal byte TimerModulo { get; set; }
         #endregion

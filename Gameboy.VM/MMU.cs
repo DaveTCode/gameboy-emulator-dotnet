@@ -196,7 +196,7 @@ namespace Gameboy.VM
             else if (address == 0xFF03)
                 _device.Log.Information("Unusable address {0:X4} for write", address);
             else if (address == 0xFF04)
-                _device.Timer.Divider = 0x0; // Always reset divider to 0 on write
+                _device.Timer.Divider = value;
             else if (address == 0xFF05)
                 _device.Timer.TimerCounter = value;
             else if (address == 0xFF06)
@@ -253,7 +253,7 @@ namespace Gameboy.VM
                 // Happy to throw an exception and crash here as we should map all addresses
                 throw new ArgumentOutOfRangeException(nameof(address), address, $"Address {address:X4} is not mapped");
 
-            return 2;
+            return 8;
         }
 
         /// <summary>

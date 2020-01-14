@@ -2,11 +2,17 @@
 
 TODO - Description
 
+## Tests
+
+- Blargg instruction tests all pass except for interrupt
+- Blargg instruction timing tests pass
+
 ## TODO
 
 ### Fixes
 
-- Blargg interrupt tests failing on #4 (bad timer)
+- Blargg interrupt tests hanging indefinitely
+-
 - Sprites don't render to the right portion of the screen
 
 ![Blargg CPU Instr Failures](./blargg_cpu_instr_output.png)

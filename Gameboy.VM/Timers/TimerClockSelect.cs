@@ -16,8 +16,8 @@ namespace Gameboy.VM.Timers
     {
         internal static int Step(this TimerClockSelect timerClockSelect) => timerClockSelect switch
         {
-            TimerClockSelect.f_2_4 => 16,
-            TimerClockSelect.f_2_10 => 1024,
+            TimerClockSelect.f_2_4 => 1024,
+            TimerClockSelect.f_2_10 => 16,
             TimerClockSelect.f_2_6 => 64,
             TimerClockSelect.f_2_8 => 256,
             _ => throw new ArgumentOutOfRangeException(nameof(timerClockSelect), timerClockSelect, "Unhandled TimerClockSelect value")
