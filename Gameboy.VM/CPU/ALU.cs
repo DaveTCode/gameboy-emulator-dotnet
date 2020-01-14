@@ -60,7 +60,7 @@ namespace Gameboy.VM.CPU
         internal int RotateLeftWithCarry(ref byte a)
         {
             _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag | CpuFlags.SubtractFlag, false);
-            _cpu.Registers.SetFlag(CpuFlags.CarryFlag, a >= 0x7F);
+            _cpu.Registers.SetFlag(CpuFlags.CarryFlag, a > 0x7F);
             a = (byte)(((a << 1) | (a >> 7)) & 0xFF);
             _cpu.Registers.SetFlag(CpuFlags.ZeroFlag, a == 0x0);
             return 1;
