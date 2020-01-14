@@ -6,7 +6,7 @@ TODO - Description
 
 ### Fixes
 
-- Blargg test failures (down to 4 failing tests)
+- Blargg interrupt tests failing on #4 (bad timer)
 - Sprites don't render to the right portion of the screen
 
 ![Blargg CPU Instr Failures](./blargg_cpu_instr_output.png)

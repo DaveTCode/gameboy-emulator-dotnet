@@ -6,59 +6,47 @@
     },
     "Blarg CPU Tests - All (MBC1)": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/gb-test-roms-master/cpu_instrs/cpu_instrs.gb --skipBootRom -s 60 -p 2"
-    },
-    "Blarg CPU Tests - 01 Special (MBC0)": {
-      "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/gb-test-roms-master/cpu_instrs/individual/01-special.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "-f ../../../../Roms/tests/blargg/cpu_instrs/cpu_instrs.gb --skipBootRom -s 60 -p 2"
     },
     "Blarg CPU Tests - 02 Interrupts (MBC0)": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/gb-test-roms-master/cpu_instrs/individual/02-interrupts.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "-f ../../../../Roms/tests/blargg/cpu_instrs/individual/02-interrupts.gb --skipBootRom -s 60 -p 2"
     },
-    "Blarg CPU Tests - 03 op sp,hl (MBC0)": {
+	"Blarg Instruction Timing": {
       "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/gb-test-roms-master/cpu_instrs/individual/03-op sp,hl.gb\" --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "-f ../../../../Roms/tests/blargg/instr_timing/instr_timing.gb --skipBootRom -s 60 -p 2"
     },
-    "Blarg CPU Tests - 04 op r,imm (MBC0)": {
+    "Mooneye IE Push": {
       "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/gb-test-roms-master/cpu_instrs/individual/04-op r,imm.gb\" --skipBootRom -s 60 -p 2"
-    },
-    "Blarg CPU Tests - 05-op rp (MBC0)": {
-      "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/gb-test-roms-master/cpu_instrs/individual/05-op rp.gb\" --skipBootRom -s 60 -p 2"
-    },
-    "Blarg CPU Tests - 06-ld r,r (MBC0)": {
-      "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/gb-test-roms-master/cpu_instrs/individual/06-ld r,r.gb\" --skipBootRom -s 60 -p 2"
-    },
-    "Blarg CPU Tests - 07-jr,jp,call,ret,rst (MBC0)": {
-      "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/gb-test-roms-master/cpu_instrs/individual/07-jr,jp,call,ret,rst.gb\" --skipBootRom -s 60 -p 2"
-    },
-    "Blarg CPU Tests - 08-misc instrs (MBC0)": {
-      "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/gb-test-roms-master/cpu_instrs/individual/08-misc instrs.gb\" --skipBootRom -s 60 -p 2"
-    },
-    "Blarg CPU Tests - 09-op r,r (MBC0)": {
-      "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/gb-test-roms-master/cpu_instrs/individual/09-op r,r.gb\" --skipBootRom -s 60 -p 2"
-    },
-    "Blarg CPU Tests - 10-bit ops (MBC0)": {
-      "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/gb-test-roms-master/cpu_instrs/individual/10-bit ops.gb\" --skipBootRom -s 60 -p 2"
-    },
-    "Blarg CPU Tests - 11-op a,(hl) (MBC0)": {
-      "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/gb-test-roms-master/cpu_instrs/individual/11-op a,(hl).gb\" --skipBootRom -s 60 -p 2"
-    },
-    "Mooneye DAA Test": {
-      "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/instr/daa.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/interrupts/ie_push.gb --skipBootRom -s 60 -p 2"
     },
     "Mooneye-MBC1-Bitsbank1 (MBC1)": {
       "commandName": "Project",
       "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/mbc1/bits_bank1.gb --skipBootRom -s 60 -p 2"
+    },
+	"Mooneye Timer - Div Write": {
+      "commandName": "Project",
+      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/timer/div_write.gb --skipBootRom -s 60 -p 2"
+    },
+	"Mooneye Timer - Rapid Toggle": {
+      "commandName": "Project",
+      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/timer/rapid_toggle.gb --skipBootRom -s 60 -p 2"
+    },
+	"Mooneye Timer - Tim00": {
+      "commandName": "Project",
+      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/timer/tim00.gb --skipBootRom -s 60 -p 2"
+    },
+	"Mooneye Timer - Tim01": {
+      "commandName": "Project",
+      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/timer/tim10.gb --skipBootRom -s 60 -p 2"
+    },
+	"Mooneye Timer - Tim10": {
+      "commandName": "Project",
+      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/timer/tim10.gb --skipBootRom -s 60 -p 2"
+    },
+	"Mooneye Timer - Tim11": {
+      "commandName": "Project",
+      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/timer/tim11.gb --skipBootRom -s 60 -p 2"
     },
     "Tetris w/ boot rom": {
       "commandName": "Project",
