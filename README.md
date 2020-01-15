@@ -6,6 +6,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 - Blargg instruction tests all pass except for interrupt
 - Blargg instruction timing tests pass
+- All MBC5 mooneye tests pass
 - Tetris is playable without sound
 
 ## TODO
@@ -29,6 +30,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 ### Ideas/Future
 
+- Integration testing using headless runner and comparing frame buffer to known good values for variety of roms? Specifically all test roms?
 - Display FPS using SDL text rendering?
 - Native debugger with winforms/wpf?
 - CGB/SGB support

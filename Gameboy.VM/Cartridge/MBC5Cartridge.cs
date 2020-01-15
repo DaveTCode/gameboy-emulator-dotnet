@@ -2,20 +2,22 @@
 
 namespace Gameboy.VM.Cartridge
 {
-    internal class MBC1Cartridge : Cartridge
+    internal class MBC5Cartridge : Cartridge
     {
-        private bool _isRamEnabled;
-        private int _romBank;
+        private bool _isRamEnabled; // Is write/read enabled to external RAM?
+
+        private byte _ROMB0; // Lower ROM Bank register
+        private byte _ROMB1; // Upper ROM Bank register
+        private int _romBank; // Combined ROM bank from above;
+
         private int _ramBank;
-        private MBC1Mode _mode;
         private readonly byte[] _ramBanks;
 
-        public MBC1Cartridge(in byte[] contents) : base(in contents)
+        public MBC5Cartridge(in byte[] contents) : base(in contents)
         {
             _isRamEnabled = false;
             _romBank = 1;
             _ramBank = 0;
-            _mode = MBC1Mode.ROM;
             _ramBanks = new byte[RAMSize.NumberBanks() * RAMSize.BankSizeBytes()];
         }
 
@@ -39,8 +41,10 @@ namespace Gameboy.VM.Cartridge
 
         internal override byte ReadRam(in ushort address)
         {
+            // Is RAM enabled
             if (!_isRamEnabled) return 0xFF;
 
+            // Is the address mappable
             if (address < 0xA000 || address >= 0xC000) throw new ArgumentOutOfRangeException(nameof(address), address, $"Can't access RAM at address {address}");
 
             return _ramBanks[address - 0xA000 + _ramBank * RAMSize.BankSizeBytes()];
@@ -52,67 +56,31 @@ namespace Gameboy.VM.Cartridge
             {
                 _isRamEnabled = (value & 0x0F) == 0x0A;
             }
-            else if (address >= 0x2000 && address <= 0x3FFF)
+            else if (address >= 0x2000 && address <= 0x2FFF)
             {
-                SetRomBank((_romBank & 0b11100000) | (value & 0x1F));
+                _ROMB0 = value;
+                _romBank = ((_ROMB1 << 8) | _ROMB0) % ROMSize.NumberBanks();
+            }
+            else if (address >= 0x3000 && address <= 0x3FFF)
+            {
+                _ROMB1 = (byte)(value & 0b00000001); // Only bottom 1 bit is used AFAICT
+                _romBank = ((_ROMB1 << 8) | _ROMB0) % ROMSize.NumberBanks();
             }
             else if (address >= 0x4000 && address <= 0x5FFF)
             {
-                var highBits = value & 0x3;
-                if (_mode == MBC1Mode.RAM)
-                {
-                    _ramBank = highBits % RAMSize.NumberBanks();
-                }
-                else
-                {
-                    SetRomBank((_romBank & 0x31) | (value & 0xE0));
-                }
-            }
-            else if (address >= 0x6000 && address <= 0x7FFF)
-            {
-                if (value == 0x0)
-                {
-                    _mode = MBC1Mode.ROM;
-                }
-                else if (value == 0x1)
-                {
-                    _mode = MBC1Mode.RAM;
-                }
+                _ramBank = (value & 8) % RAMSize.NumberBanks();
             }
         }
 
         internal override void WriteRam(in ushort address, in byte value)
         {
-            if (!_isRamEnabled) return; // Writes only accepted when RAM enabled
+            if (!_isRamEnabled) return; // Don't accept writes if RAM disabled
 
             var bankedAddress = address - 0xA000 + _ramBank * RAMSize.BankSizeBytes();
 
             if (bankedAddress > _ramBanks.Length) return; // TODO - Should we do this or does it wrap?
 
             _ramBanks[bankedAddress] = value;
-        }
-
-        private void SetRomBank(in int romBank)
-        {
-            if (ROMSize.NumberBanks() == 0) return; // Fast return on no banks to select from
-
-            // Setting ROM bank which isn't present on the cartridge causes it to wrap.
-            var bank = romBank % ROMSize.NumberBanks();
-
-            _romBank = bank switch
-            {
-                0 => 1,
-                0x20 => 0x21,
-                0x40 => 0x41,
-                0x60 => 0x61,
-                _ => bank
-            };
-        }
-
-        private enum MBC1Mode
-        {
-            ROM,
-            RAM
         }
     }
 }
