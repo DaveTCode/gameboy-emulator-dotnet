@@ -81,7 +81,7 @@ namespace Gameboy.Emulator.SDL
                                 using var vramFile = System.IO.File.OpenWrite("VRAM.csv");
                                 using var oamFile = System.IO.File.OpenWrite("OAMRAM.csv");
                                 vramFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", vram)));
-                                oamFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", vram)));
+                                oamFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", oamram)));
                                 fbFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(f => (int)f))));
                             }
                             else if (_keyMap.ContainsKey(e.key.keysym.sym))
