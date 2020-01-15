@@ -5,7 +5,8 @@ namespace Gameboy.VM.Sound
     internal class SoundRegisters
     {
         #region Sound 1
-        internal byte NR10 { get; private set; }
+
+        internal byte NR10 { get; private set; } = 0b10000000;
         internal byte NR11 { get; private set; }
         internal byte NR12 { get; private set; }
         internal byte NR13 { get; private set; }
@@ -20,24 +21,26 @@ namespace Gameboy.VM.Sound
         #endregion
 
         #region Sound 3
-        internal byte NR30 { get; private set; }
+
+        internal byte NR30 { get; private set; } = 0b01111111;
         internal byte NR31 { get; private set; }
-        internal byte NR32 { get; private set; }
+        internal byte NR32 { get; private set; } = 0b10011111;
         internal byte NR33 { get; private set; }
         internal byte NR34 { get; private set; }
         #endregion
 
         #region Sound 4
-        internal byte NR41 { get; private set; }
+
+        internal byte NR41 { get; private set; } = 0b11000000;
         internal byte NR42 { get; private set; }
         internal byte NR43 { get; private set; }
-        internal byte NR44 { get; private set; }
+        internal byte NR44 { get; private set; } = 0b00111111;
         #endregion
 
         #region Control Registers
         internal byte NR50 { get; private set; }
         internal byte NR51 { get; private set; }
-        internal byte NR52 { get; private set; }
+        internal byte NR52 { get; private set; } = 0b01110000;
         #endregion
 
         internal void Clear()
@@ -70,7 +73,7 @@ namespace Gameboy.VM.Sound
                 0xFF24 => NR50,
                 0xFF25 => NR51,
                 0xFF26 => NR52,
-                _ => 0x0
+                _ => 0xFF
             };
         }
 
@@ -80,7 +83,7 @@ namespace Gameboy.VM.Sound
             switch (address)
             {
                 case 0xFF10:
-                    NR10 = value;
+                    NR10 = (byte) (value | 0b10000000);
                     break;
                 case 0xFF11:
                     NR11 = value;
@@ -109,13 +112,13 @@ namespace Gameboy.VM.Sound
                     NR24 = value;
                     break;
                 case 0xFF1A:
-                    NR30 = value;
+                    NR30 = (byte) (value | 0b01111111); // Bottom 6 bits are not settable
                     break;
                 case 0xFF1B:
                     NR31 = value;
                     break;
                 case 0xFF1C:
-                    NR32 = value;
+                    NR32 = (byte) (value | 0b10011111);
                     break;
                 case 0xFF1D:
                     NR33 = value;
@@ -126,7 +129,7 @@ namespace Gameboy.VM.Sound
                 case 0xFF1F:// Unused address
                     break;
                 case 0xFF20:
-                    NR41 = value;
+                    NR41 = (byte) (value | 0b11000000);
                     break;
                 case 0xFF21:
                     NR42 = value;
@@ -135,7 +138,7 @@ namespace Gameboy.VM.Sound
                     NR43 = value;
                     break;
                 case 0xFF23:
-                    NR44 = value;
+                    NR44 = (byte) (value | 0b00111111);
                     break;
                 case 0xFF24:
                     NR50 = value;
@@ -144,7 +147,7 @@ namespace Gameboy.VM.Sound
                     NR51 = value;
                     break;
                 case 0xFF26:
-                    NR52 = value;
+                    NR52 = (byte) (value | 0b01110000);
                     break;
                 default: // Unmapped address
                     throw new ArgumentOutOfRangeException(nameof(address), address, "Sound register doesn't exist at address");

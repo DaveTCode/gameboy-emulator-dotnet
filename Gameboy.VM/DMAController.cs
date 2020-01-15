@@ -19,7 +19,7 @@
         {
             var address = dataAddress << 8;
 
-            for (var ii = 0; ii < 0x100; ii++)
+            for (var ii = 0; ii < 160; ii++) // DMA transfers exactly 160 bytes
             {
                 _device.MMU.WriteByte((ushort)(0xFE00 + ii), _device.MMU.ReadByte((ushort)(address + ii)));
             }

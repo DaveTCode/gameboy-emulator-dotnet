@@ -6,11 +6,23 @@
         /// Undocumented byte at 0xFF50 which is set to 0/1. 0 To enable the boot ROM
         /// and 1 to disable it.
         /// </summary>
-        internal byte RomDisabledRegister { get; set; }
+        private bool _isRomDisabled;
+
+        internal byte RomDisabledRegister
+        {
+            get => (byte) (_isRomDisabled ? 0xFF : 0x0);
+            set
+            {
+                if (_isRomDisabled) return;
+                _isRomDisabled = value == 0x1;
+            }
+        }
 
         // Serial Cable Registers
         internal byte SerialTransferData { get; set; }
-        internal byte SerialTransferControl { get; set; }
+
+        private byte _serialTransferControl = 0b01111110;
+        internal byte SerialTransferControl { get => _serialTransferControl; set => _serialTransferControl = (byte) (0b01111110 | value); }
 
         public void Clear()
         {

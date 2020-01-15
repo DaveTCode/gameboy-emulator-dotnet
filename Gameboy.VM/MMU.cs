@@ -139,7 +139,7 @@ namespace Gameboy.VM
         private byte ReadUnusedAddress(in ushort address)
         {
             _device.Log.Warning("Attempt to read from unused memory location {0:X4}", address);
-            return 0x0;
+            return 0xFF;
         }
 
         internal ushort ReadWord(in ushort address) =>
