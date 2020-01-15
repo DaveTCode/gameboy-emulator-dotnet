@@ -76,7 +76,7 @@ namespace Gameboy.VM.LCD
             _oamRam[modAddress] = value;
 
             // Also update the relevant sprite
-            switch (spriteNumber & 0x3)
+            switch (modAddress & 0x3)
             {
                 case 0:
                     _sprites[spriteNumber].Y = value - 16;
@@ -173,8 +173,6 @@ namespace Gameboy.VM.LCD
             var spriteSize = _device.LCDRegisters.LargeSprites ? 16 : 8;
 
             // Loop through all sprites
-            // TODO - Max sprites per line = 10
-            // TODO - Sprite priorities not handled
             for (var spriteIndex = 0; spriteIndex < MaxSpritesPerFrame; spriteIndex++)
             {
                 var sprite = _sprites[spriteIndex];
