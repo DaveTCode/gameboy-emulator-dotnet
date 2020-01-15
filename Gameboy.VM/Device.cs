@@ -83,15 +83,6 @@ namespace Gameboy.VM
         }
 
         /// <summary>
-        /// Rendering the screen should only really happen during VBlank so
-        /// we expose that to the calling code here.
-        /// </summary>
-        /// <returns>
-        /// True if the LCD is performing VBlank and false otherwise
-        /// </returns>
-        public bool SafeToDrawScreen() => LCDRegisters.LCDCurrentScanline >= ScreenHeight;
-
-        /// <summary>
         /// We need to expose information on whether the LCD is actually on to
         /// determine whether to actually display anything.
         /// </summary>
@@ -174,8 +165,6 @@ namespace Gameboy.VM
 
             // Step 4: Update the timer controller with the number of cycles
             Timer.Step(tCycles);
-
-            //Log.Information(ToString());
 
             return tCycles; // Machine cycles translation
         }

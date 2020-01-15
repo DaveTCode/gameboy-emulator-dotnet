@@ -6,7 +6,8 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 - Blargg instruction tests all pass except for interrupt
 - Blargg instruction timing tests pass
-- All MBC5 mooneye tests pass
+- All MBC1 & MBC5 mooneye tests pass
+- Mooneye TIM00,01,10,11 tests all pass (so timer is basically accurate)
 - Tetris is playable without sound
 
 ## TODO

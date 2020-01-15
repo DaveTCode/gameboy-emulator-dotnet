@@ -5,36 +5,32 @@ namespace Gameboy.VM.Cartridge
     internal class MBC1Cartridge : Cartridge
     {
         private bool _isRamEnabled;
-        private int _romBank;
-        private int _ramBank;
-        private MBC1Mode _mode;
+
+        private byte _bankRegister1 = 0x1; // Defaults to 1 and can't be 0
+        private byte _bankRegister2;
+        private byte _modeRegister;
+        private int _ramOffset;
+        private int _offsetLowRom;
+        private int _offsetHighRom;
         private readonly byte[] _ramBanks;
 
         public MBC1Cartridge(in byte[] contents) : base(in contents)
         {
             _isRamEnabled = false;
-            _romBank = 1;
-            _ramBank = 0;
-            _mode = MBC1Mode.ROM;
             _ramBanks = new byte[RAMSize.NumberBanks() * RAMSize.BankSizeBytes()];
+            UpdateBankValues();
         }
 
         internal override byte ReadRom(in ushort address)
         {
-            if (address < RomBankSizeBytes) // Fixed bank 0
+            var bankAddress = address switch
             {
-                // TODO - What's the correct behaviour if the ROM is smaller than the addressable space? 0x0, wrap or panic?
-                return address >= Contents.Length ? (byte)0x0 : Contents[address];
-            }
+                _ when (address < RomBankSizeBytes) => _offsetLowRom + address,
+                _ when (address < RomBankSizeBytes * 2) => _offsetHighRom + address,
+                _ => 0x0
+            } % Contents.Length; // TODO - Is this wrapping behavior correct?
 
-            if (address < RomBankSizeBytes * 2) // Switchable ROM banks
-            {
-                var bankAddress = address + (_romBank - 1) * RomBankSizeBytes;
-                // TODO - What's the correct behaviour if the ROM is smaller than the addressable space? 0x0, wrap or panic?
-                return bankAddress >= Contents.Length ? (byte)0x0 : Contents[bankAddress];
-            }
-
-            return 0x0;
+            return Contents[bankAddress];
         }
 
         internal override byte ReadRam(in ushort address)
@@ -43,7 +39,7 @@ namespace Gameboy.VM.Cartridge
 
             if (address < 0xA000 || address >= 0xC000) throw new ArgumentOutOfRangeException(nameof(address), address, $"Can't access RAM at address {address}");
 
-            return _ramBanks[address - 0xA000 + _ramBank * RAMSize.BankSizeBytes()];
+            return _ramBanks[(address + _ramOffset) % _ramBanks.Length]; // TODO - Is wrapping behavior correct?
         }
 
         internal override void WriteRom(in ushort address, in byte value)
@@ -54,65 +50,43 @@ namespace Gameboy.VM.Cartridge
             }
             else if (address >= 0x2000 && address <= 0x3FFF)
             {
-                SetRomBank((_romBank & 0b11100000) | (value & 0x1F));
+                var regValue = value & 0x1F;
+                _bankRegister1 = (byte)(regValue == 0x0 ? 0x1 : regValue);
             }
             else if (address >= 0x4000 && address <= 0x5FFF)
             {
-                var highBits = value & 0x3;
-                if (_mode == MBC1Mode.RAM)
-                {
-                    _ramBank = highBits % RAMSize.NumberBanks();
-                }
-                else
-                {
-                    SetRomBank((_romBank & 0x31) | (value & 0xE0));
-                }
+                _bankRegister2 = (byte)(value & 0x3);
             }
             else if (address >= 0x6000 && address <= 0x7FFF)
             {
-                if (value == 0x0)
-                {
-                    _mode = MBC1Mode.ROM;
-                }
-                else if (value == 0x1)
-                {
-                    _mode = MBC1Mode.RAM;
-                }
+                _modeRegister = (byte)(value & 0x1);
             }
+
+            UpdateBankValues();
         }
 
         internal override void WriteRam(in ushort address, in byte value)
         {
-            if (!_isRamEnabled) return; // Writes only accepted when RAM enabled
+            if (!_isRamEnabled || _ramBanks.Length == 0) return; // Writes only accepted when RAM enabled
 
-            var bankedAddress = address - 0xA000 + _ramBank * RAMSize.BankSizeBytes();
-
-            if (bankedAddress > _ramBanks.Length) return; // TODO - Should we do this or does it wrap?
+            var bankedAddress = (address + _ramOffset) % _ramBanks.Length; // TODO - Is wrapping correct?
 
             _ramBanks[bankedAddress] = value;
         }
 
-        private void SetRomBank(in int romBank)
+        private void UpdateBankValues()
         {
-            if (ROMSize.NumberBanks() == 0) return; // Fast return on no banks to select from
+            _ramOffset = (_modeRegister == 0x0 ? 0x0 : _bankRegister2 * RAMSize.BankSizeBytes()) - 0xA000;
+            var romBank = _bankRegister2 << 5 | _bankRegister1;
+            _offsetHighRom = (romBank - 1) * RomBankSizeBytes;
+            _offsetLowRom = _modeRegister == 0x0 ? 0x0 : (_bankRegister2 << 5) * RomBankSizeBytes;
 
-            // Setting ROM bank which isn't present on the cartridge causes it to wrap.
-            var bank = romBank % ROMSize.NumberBanks();
-
-            _romBank = bank switch
-            {
-                0 => 1,
-                0x20 => 0x21,
-                0x40 => 0x41,
-                0x60 => 0x61,
-                _ => bank
-            };
+            //Console.WriteLine(ToString());
         }
 
-        private enum MBC1Mode
+        public override string ToString()
         {
-            ROM,
-            RAM
+            return $"LOW_OFFSET:{_offsetLowRom} HIGH_OFFSET:{_offsetHighRom} RAM_OFFSET:{_ramOffset}";
         }
     }
 }

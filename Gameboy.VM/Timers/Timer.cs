@@ -7,7 +7,6 @@
         private readonly Device _device;
         private int _internalCount;
 
-
         internal Timer(in Device device)
         {
             _device = device;
@@ -20,7 +19,7 @@
 
         internal void Step(in int tCycles)
         {
-            // Handle divider register - note that it happens regardless of whether timer is turned on
+            // Handle system counter - note that it happens regardless of whether timer is turned on
             SystemCounter = (ushort)((SystemCounter + tCycles) & 0xFFFF);
 
             // Handle standard timer
@@ -66,6 +65,7 @@
             set
             {
                 SystemCounter = 0;
+                _internalCount = 0x0;
             }
         }
         internal byte TimerCounter { get; set; }
@@ -74,7 +74,7 @@
 
         public override string ToString()
         {
-            return $"DIV:{Divider:X2}, TAC:{TimerCounter:X2}, TIM:{TimerModulo:X2}, TC:{TimerController:X2}";
+            return $"DIV:{Divider:X2}, TAC:{TimerCounter:X2}, TIM:{TimerModulo:X2}, TC:{TimerController:X2}, Internal:{_internalCount:X2}";
         }
     }
 }

@@ -84,6 +84,8 @@ namespace Gameboy.VM.CPU
         /// </returns>
         internal int Step()
         {
+            //_device.Log.Information(_device.ToString());
+
             if (_isHalted) return 0; // TODO - Right number of cycles? Or do we still count cycles in HALT
 
             // EI instruction doesn't enable interrupts until after the _next_ instruction, quirk of hardware
