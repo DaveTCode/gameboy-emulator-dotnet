@@ -1,19 +1,19 @@
 # Gameboy Emulator in C# 8
 
-TODO - Description
+Gameboy emulator written in C# as an educational exercise (not as a production emulator).
 
-## Tests
+## State
 
 - Blargg instruction tests all pass except for interrupt
 - Blargg instruction timing tests pass
+- Tetris is playable without sound
 
 ## TODO
 
 ### Fixes
 
 - Blargg interrupt tests hanging indefinitely
--
-- Sprites don't render to the right portion of the screen
+- Timer seems off by a few instructions (mooneye timer-Tim** tests all fail)
 
 ![Blargg CPU Instr Failures](./blargg_cpu_instr_output.png)
 
