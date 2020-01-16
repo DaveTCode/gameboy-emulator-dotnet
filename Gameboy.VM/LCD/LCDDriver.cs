@@ -33,7 +33,7 @@ namespace Gameboy.VM.LCD
         // Current state of LCD driver
         private int _currentCycle;
 
-        internal LCDDriver(in Device device)
+        internal LCDDriver(Device device)
         {
             _device = device;
         }
@@ -46,28 +46,28 @@ namespace Gameboy.VM.LCD
             Array.Clear(_oamRam, 0, _oamRam.Length);
         }
 
-        internal byte GetVRAMByte(in ushort address)
+        internal byte GetVRAMByte(ushort address)
         {
             if (address < 0x8000 || address > 0x9FFF) throw new ArgumentOutOfRangeException(nameof(address), address, "VRAM read with invalid address");
 
             return _vRam[address - 0x8000];
         }
 
-        internal void WriteVRAMByte(in ushort address, in byte value)
+        internal void WriteVRAMByte(ushort address, in byte value)
         {
             if (address < 0x8000 || address > 0x9FFF) throw new ArgumentOutOfRangeException(nameof(address), address, "VRAM write with invalid address");
 
             _vRam[address - 0x8000] = value;
         }
 
-        internal byte GetOAMByte(in ushort address)
+        internal byte GetOAMByte(ushort address)
         {
             if (address < 0xFE00 || address > 0xFE9F) throw new ArgumentOutOfRangeException(nameof(address), address, "OAM read with invalid address");
 
             return _oamRam[address - 0xFE00];
         }
 
-        internal void WriteOAMByte(in ushort address, in byte value)
+        internal void WriteOAMByte(ushort address, in byte value)
         {
             if (address < 0xFE00 || address > 0xFE9F) throw new ArgumentOutOfRangeException(nameof(address), address, "OAM read with invalid address");
 
@@ -114,7 +114,7 @@ namespace Gameboy.VM.LCD
         /// don't know enough to achieve that yet
         /// </summary>
         /// <param name="cycles">The number of cycles since the last step was called.</param>
-        internal void Step(in int cycles)
+        internal void Step(int cycles)
         {
             if (!_device.LCDRegisters.IsLcdOn)
             {
@@ -264,11 +264,12 @@ namespace Gameboy.VM.LCD
 
         private void SetLCDOffValues()
         {
-            // TODO - What needs to happen if the LCD isn't on?
+            _currentCycle = 0x0;
             _device.LCDRegisters.ResetCurrentScanline();
+            _device.LCDRegisters.StatMode = StatMode.HBlankPeriod;
         }
 
-        private bool SetLCDStatus(in byte currentScanLine)
+        private bool SetLCDStatus(byte currentScanLine)
         {
             var oldMode = _device.LCDRegisters.StatMode;
 
@@ -293,7 +294,7 @@ namespace Gameboy.VM.LCD
                     case StatMode.HBlankPeriod:
                         if (_device.LCDRegisters.Mode0HBlankCheckEnabled)
                         {
-                            _device.InterruptRegisters.RequestInterrupt(Interrupt.LCDSTAT); // TODO - Is this the right interrupt?
+                            _device.InterruptRegisters.RequestInterrupt(Interrupt.LCDSTAT);
                         }
                         return true; // Entering HBlank so redraw scanline
                     case StatMode.VBlankPeriod:
@@ -303,7 +304,7 @@ namespace Gameboy.VM.LCD
                     case StatMode.OAMRAMPeriod:
                         if (_device.LCDRegisters.Mode2OAMCheckEnabled)
                         {
-                            _device.InterruptRegisters.RequestInterrupt(Interrupt.LCDSTAT); // TODO - Is this the right interrupt?
+                            _device.InterruptRegisters.RequestInterrupt(Interrupt.LCDSTAT);
                         }
                         return false;
                     case StatMode.TransferringDataToDriver:
@@ -320,7 +321,7 @@ namespace Gameboy.VM.LCD
 
         private bool UsingWindowForScanline => _device.LCDRegisters.IsWindowEnabled && _device.LCDRegisters.LCDCurrentScanline <= _device.LCDRegisters.WindowY;
 
-        private ushort GetTileDataAddress(in byte tileNumber)
+        private ushort GetTileDataAddress(byte tileNumber)
         {
             var tilesetAddress = _device.LCDRegisters.BackgroundAndWindowTilesetOffset;
             ushort tileDataAddress;
