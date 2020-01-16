@@ -198,7 +198,7 @@ namespace Gameboy.VM.LCD
                     
                     // Convert the tile data spread over two bytes into the
                     // specific color value for this pixel.
-                    var colorBit = ((x % 8) - 7) * -1;
+                    var colorBit = sprite.XFlip ? x : 7 - x;
                     var colorBitMask = 1 << colorBit;
                     var colorNumber =
                         (b2 & colorBitMask) == colorBitMask ? 2 : 0 +
