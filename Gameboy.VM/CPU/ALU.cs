@@ -10,7 +10,7 @@ namespace Gameboy.VM.CPU
         private readonly CPU _cpu;
         private readonly MMU _mmu;
 
-        internal ALU(in ILogger log, in CPU cpu, in MMU mmu)
+        internal ALU(ILogger log, in CPU cpu, in MMU mmu)
         {
             _log = log;
             _cpu = cpu;
@@ -349,7 +349,7 @@ namespace Gameboy.VM.CPU
         /// <remarks>
         /// This is horrific because we can't pass a ref to a property (obvs).
         /// </remarks>
-        internal int Decrement(in Register16Bit register)
+        internal int Decrement(Register16Bit register)
         {
             switch (register)
             {
@@ -375,7 +375,7 @@ namespace Gameboy.VM.CPU
             return 8;
         }
 
-        internal int AddHL(in ushort b)
+        internal int AddHL(ushort b)
         {
             var result = _cpu.Registers.HL + b;
             _cpu.Registers.SetFlag(CpuFlags.SubtractFlag, false);
@@ -386,7 +386,7 @@ namespace Gameboy.VM.CPU
             return 8;
         }
 
-        internal int AddSP(in sbyte operand)
+        internal int AddSP(sbyte operand)
         {
             var result = _cpu.Registers.StackPointer + operand;
             _cpu.Registers.SetFlag(CpuFlags.SubtractFlag | CpuFlags.ZeroFlag, false);
@@ -427,7 +427,7 @@ namespace Gameboy.VM.CPU
             return 8;
         }
 
-        internal int LoadHLSpPlusR8(in sbyte operand)
+        internal int LoadHLSpPlusR8(sbyte operand)
         {
             var result = _cpu.Registers.StackPointer + operand;
             _cpu.Registers.SetFlag(CpuFlags.SubtractFlag | CpuFlags.ZeroFlag, false);
@@ -442,14 +442,14 @@ namespace Gameboy.VM.CPU
 
         #region Jumps/Calls
 
-        internal int Call(in ushort address)
+        internal int Call(ushort address)
         {
             PushToStack(_cpu.Registers.ProgramCounter);
             Jump(address);
             return 24;
         }
 
-        internal int CallOnFlag(in CpuFlags flag, in ushort address, in bool isSet)
+        internal int CallOnFlag(CpuFlags flag, in ushort address, in bool isSet)
         {
             return _cpu.Registers.GetFlag(flag) == isSet ? Call(address) : 12;
         }
@@ -461,7 +461,7 @@ namespace Gameboy.VM.CPU
             return 16;
         }
 
-        internal int ReturnOnFlag(in CpuFlags flag, in bool isSet)
+        internal int ReturnOnFlag(CpuFlags flag, in bool isSet)
         {
             if (_cpu.Registers.GetFlag(flag) == isSet)
             {
@@ -471,19 +471,19 @@ namespace Gameboy.VM.CPU
             return 8;
         }
 
-        internal int Jump(in ushort address)
+        internal int Jump(ushort address)
         {
             _cpu.Registers.ProgramCounter = address;
             return 16;
         }
 
-        internal int JumpRight(in sbyte distance)
+        internal int JumpRight(sbyte distance)
         {
             _cpu.Registers.ProgramCounter = (ushort)((_cpu.Registers.ProgramCounter + distance) & 0xFFFF);
             return 12;
         }
 
-        internal int JumpRightOnFlag(in CpuFlags flag, in sbyte distance, in bool isSet)
+        internal int JumpRightOnFlag(CpuFlags flag, in sbyte distance, in bool isSet)
         {
             return _cpu.Registers.GetFlag(flag) == isSet ? JumpRight(distance) : 8;
         }
@@ -493,7 +493,7 @@ namespace Gameboy.VM.CPU
             return _cpu.Registers.GetFlag(flag) != isSet ? 12 : Jump(address);
         }
 
-        internal int ReturnAndEnableInterrupts(in InterruptRegisters interruptRegisters)
+        internal int ReturnAndEnableInterrupts(InterruptRegisters interruptRegisters)
         {
             Return();
 

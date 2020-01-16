@@ -13,7 +13,7 @@ namespace Gameboy.VM.CPU
 
         internal Registers Registers { get; }
 
-        internal CPU(in Device device)
+        internal CPU(Device device)
         {
             Registers = new Registers();
             _alu = new ALU(device.Log, this, device.MMU);
@@ -84,7 +84,7 @@ namespace Gameboy.VM.CPU
         /// </returns>
         internal int Step()
         {
-            _device.Log.Information(_device.ToString());
+            //_device.Log.Information(_device.ToString());
 
             if (_isHalted) return 4; // TODO - Right number of cycles? Or do we still count cycles in HALT
 

@@ -57,7 +57,7 @@ namespace Gameboy.VM
 
         internal readonly Logger Log;
 
-        public Device(in Cartridge.Cartridge cartridge)
+        public Device(Cartridge.Cartridge cartridge)
         {
             Log = new LoggerConfiguration()
                 .MinimumLevel.Warning()
@@ -173,7 +173,7 @@ namespace Gameboy.VM
         /// Called whenever a key down event is handled by the calling code
         /// </summary>
         /// <param name="key">The key pressed</param>
-        public void HandleKeyDown(in DeviceKey key)
+        public void HandleKeyDown(DeviceKey key)
         {
             JoypadHandler.Keydown(key);
         }
@@ -182,7 +182,7 @@ namespace Gameboy.VM
         /// Called whenever a key up event is handled by the calling code
         /// </summary>
         /// <param name="key">The key lifted</param>
-        public void HandleKeyUp(in DeviceKey key)
+        public void HandleKeyUp(DeviceKey key)
         {
             JoypadHandler.Keyup(key);
         }

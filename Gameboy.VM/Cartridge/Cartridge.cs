@@ -9,12 +9,12 @@ namespace Gameboy.VM.Cartridge
 
         protected readonly byte[] Contents;
 
-        internal Cartridge(in byte[] contents)
+        internal Cartridge(byte[] contents)
         {
             Contents = contents;
         }
 
-        internal virtual byte ReadRom(in ushort address)
+        internal virtual byte ReadRom(ushort address)
         {
             if (address >= Contents.Length)
             {
@@ -24,11 +24,11 @@ namespace Gameboy.VM.Cartridge
             return Contents[address];
         }
 
-        internal abstract byte ReadRam(in ushort address);
+        internal abstract byte ReadRam(ushort address);
 
-        internal abstract void WriteRom(in ushort address, in byte value);
+        internal abstract void WriteRom(ushort address, in byte value);
 
-        internal abstract void WriteRam(in ushort address, in byte value);
+        internal abstract void WriteRam(ushort address, in byte value);
 
         public string GameTitle => Encoding.ASCII.GetString(Contents[0x134..0x13F]);
 

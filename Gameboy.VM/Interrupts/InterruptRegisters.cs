@@ -21,7 +21,7 @@
         /// appropriate bit on the IF flag.
         /// </summary>
         /// <param name="interrupt">The interrupt to request</param>
-        internal void RequestInterrupt(in Interrupt interrupt)
+        internal void RequestInterrupt(Interrupt interrupt)
         {
             _interruptFlags = (byte)(_interruptFlags | interrupt.Mask());
         }
@@ -31,7 +31,7 @@
         /// processing an interrupt.
         /// </summary>
         /// <param name="interrupt">The interrupt to reset request for</param>
-        internal void ResetInterrupt(in Interrupt interrupt)
+        internal void ResetInterrupt(Interrupt interrupt)
         {
             _interruptFlags = (byte)(_interruptFlags & ~interrupt.Mask());
         }

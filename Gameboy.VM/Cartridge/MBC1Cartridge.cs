@@ -14,14 +14,14 @@ namespace Gameboy.VM.Cartridge
         private int _offsetHighRom;
         private readonly byte[] _ramBanks;
 
-        public MBC1Cartridge(in byte[] contents) : base(in contents)
+        public MBC1Cartridge(byte[] contents) : base(contents)
         {
             _isRamEnabled = false;
             _ramBanks = new byte[RAMSize.NumberBanks() * RAMSize.BankSizeBytes()];
             UpdateBankValues();
         }
 
-        internal override byte ReadRom(in ushort address)
+        internal override byte ReadRom(ushort address)
         {
             var bankAddress = address switch
             {
@@ -33,7 +33,7 @@ namespace Gameboy.VM.Cartridge
             return Contents[bankAddress];
         }
 
-        internal override byte ReadRam(in ushort address)
+        internal override byte ReadRam(ushort address)
         {
             if (!_isRamEnabled) return 0xFF;
 
@@ -42,7 +42,7 @@ namespace Gameboy.VM.Cartridge
             return _ramBanks[(address + _ramOffset) % _ramBanks.Length]; // TODO - Is wrapping behavior correct?
         }
 
-        internal override void WriteRom(in ushort address, in byte value)
+        internal override void WriteRom(ushort address, in byte value)
         {
             if (address <= 0x1FFF)
             {
@@ -65,7 +65,7 @@ namespace Gameboy.VM.Cartridge
             UpdateBankValues();
         }
 
-        internal override void WriteRam(in ushort address, in byte value)
+        internal override void WriteRam(ushort address, in byte value)
         {
             if (!_isRamEnabled || _ramBanks.Length == 0) return; // Writes only accepted when RAM enabled
 

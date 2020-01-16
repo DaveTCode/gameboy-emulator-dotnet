@@ -35,7 +35,7 @@ namespace Gameboy.Emulator.SDL
         private readonly int _pixelSize;
         private readonly Device _device;
 
-        internal SDL2Application(in Device device, in int pixelSize)
+        internal SDL2Application(Device device, in int pixelSize)
         {
             _device = device;
             _pixelSize = pixelSize;

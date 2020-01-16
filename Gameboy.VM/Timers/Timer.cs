@@ -7,17 +7,17 @@
         private readonly Device _device;
         private int _internalCount;
 
-        internal Timer(in Device device)
+        internal Timer(Device device)
         {
             _device = device;
         }
 
-        internal void Reset(in bool skipBootrom)
+        internal void Reset(bool skipBootrom)
         {
             SystemCounter = (ushort)(skipBootrom ? 0xABCC : 0x0000);
         }
 
-        internal void Step(in int tCycles)
+        internal void Step(int tCycles)
         {
             // Handle system counter - note that it happens regardless of whether timer is turned on
             SystemCounter = (ushort)((SystemCounter + tCycles) & 0xFFFF);

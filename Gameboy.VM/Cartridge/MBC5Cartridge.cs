@@ -13,7 +13,7 @@ namespace Gameboy.VM.Cartridge
         private int _ramBank;
         private readonly byte[] _ramBanks;
 
-        public MBC5Cartridge(in byte[] contents) : base(in contents)
+        public MBC5Cartridge(byte[] contents) : base(contents)
         {
             _isRamEnabled = false;
             _romBank = 1;
@@ -21,7 +21,7 @@ namespace Gameboy.VM.Cartridge
             _ramBanks = new byte[RAMSize.NumberBanks() * RAMSize.BankSizeBytes()];
         }
 
-        internal override byte ReadRom(in ushort address)
+        internal override byte ReadRom(ushort address)
         {
             if (address < RomBankSizeBytes) // Fixed bank 0
             {
@@ -39,7 +39,7 @@ namespace Gameboy.VM.Cartridge
             return 0x0;
         }
 
-        internal override byte ReadRam(in ushort address)
+        internal override byte ReadRam(ushort address)
         {
             // Is RAM enabled
             if (!_isRamEnabled) return 0xFF;
@@ -50,7 +50,7 @@ namespace Gameboy.VM.Cartridge
             return _ramBanks[address - 0xA000 + _ramBank * RAMSize.BankSizeBytes()];
         }
 
-        internal override void WriteRom(in ushort address, in byte value)
+        internal override void WriteRom(ushort address, in byte value)
         {
             if (address <= 0x1FFF)
             {
@@ -72,7 +72,7 @@ namespace Gameboy.VM.Cartridge
             }
         }
 
-        internal override void WriteRam(in ushort address, in byte value)
+        internal override void WriteRam(ushort address, in byte value)
         {
             if (!_isRamEnabled) return; // Don't accept writes if RAM disabled
 

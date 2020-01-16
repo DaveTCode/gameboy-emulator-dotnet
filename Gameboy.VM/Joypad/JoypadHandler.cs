@@ -65,19 +65,19 @@ namespace Gameboy.VM.Joypad
             }
         }
 
-        internal JoypadHandler(in Device device)
+        internal JoypadHandler(Device device)
         {
             _device = device;
         }
 
-        internal void Keydown(in DeviceKey key)
+        internal void Keydown(DeviceKey key)
         {
             _keyStates[key] = true;
 
             CheckForInterrupts();
         }
 
-        internal void Keyup(in DeviceKey key)
+        internal void Keyup(DeviceKey key)
         {
             _keyStates[key] = false;
 

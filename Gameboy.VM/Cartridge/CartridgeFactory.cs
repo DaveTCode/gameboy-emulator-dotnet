@@ -13,7 +13,7 @@ namespace Gameboy.VM.Cartridge
         /// <param name="contents">The full binary dump of a ROM</param>
         /// 
         /// <returns>A cartridge ready to inject into a <see cref="Device"/></returns>
-        public static Cartridge CreateCartridge(in byte[] contents)
+        public static Cartridge CreateCartridge(byte[] contents)
         {
             if (contents.Length < 0x150)
             {

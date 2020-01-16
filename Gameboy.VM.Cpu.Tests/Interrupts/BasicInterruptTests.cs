@@ -13,7 +13,7 @@ namespace Gameboy.VM.Tests.Interrupts
         [InlineData((int)Interrupt.Timer, 0b00000100)]
         [InlineData((int)Interrupt.Serial, 0b00001000)]
         [InlineData((int)Interrupt.Joypad, 0b00010000)]
-        public void TestAllInterruptsCanBeEnabled(in int interrupt, byte expectedValue)
+        public void TestAllInterruptsCanBeEnabled(int interrupt, byte expectedValue)
         {
             var interruptRegisters = new InterruptRegisters();
             interruptRegisters.RequestInterrupt((Interrupt)interrupt);
