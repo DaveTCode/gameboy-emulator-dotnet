@@ -651,14 +651,14 @@ namespace Gameboy.VM.CPU
         private byte FetchByte()
         {
             var b = _device.MMU.ReadByte(Registers.ProgramCounter);
-            Registers.ProgramCounter = (ushort)((Registers.ProgramCounter + 1) & 0xFFFF);
+            Registers.ProgramCounter = (ushort)(Registers.ProgramCounter + 1);
             return b;
         }
 
         private ushort FetchWord()
         {
             var w = _device.MMU.ReadWord(Registers.ProgramCounter);
-            Registers.ProgramCounter = (ushort)((Registers.ProgramCounter + 2) & 0xFFFF);
+            Registers.ProgramCounter = (ushort)(Registers.ProgramCounter + 2);
             return w;
         }
 

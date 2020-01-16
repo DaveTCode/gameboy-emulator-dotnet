@@ -83,6 +83,7 @@ namespace Gameboy.Emulator.SDL
                                 vramFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", vram)));
                                 oamFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", oamram)));
                                 fbFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(f => (int)f))));
+                                Console.WriteLine(_device.ToString());
                             }
                             else if (_keyMap.ContainsKey(e.key.keysym.sym))
                             {

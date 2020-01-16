@@ -20,7 +20,7 @@
         internal void Step(int tCycles)
         {
             // Handle system counter - note that it happens regardless of whether timer is turned on
-            SystemCounter = (ushort)((SystemCounter + tCycles) & 0xFFFF);
+            SystemCounter = (ushort)(SystemCounter + tCycles);
 
             // Handle standard timer
             if (!_isTimerEnabled) return;
@@ -36,7 +36,7 @@
                 }
                 else
                 {
-                    TimerCounter = (byte)((TimerCounter + 1) & 0xFF);
+                    TimerCounter = (byte)(TimerCounter + 1);
                 }
 
                 _internalCount -= _timerClockSelect.Step();
