@@ -12,10 +12,10 @@ namespace Gameboy.Emulator.SDL
     {
         private readonly Dictionary<Grayscale, (byte, byte, byte)> _grayscaleColorMap = new Dictionary<Grayscale, (byte, byte, byte)>
         {
-            { Grayscale.White, (0xFF, 0xFF, 0xFF) },
-            { Grayscale.LightGray, (0xCC, 0xCC, 0xCC) },
-            { Grayscale.DarkGray, (0x77, 0x77, 0x77) },
-            { Grayscale.Black, (0x00, 0x00, 0x00) },
+            { Grayscale.White, (236, 237, 176) },
+            { Grayscale.LightGray, (187, 187, 24) },
+            { Grayscale.DarkGray, (107, 110, 0) },
+            { Grayscale.Black, (16, 55, 0) },
         };
 
         private readonly Dictionary<SDL2.SDL_Keycode, DeviceKey> _keyMap = new Dictionary<SDL2.SDL_Keycode, DeviceKey>
