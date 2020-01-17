@@ -201,11 +201,12 @@ namespace Gameboy.VM.LCD
                     var colorBit = sprite.XFlip ? x : 7 - x;
                     var colorBitMask = 1 << colorBit;
                     var colorNumber =
-                        (b2 & colorBitMask) == colorBitMask ? 2 : 0 +
-                        (b1 & colorBitMask) == colorBitMask ? 1 : 0;
+                        ((b2 & colorBitMask) == colorBitMask ? 2 : 0) +
+                        ((b1 & colorBitMask) == colorBitMask ? 1 : 0);
+
+                    if (colorNumber == 0) continue; // Don't draw pixels if they're color 0 (transparent)
                     var color = _device.LCDRegisters.GetColorFromNumberPalette(colorNumber, palette);
 
-                    if (color == Grayscale.White) continue; // Don't draw transparent sprite pixels
                     if (sprite.SpriteToBgPriority == SpriteToBgPriority.BehindColors123 &&
                         _scanline[pixel] != Grayscale.White) continue; // Don't draw low priority sprites over background
 
@@ -251,8 +252,8 @@ namespace Gameboy.VM.LCD
                 var colorBit = ((xPos % 8) - 7) * -1;
                 var colorBitMask = 1 << colorBit;
                 var colorNumber =
-                    (byte2 & colorBitMask) == colorBitMask ? 2 : 0 +
-                    (byte1 & colorBitMask) == colorBitMask ? 1 : 0;
+                    ((byte2 & colorBitMask) == colorBitMask ? 2 : 0) +
+                    ((byte1 & colorBitMask) == colorBitMask ? 1 : 0);
 
                 // Retrieve the actual color to be used from the palette
                 var color = _device.LCDRegisters.GetColorFromNumberPalette(colorNumber, _device.LCDRegisters.BackgroundPaletteData);
