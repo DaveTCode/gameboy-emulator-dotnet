@@ -6,13 +6,14 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 - Passing test roms section at bottom of readme
 - Tetris is playable, Dr Mario is playable
+- Performance is a chunk below 60fps, unsure the primary cause at the moment
 
 ## TODO
 
 ### Fixes
 
-- Zelda Links Awakening intro video works fine but first in game ish screen is missing lots of sprites and has loads of glitches
 - Lots of test failures specified in the table below
+- Pokemon blue doesn't boot - probably because I haven't tested the MBC3 implementation
 
 ![Blargg CPU Instr Failures](./blargg_cpu_instr_output.png)
 
@@ -34,6 +35,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - Native debugger with winforms/wpf?
 - CGB/SGB support
 - Cycle accuracy rather than opcode atomicity assumption
+- Clean up the cartridge code to remove some of the duplication
 
 ### Known Tests
 
