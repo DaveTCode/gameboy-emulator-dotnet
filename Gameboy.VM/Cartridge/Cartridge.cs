@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 
 namespace Gameboy.VM.Cartridge
@@ -6,29 +7,46 @@ namespace Gameboy.VM.Cartridge
     public abstract class Cartridge
     {
         protected const int RomBankSizeBytes = 0x4000;
+        protected const int RamAddressStart = 0xA000;
+
+        protected bool IsRamEnabled;
+
+        protected int RamBank;
 
         protected readonly byte[] Contents;
+        protected readonly byte[] RamBanks;
 
         internal Cartridge(byte[] contents)
         {
             Contents = contents;
+            RamBanks = new byte[RAMSize.NumberBanks() * RAMSize.BankSizeBytes()];
+            RamBank = 0x0;
+            IsRamEnabled = false;
         }
 
-        internal virtual byte ReadRom(ushort address)
+        internal abstract byte ReadRom(ushort address);
+
+        internal virtual byte ReadRam(ushort address)
         {
-            if (address >= Contents.Length)
-            {
-                return 0x0;
-            }
+            // If RAM isn't enabled all wires return high (i.e. 0xFF)
+            if (!IsRamEnabled) return 0xFF;
 
-            return Contents[address];
+            // Is the address mappable? Could throw assert away if we trust calling code
+            if (address < RamAddressStart || address >= 0xC000) throw new ArgumentOutOfRangeException(nameof(address), address, $"Can't access RAM at address {address}");
+
+            return RamBanks[address - RamAddressStart + RamBank * RAMSize.BankSizeBytes()];
         }
 
-        internal abstract byte ReadRam(ushort address);
+        internal abstract void WriteRom(ushort address, byte value);
 
-        internal abstract void WriteRom(ushort address, in byte value);
+        internal virtual void WriteRam(ushort address, byte value)
+        {
+            if (!IsRamEnabled) return; // Don't accept writes if RAM disabled
 
-        internal abstract void WriteRam(ushort address, in byte value);
+            var bankedAddress = (address - RamAddressStart + RamBank * RAMSize.BankSizeBytes()) % RamBanks.Length;
+
+            RamBanks[bankedAddress] = value;
+        }
 
         public string GameTitle => Encoding.ASCII.GetString(Contents[0x134..0x13F]);
 

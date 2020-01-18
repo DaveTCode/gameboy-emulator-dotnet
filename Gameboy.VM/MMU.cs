@@ -17,7 +17,7 @@ namespace Gameboy.VM
         private readonly byte[] _hRam = new byte[HRAMSize];
         private readonly byte[] _waveRam = new byte[WaveRAMSize];
 
-        public MMU(byte[] rom, in Device device)
+        public MMU(byte[] rom, Device device)
         {
             _rom = rom;
             _device = device;
@@ -151,7 +151,7 @@ namespace Gameboy.VM
         /// <param name="address"></param>
         /// <param name="value"></param>
         /// <returns>The number of cpu cycles taken to write</returns>
-        internal int WriteByte(ushort address, in byte value)
+        internal int WriteByte(ushort address, byte value)
         {
             //_device.Log.Information("Writing {0:X2} to {1:X4}", value, address);
 
@@ -262,7 +262,7 @@ namespace Gameboy.VM
         /// <param name="address"></param>
         /// <param name="value"></param>
         /// <returns>The corresponding number of CPU cycles (4).</returns>
-        internal int WriteWord(ushort address, in ushort value)
+        internal int WriteWord(ushort address, ushort value)
         {
             return
                 WriteByte(address, (byte)(value & 0xFF)) +

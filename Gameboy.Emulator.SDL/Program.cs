@@ -7,7 +7,7 @@ namespace Gameboy.Emulator.SDL
 {
     public class CommandLineOptions
     {
-        [Option('f', "romFilePath", Required = true, HelpText = "The full file path to a binary rom dump")]
+        [Value(0, HelpText = "The full file path to a binary rom dump", MetaName = "RomFilePath")]
         public string RomFilePath { get; }
 
         [Option("skipBootRom", Default = false, HelpText = "Set to true if you want to skip the boot rom check (e.g. if the rom is not a valid gameboy cartridge)")]

@@ -5,17 +5,13 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 ## State
 
 - Passing test roms section at bottom of readme
-- All MBC1 & MBC5 mooneye tests pass
-- Mooneye TIM00,01,10,11 tests all pass (so timer is basically accurate)
-- Tetris is playable without sound
-- Mooneye unused_hwio-GS passes implying all registers are returning correct values for unreadable bits
+- Tetris is playable, Dr Mario is playable
 
 ## TODO
 
 ### Fixes
 
-- Zelda Links Awakening has various graphical bugs
-- Dr Mario doesn't get past startup screen
+- Zelda Links Awakening intro video works fine but first in game ish screen is missing lots of sprites and has loads of glitches
 - Lots of test failures specified in the table below
 
 ![Blargg CPU Instr Failures](./blargg_cpu_instr_output.png)
@@ -25,10 +21,11 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - STOP instruction implementation
 - Thorough testing all opcodes through cartridges
 - Test timer subsystem
-- DMA testing
+- DMA testing/DMA delay
 - Proper configurable serial port support
 - Thorough testing of MBC function
 - Prevent pressing multiple buttons (just direction keys?) at a time
+- MBC !={0,1,5} support
 
 ### Ideas/Future
 
@@ -36,7 +33,6 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - Display FPS using SDL text rendering?
 - Native debugger with winforms/wpf?
 - CGB/SGB support
-- MBC !={0,1} support
 - Cycle accuracy rather than opcode atomicity assumption
 
 ### Known Tests

@@ -10,7 +10,7 @@ namespace Gameboy.VM.CPU
         private readonly CPU _cpu;
         private readonly MMU _mmu;
 
-        internal ALU(ILogger log, in CPU cpu, in MMU mmu)
+        internal ALU(ILogger log, CPU cpu, MMU mmu)
         {
             _log = log;
             _cpu = cpu;
@@ -449,7 +449,7 @@ namespace Gameboy.VM.CPU
             return 24;
         }
 
-        internal int CallOnFlag(CpuFlags flag, in ushort address, in bool isSet)
+        internal int CallOnFlag(CpuFlags flag, ushort address, bool isSet)
         {
             return _cpu.Registers.GetFlag(flag) == isSet ? Call(address) : 12;
         }
@@ -461,7 +461,7 @@ namespace Gameboy.VM.CPU
             return 16;
         }
 
-        internal int ReturnOnFlag(CpuFlags flag, in bool isSet)
+        internal int ReturnOnFlag(CpuFlags flag, bool isSet)
         {
             if (_cpu.Registers.GetFlag(flag) == isSet)
             {
@@ -483,7 +483,7 @@ namespace Gameboy.VM.CPU
             return 12;
         }
 
-        internal int JumpRightOnFlag(CpuFlags flag, in sbyte distance, in bool isSet)
+        internal int JumpRightOnFlag(CpuFlags flag, sbyte distance, bool isSet)
         {
             return _cpu.Registers.GetFlag(flag) == isSet ? JumpRight(distance) : 8;
         }

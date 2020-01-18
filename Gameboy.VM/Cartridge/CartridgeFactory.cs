@@ -27,13 +27,20 @@ namespace Gameboy.VM.Cartridge
                 0x02 => new MBC1Cartridge(contents), // MBC1 + RAM
                 0x03 => new MBC1Cartridge(contents), // MBC1 + RAM + Battery
                 0x04 => throw new ArgumentException($"Unmapped/invalid cartridge type {contents[0x147]}", nameof(contents)), // 0x04 unused
+                // TODO - MBC2
+                0x0F => new MBC3Cartridge(contents), // MBC3 + Timer + Battery
+                0x10 => new MBC3Cartridge(contents), // MBC3 + RAM + Timer + Battery
+                0x11 => new MBC3Cartridge(contents), // MBC3
+                0x12 => new MBC3Cartridge(contents), // MBC3 + RAM
+                0x13 => new MBC3Cartridge(contents), // MBC3 + RAM + Battery
+                _ when contents[0x147] >= 0x14 && contents[0x147] <= 0x18 => throw new ArgumentException($"Unmapped/invalid cartridge type {contents[0x147]}", nameof(contents)), // 0x14-18 unused
                 0x19 => new MBC5Cartridge(contents), // MBC5
                 0x1A => new MBC5Cartridge(contents), // MBC5+RAM
                 0x1B => new MBC5Cartridge(contents), // MBC5+RAM+BATTERY
                 0x1C => new MBC5Cartridge(contents), // MBC5+RUMBLE
                 0x1D => new MBC5Cartridge(contents), // MBC5+RUMBLE+RAM
                 0x1E => new MBC5Cartridge(contents), // MBC5+RUMBLE+RAM+BATTERY
-                // TODO - MBC2,3,5,6,7,PocketCamera,etc
+                // TODO - MBC 6,7,PocketCamera,etc
                 _ => throw new ArgumentException($"Unmapped/invalid cartridge type {contents[0x147]}", nameof(contents))
             };
         }

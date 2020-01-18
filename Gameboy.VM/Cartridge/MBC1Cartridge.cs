@@ -1,24 +1,18 @@
-﻿using System;
-
-namespace Gameboy.VM.Cartridge
+﻿namespace Gameboy.VM.Cartridge
 {
     internal class MBC1Cartridge : Cartridge
     {
-        private bool _isRamEnabled;
-
-        private byte _bankRegister1 = 0x1; // Defaults to 1 and can't be 0
+        private byte _bankRegister1;
         private byte _bankRegister2;
         private byte _modeRegister;
-        private int _ramOffset;
         private int _offsetLowRom;
         private int _offsetHighRom;
-        private readonly byte[] _ramBanks;
 
         public MBC1Cartridge(byte[] contents) : base(contents)
         {
-            _isRamEnabled = false;
-            _ramBanks = new byte[RAMSize.NumberBanks() * RAMSize.BankSizeBytes()];
             UpdateBankValues();
+            _bankRegister1 = 0x1;  // Defaults to 1 and can't be 0
+            _bankRegister2 = 0x0;
         }
 
         internal override byte ReadRom(ushort address)
@@ -33,20 +27,11 @@ namespace Gameboy.VM.Cartridge
             return Contents[bankAddress];
         }
 
-        internal override byte ReadRam(ushort address)
-        {
-            if (!_isRamEnabled) return 0xFF;
-
-            if (address < 0xA000 || address >= 0xC000) throw new ArgumentOutOfRangeException(nameof(address), address, $"Can't access RAM at address {address}");
-
-            return _ramBanks[(address + _ramOffset) % _ramBanks.Length]; // TODO - Is wrapping behavior correct?
-        }
-
-        internal override void WriteRom(ushort address, in byte value)
+        internal override void WriteRom(ushort address, byte value)
         {
             if (address <= 0x1FFF)
             {
-                _isRamEnabled = (value & 0x0F) == 0x0A;
+                IsRamEnabled = (value & 0x0F) == 0x0A;
             }
             else if (address >= 0x2000 && address <= 0x3FFF)
             {
@@ -65,28 +50,14 @@ namespace Gameboy.VM.Cartridge
             UpdateBankValues();
         }
 
-        internal override void WriteRam(ushort address, in byte value)
-        {
-            if (!_isRamEnabled || _ramBanks.Length == 0) return; // Writes only accepted when RAM enabled
-
-            var bankedAddress = (address + _ramOffset) % _ramBanks.Length; // TODO - Is wrapping correct?
-
-            _ramBanks[bankedAddress] = value;
-        }
-
         private void UpdateBankValues()
         {
-            _ramOffset = (_modeRegister == 0x0 ? 0x0 : _bankRegister2 * RAMSize.BankSizeBytes()) - 0xA000;
+            RamBank = (_modeRegister == 0x0 ? 0x0 : _bankRegister2);
             var romBank = _bankRegister2 << 5 | _bankRegister1;
             _offsetHighRom = (romBank - 1) * RomBankSizeBytes;
             _offsetLowRom = _modeRegister == 0x0 ? 0x0 : (_bankRegister2 << 5) * RomBankSizeBytes;
 
             //Console.WriteLine(ToString());
-        }
-
-        public override string ToString()
-        {
-            return $"LOW_OFFSET:{_offsetLowRom} HIGH_OFFSET:{_offsetHighRom} RAM_OFFSET:{_ramOffset}";
         }
     }
 }

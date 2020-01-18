@@ -53,7 +53,7 @@ namespace Gameboy.VM.LCD
             return _vRam[address - 0x8000];
         }
 
-        internal void WriteVRAMByte(ushort address, in byte value)
+        internal void WriteVRAMByte(ushort address, byte value)
         {
             if (address < 0x8000 || address > 0x9FFF) throw new ArgumentOutOfRangeException(nameof(address), address, "VRAM write with invalid address");
 
@@ -67,7 +67,7 @@ namespace Gameboy.VM.LCD
             return _oamRam[address - 0xFE00];
         }
 
-        internal void WriteOAMByte(ushort address, in byte value)
+        internal void WriteOAMByte(ushort address, byte value)
         {
             if (address < 0xFE00 || address > 0xFE9F) throw new ArgumentOutOfRangeException(nameof(address), address, "OAM read with invalid address");
 

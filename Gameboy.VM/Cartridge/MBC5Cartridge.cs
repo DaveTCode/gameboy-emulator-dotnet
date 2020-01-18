@@ -4,21 +4,13 @@ namespace Gameboy.VM.Cartridge
 {
     internal class MBC5Cartridge : Cartridge
     {
-        private bool _isRamEnabled; // Is write/read enabled to external RAM?
-
         private byte _ROMB0; // Lower ROM Bank register
         private byte _ROMB1; // Upper ROM Bank register
         private int _romBank; // Combined ROM bank from above;
 
-        private int _ramBank;
-        private readonly byte[] _ramBanks;
-
         public MBC5Cartridge(byte[] contents) : base(contents)
         {
-            _isRamEnabled = false;
             _romBank = 1;
-            _ramBank = 0;
-            _ramBanks = new byte[RAMSize.NumberBanks() * RAMSize.BankSizeBytes()];
         }
 
         internal override byte ReadRom(ushort address)
@@ -39,22 +31,11 @@ namespace Gameboy.VM.Cartridge
             return 0x0;
         }
 
-        internal override byte ReadRam(ushort address)
-        {
-            // Is RAM enabled
-            if (!_isRamEnabled) return 0xFF;
-
-            // Is the address mappable
-            if (address < 0xA000 || address >= 0xC000) throw new ArgumentOutOfRangeException(nameof(address), address, $"Can't access RAM at address {address}");
-
-            return _ramBanks[address - 0xA000 + _ramBank * RAMSize.BankSizeBytes()];
-        }
-
-        internal override void WriteRom(ushort address, in byte value)
+        internal override void WriteRom(ushort address, byte value)
         {
             if (address <= 0x1FFF)
             {
-                _isRamEnabled = (value & 0x0F) == 0x0A;
+                IsRamEnabled = (value & 0x0F) == 0x0A;
             }
             else if (address >= 0x2000 && address <= 0x2FFF)
             {
@@ -68,19 +49,8 @@ namespace Gameboy.VM.Cartridge
             }
             else if (address >= 0x4000 && address <= 0x5FFF)
             {
-                _ramBank = (value & 8) % RAMSize.NumberBanks();
+                RamBank = (value & 8) % RAMSize.NumberBanks();
             }
-        }
-
-        internal override void WriteRam(ushort address, in byte value)
-        {
-            if (!_isRamEnabled) return; // Don't accept writes if RAM disabled
-
-            var bankedAddress = address - 0xA000 + _ramBank * RAMSize.BankSizeBytes();
-
-            if (bankedAddress > _ramBanks.Length) return; // TODO - Should we do this or does it wrap?
-
-            _ramBanks[bankedAddress] = value;
         }
     }
 }

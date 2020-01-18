@@ -69,7 +69,7 @@ namespace Gameboy.VM.LCD
 
         #region PaletteData Utilities
 
-        internal Grayscale GetColorFromNumberPalette(int colorNumber, in byte paletteData) =>
+        internal Grayscale GetColorFromNumberPalette(int colorNumber, byte paletteData) =>
             colorNumber switch
             {
                 0 => (Grayscale) (paletteData & 0x3),
