@@ -48,13 +48,18 @@ namespace Gameboy.VM.Cartridge
             RamBanks[bankedAddress] = value;
         }
 
+        // TODO - This was only true on some cartridges, others used all the way to 0x143 and didn't have the manufacturer code
         public string GameTitle => Encoding.ASCII.GetString(Contents[0x134..0x13F]);
 
         public string ManufacturerCode => Encoding.ASCII.GetString(Contents[0x13F..0x143]);
 
         public CGBSupportCode CGBSupportCode => (CGBSupportCode)Contents[0x143];
 
-        public string MakerCode => Encoding.ASCII.GetString(Contents[0x144..0x146]);
+        public string MakerCode => Contents[0x14B] switch
+        {
+            0x33 => Encoding.ASCII.GetString(Contents[0x144..0x146]),
+            _ => Encoding.ASCII.GetString(new[] { Contents[0x14B] })
+        };
 
         public SGBSupportCode SGBSupportCode => (SGBSupportCode)Contents[0x146];
 
@@ -64,7 +69,7 @@ namespace Gameboy.VM.Cartridge
 
         public CartridgeDestinationCode DestinationCode => (CartridgeDestinationCode)Contents[0x14A];
 
-        public byte MaskRomNumber => Contents[0x14C];
+        public byte RomVersion => Contents[0x14C];
 
         public byte HeaderChecksum => Contents[0x14D];
 

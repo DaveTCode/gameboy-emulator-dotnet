@@ -13,17 +13,15 @@
 
         internal override byte ReadRam(ushort address)
         {
-            return 0xFF; // TODO - Not necessarily true, not clear what this would actually do in practice
+            return 0xFF;
         }
 
         internal override void WriteRom(ushort address, byte value)
         {
-            // NOOP - TODO, is this correct or does it lock up?
         }
 
         internal override void WriteRam(ushort address, byte value)
         {
-            // NOOP - TODO, is this correct or does it lock up?
         }
     }
 }
