@@ -56,8 +56,6 @@
             var romBank = _bankRegister2 << 5 | _bankRegister1;
             _offsetHighRom = (romBank - 1) * RomBankSizeBytes;
             _offsetLowRom = _modeRegister == 0x0 ? 0x0 : (_bankRegister2 << 5) * RomBankSizeBytes;
-
-            //Console.WriteLine(ToString());
         }
     }
 }

@@ -51,6 +51,10 @@
     "Super Mario Land": {
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/real/Super Mario Land (World).gb\" -s 60 -p 2 --skipBootRom"
+    },
+    "Pokemon Blue": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/real/Pokemon - Blue Version (USA, Europe) (SGB Enhanced).gb\" -s 60 -p 2 --skipBootRom"
     }
   }
 }

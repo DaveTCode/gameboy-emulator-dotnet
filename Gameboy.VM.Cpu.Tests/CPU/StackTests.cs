@@ -44,7 +44,7 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice(new byte[]
             {
                 0x3E, 0x05, // LD A, 0x05
-                0x37, // SCF to force F = Carry + Zero (default)
+                0x37, // SCF to force F = Carry
                 0xF5, // PUSH AF
                 0x3E, 0x00, // LD reg1, 0x00
                 0xF1, // POP AF
@@ -55,7 +55,7 @@ namespace Gameboy.VM.Tests.CPU
                 device.Step();
             }
 
-            Assert.Equal(0x0590, device.CPU.Registers.AF);
+            Assert.Equal(0x0610, device.CPU.Registers.AF);
         }
     }
 }

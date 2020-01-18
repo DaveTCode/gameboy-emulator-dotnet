@@ -255,7 +255,7 @@ namespace Gameboy.VM.Tests.CPU
         }
 
         [Theory]
-        [InlineData(0xFFF8, -2, 0xFFF6, 0x20)]
+        [InlineData(0xFFF8, -2, 0xFFF6, 0x30)]
         [InlineData(0xFFF8, 2, 0xFFFA, 0x0)]
         public void TestLoadHlSpPlusR8(ushort stackPointer, sbyte r8, ushort result, byte flagValues)
         {

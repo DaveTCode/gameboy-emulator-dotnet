@@ -28,17 +28,17 @@ namespace Gameboy.VM.Tests.LCD
         }
 
         [Theory]
-        [InlineData((int)StatMode.HBlankPeriod, 0x80)]
-        [InlineData((int)StatMode.VBlankPeriod, 0x81)]
-        [InlineData((int)StatMode.OAMRAMPeriod, 0x82)]
-        [InlineData((int)StatMode.TransferringDataToDriver, 0x83)]
+        [InlineData((int)StatMode.HBlankPeriod, 0x84)]
+        [InlineData((int)StatMode.VBlankPeriod, 0x85)]
+        [InlineData((int)StatMode.OAMRAMPeriod, 0x86)]
+        [InlineData((int)StatMode.TransferringDataToDriver, 0x87)]
         public void TestSTATRegisterAfterModeChanges(int statModeValue, byte expectedStatRegisterValue)
         {
             var statMode = (StatMode)statModeValue;
             var device = TestUtils.CreateTestDevice();
             device.LCDRegisters.StatMode = statMode;
             Assert.Equal(statMode, device.LCDRegisters.StatMode);
-            Assert.Equal(expectedStatRegisterValue, device.LCDRegisters.StatRegister);
+            Assert.Equal(expectedStatRegisterValue | 0b10000000, device.LCDRegisters.StatRegister);
         }
 
         [Theory]

@@ -13,9 +13,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 ### Fixes
 
 - Lots of test failures specified in the table below
-- Pokemon blue doesn't boot - probably because I haven't tested the MBC3 implementation
-
-![Blargg CPU Instr Failures](./blargg_cpu_instr_output.png)
+- Not convinced about the timing of VBlank interrupts, or specifically how long a whole frame is taking
 
 ### Specific
 
@@ -24,9 +22,9 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - Test timer subsystem
 - DMA testing/DMA delay
 - Proper configurable serial port support
-- Thorough testing of MBC function
 - Prevent pressing multiple buttons (just direction keys?) at a time
-- MBC !={0,1,5} support
+- MBC2
+- APU :(
 
 ### Ideas/Future
 
@@ -35,7 +33,6 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - Native debugger with winforms/wpf?
 - CGB/SGB support
 - Cycle accuracy rather than opcode atomicity assumption
-- Clean up the cartridge code to remove some of the duplication
 
 ### Known Tests
 

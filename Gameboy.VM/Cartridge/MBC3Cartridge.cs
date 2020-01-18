@@ -4,8 +4,6 @@ namespace Gameboy.VM.Cartridge
 {
     internal class MBC3Cartridge : Cartridge
     {
-        private int _romBank = 0x1;
-        
         // RTC registers
         private byte _rtcSecondsRegister;
         private byte _rtcMinutesRegister;
@@ -17,19 +15,9 @@ namespace Gameboy.VM.Cartridge
 
         private DateTime? _latchedTime;
 
+        // TODO - MBC3 doesn't support more than 3 banks of RAM, how to ensure this?
         public MBC3Cartridge(byte[] contents) : base(contents)
         {
-        }
-
-        internal override byte ReadRom(ushort address)
-        {
-            if (address < RomBankSizeBytes)
-            {
-                return Contents[address]; // Fixed bank 0
-            }
-
-            // Variable bank addresses
-            return Contents[address + RomBankSizeBytes * _romBank];
         }
 
         internal override byte ReadRam(ushort address)
@@ -41,7 +29,7 @@ namespace Gameboy.VM.Cartridge
                 return _mappedRTCRegister.Value;
             }
 
-            return RamBanks[address - 0xA000 + RamBank * RAMSize.BankSizeBytes()];
+            return base.ReadRam(address);
         }
 
         internal override void WriteRom(ushort address, byte value)
@@ -52,8 +40,8 @@ namespace Gameboy.VM.Cartridge
             }
             else if (address >= 0x2000 && address <= 0x3FFF)
             {
-                _romBank = value % ROMSize.NumberBanks();
-                if (_romBank == 0x0) _romBank = 0x1;
+                RomBank = value % ROMSize.NumberBanks();
+                if (RomBank == 0x0) RomBank = 0x1;
             }
             else if (address >= 0x4000 && address < 0x5FFF)
             {

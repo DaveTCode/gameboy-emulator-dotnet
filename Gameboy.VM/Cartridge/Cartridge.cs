@@ -12,6 +12,7 @@ namespace Gameboy.VM.Cartridge
         protected bool IsRamEnabled;
 
         protected int RamBank;
+        protected int RomBank;
 
         protected readonly byte[] Contents;
         protected readonly byte[] RamBanks;
@@ -21,27 +22,42 @@ namespace Gameboy.VM.Cartridge
             Contents = contents;
             RamBanks = new byte[RAMSize.NumberBanks() * RAMSize.BankSizeBytes()];
             RamBank = 0x0;
+            RomBank = 0x1;
             IsRamEnabled = false;
         }
 
-        internal abstract byte ReadRom(ushort address);
+        internal virtual byte ReadRom(ushort address)
+        {
+            if (address < RomBankSizeBytes) // Fixed bank 0
+            {
+                return Contents[address % Contents.Length];
+            }
+
+            if (address < RomBankSizeBytes * 2) // Switchable ROM banks
+            {
+                var bankAddress = address + (RomBank - 1) * RomBankSizeBytes;
+                return Contents[bankAddress % Contents.Length];
+            }
+
+            return 0x0;
+        }
 
         internal virtual byte ReadRam(ushort address)
         {
-            // If RAM isn't enabled all wires return high (i.e. 0xFF)
-            if (!IsRamEnabled) return 0xFF;
+            // If RAM isn't enabled or there isn't any all wires return high (i.e. 0xFF)
+            if (!IsRamEnabled || RAMSize == CartridgeRAMSize.None) return 0xFF;
 
-            // Is the address mappable? Could throw assert away if we trust calling code
-            if (address < RamAddressStart || address >= 0xC000) throw new ArgumentOutOfRangeException(nameof(address), address, $"Can't access RAM at address {address}");
+            var bankedAddress = (address - RamAddressStart + RamBank * RAMSize.BankSizeBytes()) % RamBanks.Length;
 
-            return RamBanks[address - RamAddressStart + RamBank * RAMSize.BankSizeBytes()];
+            return RamBanks[bankedAddress];
         }
 
         internal abstract void WriteRom(ushort address, byte value);
 
         internal virtual void WriteRam(ushort address, byte value)
         {
-            if (!IsRamEnabled) return; // Don't accept writes if RAM disabled
+            // Don't accept writes if RAM disabled
+            if (!IsRamEnabled || RAMSize == CartridgeRAMSize.None) return;
 
             var bankedAddress = (address - RamAddressStart + RamBank * RAMSize.BankSizeBytes()) % RamBanks.Length;
 

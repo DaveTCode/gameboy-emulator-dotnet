@@ -37,8 +37,8 @@ namespace Gameboy.VM.Tests.Cartridge
         public void TestRamDoesNotExist()
         {
             var cartridge = CartridgeFactory.CreateCartridge(_cartridgeHeader);
-
             var device = new Device(cartridge);
+            device.SkipBootRom();
 
             // Test that all writes to RAM are ignored leaving 0xFF as default value
             for (ushort ii = 0xA000; ii < 0xC000; ii++)
@@ -53,6 +53,7 @@ namespace Gameboy.VM.Tests.Cartridge
         {
             var cartridge = CartridgeFactory.CreateCartridge(_cartridgeHeader);
             var device = new Device(cartridge);
+            device.SkipBootRom();
 
             // Test that all writes to ROM are ignored and original values retained
             for (ushort ii = 0; ii < 0x7FFF; ii++)

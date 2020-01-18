@@ -6,11 +6,7 @@
         {
         }
 
-        internal override byte ReadRom(ushort address)
-        {
-            return Contents[address % Contents.Length];
-        }
-
+        // TODO - Some documentation suggests that it's possible for a Rom only cartridge to have a single RAM bank?
         internal override byte ReadRam(ushort address)
         {
             return 0xFF;
