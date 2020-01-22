@@ -55,6 +55,10 @@
     "Pokemon Blue": {
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/real/Pokemon - Blue Version (USA, Europe) (SGB Enhanced).gb\" -s 60 -p 2 --skipBootRom"
+    },
+    "Kirby's Pinball Land (MBC2)": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/real/Kirby's Pinball Land (USA, Europe).gb\" -s 60 -p 2 --skipBootRom"
     }
   }
 }

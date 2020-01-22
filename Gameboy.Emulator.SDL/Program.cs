@@ -42,8 +42,8 @@ namespace Gameboy.Emulator.SDL
 
             if (options.SkipBootRom) device.SkipBootRom();
 
-            using var sdlApplication = new SDL2Application(device, options.PixelSize);
-            sdlApplication.ExecuteProgram(options.FramesPerSecond);
+            using var sdlApplication = new SDL2Application(device, options.PixelSize, options.FramesPerSecond);
+            sdlApplication.ExecuteProgram();
 
             return 0;
         }

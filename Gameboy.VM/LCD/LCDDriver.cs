@@ -9,7 +9,7 @@ namespace Gameboy.VM.LCD
         private const int OAMRAMSize = 0xA0;
 
         public const int ClockCyclesForScanline = 456;
-        public const int MaxSpritesPerScanline = 10;
+        public const int MaxSpritesPerScanline = 10; // TODO - Not actually using this
         public const int MaxSpritesPerFrame = 40;
 
         private readonly Device _device;
@@ -299,8 +299,8 @@ namespace Gameboy.VM.LCD
                         }
                         return true; // Entering HBlank so redraw scanline
                     case StatMode.VBlankPeriod:
-                        // TODO - VBlank interrupt but do we need an LCDSTAT interrupt as well?
-                        _device.InterruptRegisters.RequestInterrupt(Interrupt.VerticalBlank);
+                        _device.VBlankHandler?.Invoke(_frameBuffer);
+                        _device.InterruptRegisters.RequestInterrupt(Interrupt.VerticalBlank); // TODO - VBlank interrupt but do we need an LCDSTAT interrupt as well?
                         return false;
                     case StatMode.OAMRAMPeriod:
                         if (_device.LCDRegisters.Mode2OAMCheckEnabled)

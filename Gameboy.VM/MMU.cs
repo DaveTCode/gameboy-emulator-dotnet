@@ -32,8 +32,6 @@ namespace Gameboy.VM
 
         internal byte ReadByte(ushort address)
         {
-            _device.Log.Debug("Reading address {0}", address);
-
             if (address <= 0xFF)
                 return _device.ControlRegisters.RomDisabledRegister == 0
                     ? _rom[address]                     // Read from device ROM if in that state

@@ -2,6 +2,7 @@
 {
     internal class Timer
     {
+        internal long TotalTCycles;
         internal ushort SystemCounter { get; private set; }
 
         private readonly Device _device;
@@ -21,6 +22,7 @@
         {
             // Handle system counter - note that it happens regardless of whether timer is turned on
             SystemCounter = (ushort)(SystemCounter + tCycles);
+            TotalTCycles += tCycles;
 
             // Handle standard timer
             if (!_isTimerEnabled) return;

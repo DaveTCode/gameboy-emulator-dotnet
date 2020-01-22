@@ -27,7 +27,13 @@ namespace Gameboy.VM.Cartridge
                 0x02 => new MBC1Cartridge(contents), // MBC1 + RAM
                 0x03 => new MBC1Cartridge(contents), // MBC1 + RAM + Battery
                 0x04 => throw new ArgumentException($"Unmapped/invalid cartridge type {contents[0x147]}", nameof(contents)), // 0x04 unused
-                // TODO - MBC2
+                0x05 => new MBC2Cartridge(contents), // MBC2
+                0x06 => new MBC2Cartridge(contents), // MBC2 + Battery
+                // TODO - MBC0 with RAM 0x08 =>
+                // TODO - MBC0 with RAM 0x09 =>
+                0x0A => throw new ArgumentException($"Unmapped/invalid cartridge type {contents[0x147]}", nameof(contents)), // 0x0A unused
+                // TODO 0x0B-0x0D MMM01 cartridge
+                0x0E => throw new ArgumentException($"Unmapped/invalid cartridge type {contents[0x147]}", nameof(contents)), // 0x0E unused
                 0x0F => new MBC3Cartridge(contents), // MBC3 + Timer + Battery
                 0x10 => new MBC3Cartridge(contents), // MBC3 + RAM + Timer + Battery
                 0x11 => new MBC3Cartridge(contents), // MBC3
@@ -40,6 +46,7 @@ namespace Gameboy.VM.Cartridge
                 0x1C => new MBC5Cartridge(contents), // MBC5+RUMBLE
                 0x1D => new MBC5Cartridge(contents), // MBC5+RUMBLE+RAM
                 0x1E => new MBC5Cartridge(contents), // MBC5+RUMBLE+RAM+BATTERY
+                0x1F => throw new ArgumentException($"Unmapped/invalid cartridge type {contents[0x147]}", nameof(contents)), // 0x1F unused
                 // TODO - MBC 6,7,PocketCamera,etc
                 _ => throw new ArgumentException($"Unmapped/invalid cartridge type {contents[0x147]}", nameof(contents))
             };

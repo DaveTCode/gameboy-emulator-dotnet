@@ -6,14 +6,14 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 - Passing test roms section at bottom of readme
 - Tetris is playable, Dr Mario is playable
-- Performance is a chunk below 60fps, unsure the primary cause at the moment
+- MBC1,2,3,5 all implemented and tested
 
 ## TODO
 
 ### Fixes
 
 - Lots of test failures specified in the table below
-- Not convinced about the timing of VBlank interrupts, or specifically how long a whole frame is taking
+- Something funny going on with the way that I choose to render, why is every vblank causing 30fps?? Missing chars during rendering certain tests?? Sounds like PPU/CPU not in sync
 
 ### Specific
 
@@ -23,8 +23,8 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - DMA testing/DMA delay
 - Proper configurable serial port support
 - Prevent pressing multiple buttons (just direction keys?) at a time
-- MBC2
 - APU :(
+- RTC for MBC3 pretends to exist but doesn't really
 
 ### Ideas/Future
 
@@ -55,6 +55,13 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 | Mooneye - MBC1 - rom4Mb                     | :white_check_mark:    |       |
 | Mooneye - MBC1 - rom8Mb                     | :white_check_mark:    |       |
 | Mooneye - MBC1 - rom16Mb                    | :white_check_mark:    |       |
+| Mooneye - MBC2 - bits_ramg                  | :white_check_mark:    |       |
+| Mooneye - MBC2 - bits_romb                  | :white_check_mark:    |       |
+| Mooneye - MBC2 - bits_unused                | :white_check_mark:    |       |
+| Mooneye - MBC2 - ram                        | :white_check_mark:    |       |
+| Mooneye - MBC2 - rom1Mb                     | :white_check_mark:    |       |
+| Mooneye - MBC2 - rom2Mb                     | :white_check_mark:    |       |
+| Mooneye - MBC2 - rom512kb                   | :white_check_mark:    |       |
 | Mooneye - MBC5 - rom512kb                   | :white_check_mark:    |       |
 | Mooneye - MBC5 - rom1Mb                     | :white_check_mark:    |       |
 | Mooneye - MBC5 - rom2Mb                     | :white_check_mark:    |       |

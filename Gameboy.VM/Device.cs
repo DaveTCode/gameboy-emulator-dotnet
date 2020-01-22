@@ -18,7 +18,9 @@ namespace Gameboy.VM
     {
         public const int ScreenWidth = 160;
         public const int ScreenHeight = 144;
-        public const int ClockCyclesPerSecond = 4194304 * 4;
+        public const int ClockCyclesPerFrame = 70224;
+
+        public delegate void ExternalVBlankHandler(Grayscale[] frameBuffer);
 
         /// <summary>
         /// Original ROM from a DMG, used to set initial values of registers
@@ -57,6 +59,8 @@ namespace Gameboy.VM
 
         internal readonly Logger Log;
 
+        public ExternalVBlankHandler VBlankHandler { get; set; }
+
         public Device(Cartridge.Cartridge cartridge)
         {
             Log = new LoggerConfiguration()
@@ -82,16 +86,14 @@ namespace Gameboy.VM
             return LCDDriver.DumpVRAM();
         }
 
-        /// <summary>
-        /// We need to expose information on whether the LCD is actually on to
-        /// determine whether to actually display anything.
-        /// </summary>
-        /// <returns></returns>
-        public bool IsScreenOn() => LCDRegisters.IsLcdOn;
-
         public Grayscale[] GetCurrentFrame()
         {
             return LCDDriver.GetCurrentFrame();
+        }
+
+        public string GetCartridgeTitle()
+        {
+            return Cartridge.GameTitle;
         }
 
         /// <summary>
