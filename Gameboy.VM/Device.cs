@@ -121,7 +121,7 @@ namespace Gameboy.VM
         public void SkipBootRom()
         {
             // Set up registers
-            CPU.Registers.AF = 0x01B0;
+            CPU.Registers.AF = (ushort) (Mode == DeviceMode.CGB ? 0x11B0 : 0x01B0); // TODO - Surely more than this needs changing based on boot rom??
             CPU.Registers.BC = 0x0013;
             CPU.Registers.DE = 0x00D8;
             CPU.Registers.HL = 0x014D;

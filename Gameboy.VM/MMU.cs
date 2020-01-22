@@ -137,6 +137,14 @@ namespace Gameboy.VM
                 return _device.LCDDriver.GetVRAMBankRegister();
             if (address == 0xFF50) // Is device ROM enabled?
                 return _device.ControlRegisters.RomDisabledRegister;
+            if (address == 0xFF68) // BCPS register
+                return _device.LCDRegisters.CGBBackgroundPalette.PaletteIndex;
+            if (address == 0xFF69) // BCPD register
+                return _device.LCDRegisters.CGBBackgroundPalette.ReadPaletteMemory();
+            if (address == 0xFF6A) // OCPS register
+                return _device.LCDRegisters.CGBSpritePalette.PaletteIndex;
+            if (address == 0xFF6B) // OCPD register
+                return _device.LCDRegisters.CGBSpritePalette.ReadPaletteMemory();
             if (address == 0xFF70) // RAM Bank register
                 return _wramBank;
             if (address >= 0xFF51 && address <= 0xFF7F) // Unused addresses (TODO some used in CGB)
@@ -258,6 +266,14 @@ namespace Gameboy.VM
                 _device.LCDDriver.SetVRAMBankRegister(value);
             else if (address == 0xFF50) // Undocumented register to unmap ROM and map cartridge
                 _device.ControlRegisters.RomDisabledRegister = value;
+            else if (address == 0xFF68)
+                _device.LCDRegisters.CGBBackgroundPalette.PaletteIndex = value;
+            else if (address == 0xFF69)
+                _device.LCDRegisters.CGBBackgroundPalette.WritePaletteMemory(value);
+            else if (address == 0xFF6A)
+                _device.LCDRegisters.CGBSpritePalette.PaletteIndex = value;
+            else if (address == 0xFF6B)
+                _device.LCDRegisters.CGBSpritePalette.WritePaletteMemory(value);
             else if (address == 0xFF70) // RAM Bank register - only bits 0-2 valid
                 _wramBank = (byte) (value & 0x7);
             else if (address >= 0xFF51 && address <= 0xFF7F) // Unused addresses (TODO - some used in CGB)

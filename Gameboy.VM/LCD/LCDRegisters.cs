@@ -25,6 +25,13 @@ namespace Gameboy.VM.LCD
 
         internal byte ObjectPaletteData1 { get; set; }
 
+        #region CGB Registers
+
+        internal CGBPalette CGBBackgroundPalette { get; } = new CGBPalette();
+
+        internal CGBPalette CGBSpritePalette { get; } = new CGBPalette();
+        #endregion
+
         // TODO - This can be set by the program during normal operation when the LCD is off
         private byte _lcdCurrentScanline;
         internal byte LCDCurrentScanline
@@ -72,10 +79,10 @@ namespace Gameboy.VM.LCD
         internal Grayscale GetColorFromNumberPalette(int colorNumber, byte paletteData) =>
             colorNumber switch
             {
-                0 => (Grayscale) (paletteData & 0x3),
-                1 => (Grayscale) ((paletteData >> 2) & 0x3),
-                2 => (Grayscale) ((paletteData >> 4) & 0x3),
-                3 => (Grayscale) ((paletteData >> 6) & 0x3),
+                0 => (Grayscale)(paletteData & 0x3),
+                1 => (Grayscale)((paletteData >> 2) & 0x3),
+                2 => (Grayscale)((paletteData >> 4) & 0x3),
+                3 => (Grayscale)((paletteData >> 6) & 0x3),
                 _ => throw new ArgumentOutOfRangeException(nameof(colorNumber), colorNumber,
                     "Color number out of range (0-3)")
             };
