@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 using Gameboy.VM.LCD;
 
 namespace Gameboy.VM
 {
     internal class MMU
     {
-        private const int WRAMSize = 0x2000;
+        private const int WRAMSizeDmg = 0x2000;
+        private const int WRAMSizeCgb = 0x8000;
         private const int HRAMSize = 0x7F;
         private const int WaveRAMSize = 0x10;
 
@@ -13,14 +15,23 @@ namespace Gameboy.VM
 
         private readonly byte[] _rom;
 
-        private readonly byte[] _workingRam = new byte[WRAMSize];
+        private readonly byte[] _workingRam;
         private readonly byte[] _hRam = new byte[HRAMSize];
         private readonly byte[] _waveRam = new byte[WaveRAMSize];
+        
+        private byte _wramBank = 1;
 
         public MMU(in byte[] rom, in Device device)
         {
             _rom = rom;
             _device = device;
+
+            _workingRam = device.Mode switch
+            {
+                DeviceMode.DMG => new byte[WRAMSizeDmg],
+                DeviceMode.CGB => new byte[WRAMSizeCgb],
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         internal void Clear()
@@ -38,9 +49,9 @@ namespace Gameboy.VM
                 return _device.ControlRegisters.RomDisabledRegister == 0
                     ? _rom[address]                     // Read from device ROM if in that state
                     : _device.Cartridge.ReadRom(address);      // Read from the 8kB ROM on the cartridge
-            if (address >= 0x0100 && address <= 0x7FFF) // Read from the 8kB ROM on the cartridge
+            if (address <= 0x7FFF) // Read from the 8kB ROM on the cartridge
                 return _device.Cartridge.ReadRom(address);
-            if (address >= 0x8000 && address <= 0x9FFF) // Read from the 8kB Video RAM
+            if (address <= 0x9FFF) // Read from the 8kB Video RAM
             {
                 // Video RAM is unreadable by the CPU during STAT mode 3
                 if (_device.LCDRegisters.StatMode == StatMode.TransferringDataToDriver)
@@ -51,13 +62,13 @@ namespace Gameboy.VM
 
                 return _device.LCDDriver.GetVRAMByte(address);
             }
-            if (address >= 0xA000 && address <= 0xBFFF) // Read from MBC RAM on the cartridge
+            if (address <= 0xBFFF) // Read from MBC RAM on the cartridge
                 return _device.Cartridge.ReadRam(address);
-            if (address >= 0xC000 && address <= 0xDFFF) // Read from 8kB internal RAM
-                return _workingRam[address - 0xC000];
-            if (address >= 0xE000 && address <= 0xFDFF) // Read from echo of internal RAM
-                return _workingRam[address - 0xE000];
-            if (address >= 0xFE00 && address <= 0xFE9F) // Read from sprite attribute table
+            if (address <= 0xDFFF) // Read from WRAM
+                return ReadFromRam(address);
+            if (address <= 0xFDFF) // Read from echo of internal RAM
+                return ReadFromRam((ushort) (address - 0x2000));
+            if (address <= 0xFE9F) // Read from sprite attribute table
             {
                 // OAM RAM is unreadable by the CPU during STAT mode 2 & 3                                              
                 if (_device.LCDRegisters.StatMode == StatMode.OAMRAMPeriod || _device.LCDRegisters.StatMode == StatMode.TransferringDataToDriver)
@@ -68,7 +79,7 @@ namespace Gameboy.VM
 
                 return _device.LCDDriver.GetOAMByte(address);
             }
-            if (address >= 0xFEA0 && address <= 0xFEFF) // Unusable addresses
+            if (address <= 0xFEFF) // Unusable addresses
                 return ReadUnusedAddress(address);
             if (address == 0xFF00) // P1 Register - Joypad input
                 return _device.JoypadHandler.P1Register;
@@ -126,6 +137,8 @@ namespace Gameboy.VM
                 return ReadUnusedAddress(address);
             if (address == 0xFF50) // Is device ROM enabled?
                 return _device.ControlRegisters.RomDisabledRegister;
+            if (address == 0xFF70) // RAM Bank register
+                return _wramBank;
             if (address >= 0xFF51 && address <= 0xFF7F) // Unused addresses (TODO some used in CGB)
                 return ReadUnusedAddress(address);
             if (address >= 0xFF80 && address <= 0xFFFE) // Read from HRAM
@@ -167,9 +180,9 @@ namespace Gameboy.VM
             else if (address >= 0xA000 && address <= 0xBFFF) // Write to the MBC RAM on the cartridge - TODO
                 _device.Cartridge.WriteRam(address, value);
             else if (address >= 0xC000 && address <= 0xDFFF) // Write to the 8kB internal RAM
-                _workingRam[address - 0xC000] = value;
+                WriteToRam(address, value);
             else if (address >= 0xE000 && address <= 0xFDFF) // Write to the 8kB internal RAM
-                _workingRam[address - 0xE000] = value;
+                WriteToRam((ushort) (address - 0x2000), value);
             else if (address >= 0xFE00 && address <= 0xFE9F) // Write to the sprite attribute table
             {
                 if (_device.LCDRegisters.StatMode != StatMode.OAMRAMPeriod && _device.LCDRegisters.StatMode != StatMode.TransferringDataToDriver)
@@ -243,6 +256,8 @@ namespace Gameboy.VM
                 _device.Log.Information("Write to unused address {0:X4}", address);
             else if (address == 0xFF50) // Undocumented register to unmap ROM and map cartridge
                 _device.ControlRegisters.RomDisabledRegister = value;
+            else if (address == 0xFF70) // RAM Bank register - only bits 0-2 valid
+                _wramBank = (byte) (value & 0x7);
             else if (address >= 0xFF51 && address <= 0xFF7F) // Unused addresses (TODO - some used in CGB)
                 _device.Log.Information("Write to unused address {0:X4}", address);
             else if (address >= 0xFF80 && address <= 0xFFFE)  // Write to HRAM
@@ -262,11 +277,31 @@ namespace Gameboy.VM
         /// <param name="address"></param>
         /// <param name="value"></param>
         /// <returns>The corresponding number of CPU cycles (4).</returns>
-        internal int WriteWord(ushort address, in ushort value)
+        internal int WriteWord(ushort address, ushort value)
         {
             return
                 WriteByte(address, (byte)(value & 0xFF)) +
                 WriteByte((ushort)((address + 1) & 0xFFFF), (byte)(value >> 8));
+        }
+
+        private void WriteToRam(ushort address, byte value)
+        {
+            if (_device.Mode == DeviceMode.DMG || address < 0xD000)
+            {
+                _workingRam[address - 0xC000] = value;
+            }
+
+            _workingRam[address - 0xD000 + _wramBank * 0x1000] = value;
+        }
+
+        private byte ReadFromRam(ushort address)
+        {
+            if (_device.Mode == DeviceMode.DMG || address < 0xD000)
+            {
+                return _workingRam[address - 0xC000];
+            }
+
+            return _workingRam[address - 0xD000 + _wramBank * 0x1000];
         }
     }
 }

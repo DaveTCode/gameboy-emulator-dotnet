@@ -54,11 +54,19 @@ namespace Gameboy.VM
         internal readonly Timer Timer;
         internal readonly DMAController DMAController;
         internal readonly JoypadHandler JoypadHandler;
+        internal readonly DeviceMode Mode;
 
         internal readonly Logger Log;
 
-        public Device(in Cartridge.Cartridge cartridge)
+        /// <summary>
+        /// Creates whichever device the <see cref="mode"/> specifies with the
+        /// loaded cartridge.
+        /// </summary>
+        /// <param name="cartridge"></param>
+        /// <param name="mode"></param>
+        public Device(Cartridge.Cartridge cartridge, DeviceMode mode)
         {
+            Mode = mode;
             Log = new LoggerConfiguration()
                 .MinimumLevel.Warning()
                 .WriteTo.File("log.txt", buffered: true)
@@ -101,6 +109,7 @@ namespace Gameboy.VM
         public void SkipBootRom()
         {
             // Set up registers
+            // TODO - Are these values dependent on CGB/DMG? Suspect yes.
             CPU.Registers.AF = 0x01B0;
             CPU.Registers.BC = 0x0013;
             CPU.Registers.DE = 0x00D8;

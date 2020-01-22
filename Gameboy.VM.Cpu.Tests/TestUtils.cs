@@ -12,14 +12,17 @@ namespace Gameboy.VM.Tests
         /// <param name="additionalBytes">
         /// Optional parameter to specify a set of bytes to append at 0x150 (starting PC)
         /// </param>
+        /// <param name="mode">
+        /// Optional parameter to change the device to CGB mode
+        /// </param>
         /// <returns></returns>
-        internal static Device CreateTestDevice(byte[] additionalBytes = null)
+        internal static Device CreateTestDevice(byte[] additionalBytes = null, DeviceMode mode = DeviceMode.DMG)
         {
             var l = new List<byte>(File.ReadAllBytes(Path.Join("ROMs", "base.gb")));
             if (additionalBytes != null) l.AddRange(additionalBytes);
             var cartridge = CartridgeFactory.CreateCartridge(l.ToArray());
 
-            var device = new Device(cartridge);
+            var device = new Device(cartridge, mode);
             device.SkipBootRom();
             return device;
         }
