@@ -14,8 +14,11 @@ namespace Gameboy.VM.LCD
 
         private readonly Device _device;
 
-        private readonly byte[] _vRam = new byte[VRAMSize]; // TODO - Implement CGB vram banks
+        private readonly byte[] _vRamBank0 = new byte[VRAMSize];
+        private readonly byte[] _vRamBank1 = new byte[VRAMSize];
         private readonly byte[] _oamRam = new byte[OAMRAMSize];
+
+        private byte _vRamBank;
 
         /// <summary>
         /// Pre-allocated array of sprite objects which get filled on each
@@ -41,36 +44,43 @@ namespace Gameboy.VM.LCD
         internal void Clear()
         {
             _currentCycle = 0;
+            _vRamBank = 0;
             Array.Clear(_frameBuffer, 0, _frameBuffer.Length);
-            Array.Clear(_vRam, 0, _vRam.Length);
+            Array.Clear(_vRamBank0, 0, _vRamBank0.Length);
+            Array.Clear(_vRamBank1, 0, _vRamBank1.Length);
             Array.Clear(_oamRam, 0, _oamRam.Length);
+        }
+
+        internal byte GetVRAMBankRegister()
+        {
+            return _vRamBank == 1 ? (byte) 0xFF : (byte) 0xFE;
+        }
+
+        internal void SetVRAMBankRegister(byte value)
+        {
+            if (_device.Mode == DeviceMode.DMG) return;
+
+            _vRamBank = (byte) (value & 0x1); // Only bottom bit is important
         }
 
         internal byte GetVRAMByte(ushort address)
         {
-            if (address < 0x8000 || address > 0x9FFF) throw new ArgumentOutOfRangeException(nameof(address), address, "VRAM read with invalid address");
-
-            return _vRam[address - 0x8000];
+            return _vRamBank == 0 ? _vRamBank0[address - 0x8000] : _vRamBank1[address - 0x8000];
         }
 
         internal void WriteVRAMByte(ushort address, byte value)
         {
-            if (address < 0x8000 || address > 0x9FFF) throw new ArgumentOutOfRangeException(nameof(address), address, "VRAM write with invalid address");
-
-            _vRam[address - 0x8000] = value;
+            if (_vRamBank == 0) _vRamBank0[address - 0x8000] = value;
+            else _vRamBank1[address - 0x8000] = value;
         }
 
         internal byte GetOAMByte(ushort address)
         {
-            if (address < 0xFE00 || address > 0xFE9F) throw new ArgumentOutOfRangeException(nameof(address), address, "OAM read with invalid address");
-
             return _oamRam[address - 0xFE00];
         }
 
         internal void WriteOAMByte(ushort address, byte value)
         {
-            if (address < 0xFE00 || address > 0xFE9F) throw new ArgumentOutOfRangeException(nameof(address), address, "OAM read with invalid address");
-
             var modAddress = address - 0xFE00;
             var spriteNumber = modAddress >> 2;
             _oamRam[modAddress] = value;
@@ -164,7 +174,7 @@ namespace Gameboy.VM.LCD
 
         internal (byte[], byte[]) DumpVRAM()
         {
-            return (_vRam, _oamRam);
+            return (_vRamBank0, _oamRam);
         }
 
         private void DrawSprites()
@@ -188,8 +198,8 @@ namespace Gameboy.VM.LCD
                 var tileAddress = sprite.YFlip ? 
                     tileNumber * 16 + (spriteSize - 1 - (line - sprite.Y)) * 2 :
                     tileNumber * 16 + (line - sprite.Y) * 2;
-                var b1 = _vRam[tileAddress];
-                var b2 = _vRam[tileAddress + 1];
+                var b1 = _vRamBank0[tileAddress];
+                var b2 = _vRamBank0[tileAddress + 1];
 
                 for (var x = 0; x < 8; x++)
                 {
@@ -241,11 +251,11 @@ namespace Gameboy.VM.LCD
 
                 var tileNumberAddress = (ushort)((tileMapAddress + tileRow + tileCol) & 0xFFFF);
 
-                var tileNumber = _vRam[tileNumberAddress - 0x8000];
+                var tileNumber = _vRamBank0[tileNumberAddress - 0x8000];
 
                 var tileDataAddress = GetTileDataAddress(tileNumber);
-                var byte1 = _vRam[(tileDataAddress + tileLine) & 0xFFFF - 0x8000];
-                var byte2 = _vRam[(tileDataAddress + tileLine + 1) & 0xFFFF - 0x8000];
+                var byte1 = _vRamBank0[(tileDataAddress + tileLine) & 0xFFFF - 0x8000];
+                var byte2 = _vRamBank0[(tileDataAddress + tileLine + 1) & 0xFFFF - 0x8000];
 
                 // Convert the tile data spread over two bytes into the
                 // specific color value for this pixel.

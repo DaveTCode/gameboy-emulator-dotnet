@@ -4,11 +4,14 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 ## CGB branch known requirements
 
-- WRAM banks
+- WRAM banks - DONE
+- VRAM banks - DONE
+- Speed mode
 - Change boot up state, different boot rom and different initial register values
 - Palettes
 - HDMA
 - CGB only registers
+- Actual rendering of tiles (attributes etc)
 
 
 ## State

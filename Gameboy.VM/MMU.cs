@@ -131,8 +131,10 @@ namespace Gameboy.VM
                 return _device.LCDRegisters.WindowY;
             if (address == 0xFF4B) // WX Register
                 return _device.LCDRegisters.WindowX;
-            if (address >= 0xFF4C && address <= 0xFF4F) // Unused addresses (TODO 0xFF4D used in CGB)
+            if (address >= 0xFF4C && address <= 0xFF4E) // Unused addresses (TODO 0xFF4D used in CGB)
                 return ReadUnusedAddress(address);
+            if (address == 0xFF4F)
+                return _device.LCDDriver.GetVRAMBankRegister();
             if (address == 0xFF50) // Is device ROM enabled?
                 return _device.ControlRegisters.RomDisabledRegister;
             if (address == 0xFF70) // RAM Bank register
@@ -250,8 +252,10 @@ namespace Gameboy.VM
                 _device.LCDRegisters.WindowY = value;
             else if (address == 0xFF4B)
                 _device.LCDRegisters.WindowX = value;
-            else if (address >= 0xFF4C && address <= 0xFF4F) // Unused addresses (TODO 0xFF4D used in CGB)
+            else if (address >= 0xFF4C && address <= 0xFF4E) // Unused addresses (TODO 0xFF4D used in CGB)
                 _device.Log.Information("Write to unused address {0:X4}", address);
+            else if (address == 0xFF4F)
+                _device.LCDDriver.SetVRAMBankRegister(value);
             else if (address == 0xFF50) // Undocumented register to unmap ROM and map cartridge
                 _device.ControlRegisters.RomDisabledRegister = value;
             else if (address == 0xFF70) // RAM Bank register - only bits 0-2 valid

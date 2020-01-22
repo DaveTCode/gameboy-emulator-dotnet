@@ -1,7 +1,9 @@
-﻿using Gameboy.VM.LCD;
+﻿using System;
+using Gameboy.VM.LCD;
 using Gameboy.VM.Interrupts;
 using Gameboy.VM.Sound;
 using System.Runtime.CompilerServices;
+using Gameboy.VM.Cartridge;
 using Gameboy.VM.Timers;
 using Serilog;
 using Serilog.Core;
@@ -80,7 +82,21 @@ namespace Gameboy.VM
             Timer = new Timer(this);
             DMAController = new DMAController(this);
             JoypadHandler = new JoypadHandler(this);
-            Mode = mode;
+
+            // A bit of double checking that we're loading a valid cartridge for the device type
+            if (cartridge.CGBSupportCode == CGBSupportCode.CGBExclusive && mode == DeviceMode.DMG)
+            {
+                Log.Error("Cartridge can't be loaded because it's CGB only and this device was created as DMG");
+                throw new ApplicationException();
+            }
+
+            Mode = cartridge.CGBSupportCode switch
+            {
+                CGBSupportCode.CGBExclusive => DeviceMode.CGB,
+                CGBSupportCode.CGBCompatible => mode,
+                CGBSupportCode.CGBIncompatible => DeviceMode.DMG,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         public (byte[], byte[]) DumpVRAM()
