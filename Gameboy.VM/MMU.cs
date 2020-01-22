@@ -21,7 +21,7 @@ namespace Gameboy.VM
         
         private byte _wramBank = 1;
 
-        public MMU(in byte[] rom, in Device device)
+        public MMU(byte[] rom, Device device)
         {
             _rom = rom;
             _device = device;
@@ -43,8 +43,6 @@ namespace Gameboy.VM
 
         internal byte ReadByte(ushort address)
         {
-            _device.Log.Debug("Reading address {0}", address);
-
             if (address <= 0xFF)
                 return _device.ControlRegisters.RomDisabledRegister == 0
                     ? _rom[address]                     // Read from device ROM if in that state
@@ -149,13 +147,13 @@ namespace Gameboy.VM
             throw new ArgumentOutOfRangeException(nameof(address), address, $"Memory address {address:X4} doesn't map to anything");
         }
 
-        private byte ReadUnusedAddress(in ushort address)
+        private byte ReadUnusedAddress(ushort address)
         {
             _device.Log.Warning("Attempt to read from unused memory location {0:X4}", address);
             return 0xFF;
         }
 
-        internal ushort ReadWord(in ushort address) =>
+        internal ushort ReadWord(ushort address) =>
             (ushort)(ReadByte(address) | (ReadByte((ushort)((address + 1) & 0xFFFF)) << 8));
 
         /// <summary>
@@ -164,7 +162,7 @@ namespace Gameboy.VM
         /// <param name="address"></param>
         /// <param name="value"></param>
         /// <returns>The number of cpu cycles taken to write</returns>
-        internal int WriteByte(in ushort address, in byte value)
+        internal int WriteByte(ushort address, byte value)
         {
             //_device.Log.Information("Writing {0:X2} to {1:X4}", value, address);
 

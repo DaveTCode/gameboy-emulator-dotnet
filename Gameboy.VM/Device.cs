@@ -18,7 +18,9 @@ namespace Gameboy.VM
     {
         public const int ScreenWidth = 160;
         public const int ScreenHeight = 144;
-        public const int ClockCyclesPerSecond = 4194304 * 4;
+        public const int ClockCyclesPerFrame = 70224;
+
+        public delegate void ExternalVBlankHandler(Grayscale[] frameBuffer);
 
         /// <summary>
         /// Original ROM from a DMG, used to set initial values of registers
@@ -54,19 +56,13 @@ namespace Gameboy.VM
         internal readonly Timer Timer;
         internal readonly DMAController DMAController;
         internal readonly JoypadHandler JoypadHandler;
-        internal readonly DeviceMode Mode;
 
         internal readonly Logger Log;
 
-        /// <summary>
-        /// Creates whichever device the <see cref="mode"/> specifies with the
-        /// loaded cartridge.
-        /// </summary>
-        /// <param name="cartridge"></param>
-        /// <param name="mode"></param>
-        public Device(Cartridge.Cartridge cartridge, DeviceMode mode)
+        public ExternalVBlankHandler VBlankHandler { get; set; }
+
+        public Device(Cartridge.Cartridge cartridge)
         {
-            Mode = mode;
             Log = new LoggerConfiguration()
                 .MinimumLevel.Warning()
                 .WriteTo.File("log.txt", buffered: true)
@@ -90,16 +86,14 @@ namespace Gameboy.VM
             return LCDDriver.DumpVRAM();
         }
 
-        /// <summary>
-        /// We need to expose information on whether the LCD is actually on to
-        /// determine whether to actually display anything.
-        /// </summary>
-        /// <returns></returns>
-        public bool IsScreenOn() => LCDRegisters.IsLcdOn;
-
         public Grayscale[] GetCurrentFrame()
         {
             return LCDDriver.GetCurrentFrame();
+        }
+
+        public string GetCartridgeTitle()
+        {
+            return Cartridge.GameTitle;
         }
 
         /// <summary>
@@ -109,7 +103,6 @@ namespace Gameboy.VM
         public void SkipBootRom()
         {
             // Set up registers
-            // TODO - Are these values dependent on CGB/DMG? Suspect yes.
             CPU.Registers.AF = 0x01B0;
             CPU.Registers.BC = 0x0013;
             CPU.Registers.DE = 0x00D8;
@@ -182,7 +175,7 @@ namespace Gameboy.VM
         /// Called whenever a key down event is handled by the calling code
         /// </summary>
         /// <param name="key">The key pressed</param>
-        public void HandleKeyDown(in DeviceKey key)
+        public void HandleKeyDown(DeviceKey key)
         {
             JoypadHandler.Keydown(key);
         }
@@ -191,7 +184,7 @@ namespace Gameboy.VM
         /// Called whenever a key up event is handled by the calling code
         /// </summary>
         /// <param name="key">The key lifted</param>
-        public void HandleKeyUp(in DeviceKey key)
+        public void HandleKeyUp(DeviceKey key)
         {
             JoypadHandler.Keyup(key);
         }

@@ -14,7 +14,7 @@ namespace Gameboy.VM.Tests.CPU
     /// </summary>
     public class LoadTests
     {
-        private byte OpcodeLoadd8FromOpcodeLoadRegDest(in byte opcode) => opcode switch
+        private byte OpcodeLoadd8FromOpcodeLoadRegDest(byte opcode) => opcode switch
         {
             _ when opcode >= 0x40 && opcode <= 0x47 => 0x06, // LD B, d8
             _ when opcode >= 0x48 && opcode <= 0x4F => 0x0E, // LD C, d8
@@ -26,7 +26,7 @@ namespace Gameboy.VM.Tests.CPU
             _ => throw new ArgumentOutOfRangeException(nameof(opcode), opcode, "Opcode not mapped")
         };
 
-        private byte OpcodeLoadd8FromOpcodeLoadRegSrc(in byte opcode) => opcode switch
+        private byte OpcodeLoadd8FromOpcodeLoadRegSrc(byte opcode) => opcode switch
         {
             _ when opcode == 0x40 || opcode == 0x48 || opcode == 0x50 || opcode == 0x58 || opcode == 0x60 || opcode == 0x68 || opcode == 0x70 || opcode == 0x78 => 0x06, // LD B, d8
             _ when opcode == 0x41 || opcode == 0x49 || opcode == 0x51 || opcode == 0x59 || opcode == 0x61 || opcode == 0x69 || opcode == 0x71 || opcode == 0x79 => 0x0E, // LD C, d8
@@ -38,7 +38,7 @@ namespace Gameboy.VM.Tests.CPU
             _ => throw new ArgumentOutOfRangeException(nameof(opcode), opcode, "Opcode not mapped")
         };
 
-        private byte GetRegisterFromOpcode(in Registers register, in byte opcode) => opcode switch
+        private byte GetRegisterFromOpcode(Registers register, in byte opcode) => opcode switch
         {
             _ when opcode >= 0x40 && opcode <= 0x47 => register.B, // LD B, d8
             _ when opcode >= 0x48 && opcode <= 0x4F => register.C, // LD C, d8
@@ -255,7 +255,7 @@ namespace Gameboy.VM.Tests.CPU
         }
 
         [Theory]
-        [InlineData(0xFFF8, -2, 0xFFF6, 0x20)]
+        [InlineData(0xFFF8, -2, 0xFFF6, 0x30)]
         [InlineData(0xFFF8, 2, 0xFFFA, 0x0)]
         public void TestLoadHlSpPlusR8(ushort stackPointer, sbyte r8, ushort result, byte flagValues)
         {

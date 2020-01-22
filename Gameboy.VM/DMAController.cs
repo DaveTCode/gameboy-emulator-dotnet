@@ -4,7 +4,7 @@
     {
         private readonly Device _device;
 
-        internal DMAController(in Device device)
+        internal DMAController(Device device)
         {
             _device = device;
         }
@@ -15,7 +15,7 @@
         /// accessible.
         /// </summary>
         /// <param name="dataAddress"></param>
-        internal void InitiateDMATransfer(in byte dataAddress)
+        internal void InitiateDMATransfer(byte dataAddress)
         {
             var address = dataAddress << 8;
 

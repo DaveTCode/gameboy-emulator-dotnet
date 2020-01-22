@@ -6,7 +6,7 @@ namespace Gameboy.VM.LCD
     {
         private readonly Device _device;
 
-        internal LCDRegisters(in Device device)
+        internal LCDRegisters(Device device)
         {
             _device = device;
         }
@@ -32,6 +32,9 @@ namespace Gameboy.VM.LCD
             get => _lcdCurrentScanline;
             set
             {
+                // Writes are ignored during LCD off
+                if (!IsLcdOn) return;
+
                 _lcdCurrentScanline = value;
                 CoincidenceFlag = value == LYCompare;
 
@@ -66,7 +69,7 @@ namespace Gameboy.VM.LCD
 
         #region PaletteData Utilities
 
-        internal Grayscale GetColorFromNumberPalette(in int colorNumber, in byte paletteData) =>
+        internal Grayscale GetColorFromNumberPalette(int colorNumber, byte paletteData) =>
             colorNumber switch
             {
                 0 => (Grayscale) (paletteData & 0x3),
@@ -185,7 +188,7 @@ namespace Gameboy.VM.LCD
 
         private void CheckLYLCInterrupt()
         {
-            if (IsLYLCCheckEnabled && _lcdCurrentScanline == _lyCompare)
+            if (IsLcdOn && IsLYLCCheckEnabled && _lcdCurrentScanline == _lyCompare)
             {
                 _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.LCDSTAT);
             }

@@ -2,55 +2,63 @@
   "profiles": {
     "Bootrom": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/DMG_ROM.bin --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/DMG_ROM.bin --skipBootRom -s 60 -p 2"
     },
     "Blarg CPU Tests - All (MBC1)": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/tests/blargg/cpu_instrs/cpu_instrs.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/blargg/cpu_instrs/cpu_instrs.gb --skipBootRom -s 60 -p 2"
     },
     "Blarg Instruction Timing": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/tests/blargg/instr_timing/instr_timing.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/blargg/instr_timing/instr_timing.gb --skipBootRom -s 60 -p 2"
     },
     "Blarg Interrupt Timing": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/tests/blargg/interrupt_time/interrupt_time.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/blargg/interrupt_time/interrupt_time.gb --skipBootRom -s 60 -p 2"
     },
     "Mooneye IE Push": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/interrupts/ie_push.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/interrupts/ie_push.gb --skipBootRom -s 60 -p 2"
     },
     "Mooneye Timer - Rapid Toggle": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/timer/rapid_toggle.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/timer/rapid_toggle.gb --skipBootRom -s 60 -p 2"
     },
     "Mooneye Bits - mem_oam.gb": {
       "commandName": "Project",
-      "commandLineArgs": "-f ../../../../Roms/tests/mooneye-gb/acceptance/bits/unused_hwio-GS.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/bits/unused_hwio-GS.gb --skipBootRom -s 60 -p 2"
     },
     "Tetris w/ boot rom": {
       "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/real/Tetris (World) (Rev A).gb\" -s 60 -p 2"
+      "commandLineArgs": "\"../../../../Roms/real/Tetris (World) (Rev A).gb\" -s 60 -p 2"
     },
     "Tetris": {
       "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/real/Tetris (World) (Rev A).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Tetris (World) (Rev A).gb\" -s 60 -p 2 --skipBootRom"
     },
     "Asteroids": {
       "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/real/Asteroids (USA, Europe).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Asteroids (USA, Europe).gb\" -s 60 -p 2 --skipBootRom"
     },
     "Dr Mario - no boot rom": {
       "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/real/Dr. Mario (World).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Dr. Mario (World).gb\" -s 60 -p 2 --skipBootRom"
     },
     "Zelda - Link's Awakening": {
       "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/real/Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev B).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev B).gb\" -s 60 -p 2 --skipBootRom"
     },
     "Super Mario Land": {
       "commandName": "Project",
-      "commandLineArgs": "-f \"../../../../Roms/real/Super Mario Land (World).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Super Mario Land (World).gb\" -s 60 -p 2 --skipBootRom"
+    },
+    "Pokemon Blue": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/real/Pokemon - Blue Version (USA, Europe) (SGB Enhanced).gb\" -s 60 -p 2 --skipBootRom"
+    },
+    "Kirby's Pinball Land (MBC2)": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/real/Kirby's Pinball Land (USA, Europe).gb\" -s 60 -p 2 --skipBootRom"
     }
   }
 }

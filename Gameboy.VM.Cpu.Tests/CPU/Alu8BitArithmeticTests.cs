@@ -14,8 +14,8 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
             var alu = new ALU(Log.Logger, cpu, device.MMU);
-            var cycles = alu.Increment(ref a);
-            Assert.Equal(1, cycles);
+            alu.Increment(ref a);
+            
             Assert.Equal(result, a);
             Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
             Assert.False(cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
@@ -30,8 +30,8 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
             var alu = new ALU(Log.Logger, cpu, device.MMU);
-            var cycles = alu.Decrement(ref a);
-            Assert.Equal(1, cycles);
+            alu.Decrement(ref a);
+            
             Assert.Equal(result, a);
             Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
             Assert.True(cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
@@ -47,8 +47,8 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
             var alu = new ALU(Log.Logger, cpu, device.MMU);
-            var cycles = alu.Add(ref a, b, false);
-            Assert.Equal(1, cycles);
+            alu.Add(ref a, b, false);
+            
             Assert.Equal(result, a);
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
@@ -66,8 +66,7 @@ namespace Gameboy.VM.Tests.CPU
             var cpu = device.CPU;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, currentCarry);
             var alu = new ALU(Log.Logger, cpu, device.MMU);
-            var cycles = alu.Add(ref a, b, true);
-            Assert.Equal(1, cycles);
+            alu.Add(ref a, b, true);
             Assert.Equal(result, a);
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
@@ -85,8 +84,7 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
             var alu = new ALU(Log.Logger, cpu, device.MMU);
-            var cycles = alu.Sub(ref a, b, false);
-            Assert.Equal(1, cycles);
+            alu.Sub(ref a, b, false);
             Assert.Equal(result, a);
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
@@ -104,8 +102,7 @@ namespace Gameboy.VM.Tests.CPU
             var cpu = device.CPU;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, currentCarry);
             var alu = new ALU(Log.Logger, cpu, device.MMU);
-            var cycles = alu.Sub(ref a, b, true);
-            Assert.Equal(1, cycles);
+            alu.Sub(ref a, b, true);
             Assert.Equal(result, a);
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
@@ -122,8 +119,8 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
             var alu = new ALU(Log.Logger, cpu, device.MMU);
-            var cycles = alu.And(ref a, b);
-            Assert.Equal(1, cycles);
+            alu.And(ref a, b);
+            
             Assert.Equal(result, a);
             Assert.False(cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             Assert.True(cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
@@ -140,8 +137,8 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
             var alu = new ALU(Log.Logger, cpu, device.MMU);
-            var cycles = alu.Or(ref a, b);
-            Assert.Equal(1, cycles);
+            alu.Or(ref a, b);
+            
             Assert.Equal(result, a);
             Assert.False(cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             Assert.False(cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
@@ -158,8 +155,8 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
             var alu = new ALU(Log.Logger, cpu, device.MMU);
-            var cycles = alu.Xor(ref a, b);
-            Assert.Equal(1, cycles);
+            alu.Xor(ref a, b);
+            
             Assert.Equal(result, a);
             Assert.False(cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             Assert.False(cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
@@ -176,8 +173,8 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
             var alu = new ALU(Log.Logger, cpu, device.MMU);
-            var cycles = alu.Cp(a, b);
-            Assert.Equal(1, cycles);
+            alu.Cp(a, b);
+            
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
             Assert.True(cpu.Registers.GetFlag(CpuFlags.SubtractFlag));
@@ -193,16 +190,16 @@ namespace Gameboy.VM.Tests.CPU
             cpu.Registers.A = 0x45;
             cpu.Registers.B = 0x38;
             alu.Add(ref cpu.Registers.A, cpu.Registers.B, false);
-            var cycles = alu.DecimalAdjustRegister(ref cpu.Registers.A);
+            alu.DecimalAdjustRegister(ref cpu.Registers.A);
             Assert.Equal(0x83, cpu.Registers.A);
-            Assert.Equal(1, cycles);
+            
             Assert.Equal(0x0, cpu.Registers.F); // All flags zero 
 
             cpu.Registers.A = 0x83;
             alu.Sub(ref cpu.Registers.A, cpu.Registers.B, false);
-            cycles = alu.DecimalAdjustRegister(ref cpu.Registers.A);
+            alu.DecimalAdjustRegister(ref cpu.Registers.A);
             Assert.Equal(0x45, cpu.Registers.A);
-            Assert.Equal(1, cycles);
+            
             Assert.Equal((byte)CpuFlags.SubtractFlag, cpu.Registers.F); // All flags zero 
         }
 

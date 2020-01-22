@@ -13,7 +13,7 @@ namespace Gameboy.VM.CPU
 
         internal Registers Registers { get; }
 
-        internal CPU(in Device device)
+        internal CPU(Device device)
         {
             Registers = new Registers();
             _alu = new ALU(device.Log, this, device.MMU);
@@ -84,7 +84,7 @@ namespace Gameboy.VM.CPU
         /// </returns>
         internal int Step()
         {
-            _device.Log.Information(_device.ToString());
+            //_device.Log.Information(_device.ToString());
 
             if (_isHalted) return 4; // TODO - Right number of cycles? Or do we still count cycles in HALT
 
@@ -651,14 +651,14 @@ namespace Gameboy.VM.CPU
         private byte FetchByte()
         {
             var b = _device.MMU.ReadByte(Registers.ProgramCounter);
-            Registers.ProgramCounter = (ushort)((Registers.ProgramCounter + 1) & 0xFFFF);
+            Registers.ProgramCounter = (ushort)(Registers.ProgramCounter + 1);
             return b;
         }
 
         private ushort FetchWord()
         {
             var w = _device.MMU.ReadWord(Registers.ProgramCounter);
-            Registers.ProgramCounter = (ushort)((Registers.ProgramCounter + 2) & 0xFFFF);
+            Registers.ProgramCounter = (ushort)(Registers.ProgramCounter + 2);
             return w;
         }
 

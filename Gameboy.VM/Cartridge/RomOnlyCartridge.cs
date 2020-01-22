@@ -2,23 +2,22 @@
 {
     internal class RomOnlyCartridge : Cartridge
     {
-        public RomOnlyCartridge(in byte[] contents) : base(in contents)
+        public RomOnlyCartridge(byte[] contents) : base(contents)
         {
         }
 
-        internal override byte ReadRam(in ushort address)
+        // TODO - Some documentation suggests that it's possible for a Rom only cartridge to have a single RAM bank?
+        internal override byte ReadRam(ushort address)
         {
-            return 0x0; // TODO - Not necessarily true, not clear what this would actually do in practice
+            return 0xFF;
         }
 
-        internal override void WriteRom(in ushort address, in byte value)
+        internal override void WriteRom(ushort address, byte value)
         {
-            // NOOP - TODO, is this correct or does it lock up?
         }
 
-        internal override void WriteRam(in ushort address, in byte value)
+        internal override void WriteRam(ushort address, byte value)
         {
-            // NOOP - TODO, is this correct or does it lock up?
         }
     }
 }
