@@ -30,7 +30,7 @@ namespace Gameboy.VM.Tests.Cartridge
         [Fact]
         public void TestRamAccess()
         {
-            var device = new Device(CartridgeFactory.CreateCartridge(_cartridgeBaseContents));
+            var device = new Device(CartridgeFactory.CreateCartridge(_cartridgeBaseContents), DeviceMode.DMG);
             device.SkipBootRom();
 
             Assert.IsType<MBC2Cartridge>(device.Cartridge);
@@ -57,7 +57,7 @@ namespace Gameboy.VM.Tests.Cartridge
             var cartridgeContents = new byte[0x40000];
             Array.Copy(_cartridgeBaseContents, cartridgeContents, _cartridgeBaseContents.Length);
             cartridgeContents[0x7FFF] = 0x9; // Set a random value in ROM bank 1
-            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents));
+            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceMode.DMG);
 
             Assert.Equal(CartridgeROMSize.A256KB, device.Cartridge.ROMSize);
             Assert.Equal(CartridgeRAMSize.None, device.Cartridge.RAMSize);

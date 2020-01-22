@@ -45,6 +45,7 @@ namespace Gameboy.VM
             0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50
         };
 
+        internal readonly DeviceMode Mode;
         internal readonly MMU MMU;
         internal readonly CPU.CPU CPU;
         internal readonly ControlRegisters ControlRegisters;
@@ -61,7 +62,7 @@ namespace Gameboy.VM
 
         public ExternalVBlankHandler VBlankHandler { get; set; }
 
-        public Device(Cartridge.Cartridge cartridge)
+        public Device(Cartridge.Cartridge cartridge, DeviceMode mode)
         {
             Log = new LoggerConfiguration()
                 .MinimumLevel.Warning()
@@ -79,6 +80,7 @@ namespace Gameboy.VM
             Timer = new Timer(this);
             DMAController = new DMAController(this);
             JoypadHandler = new JoypadHandler(this);
+            Mode = mode;
         }
 
         public (byte[], byte[]) DumpVRAM()

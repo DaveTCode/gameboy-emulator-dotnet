@@ -19,12 +19,16 @@ namespace Gameboy.Emulator.SDL
         [Option('p', "pixelSize", Default = 2, HelpText = "The size of the square that we use to represent a single pixel")]
         public int PixelSize { get; }
 
-        public CommandLineOptions(string romFilePath, bool skipBootRom, int framesPerSecond, int pixelSize)
+        [Option("mode", Default = DeviceMode.DMG, HelpText = "Use to select the device mode from CGB/DMG")]
+        public DeviceMode Mode { get; }
+
+        public CommandLineOptions(string romFilePath, bool skipBootRom, int framesPerSecond, int pixelSize, DeviceMode mode)
         {
             RomFilePath = romFilePath;
             SkipBootRom = skipBootRom;
             FramesPerSecond = framesPerSecond;
             PixelSize = pixelSize;
+            Mode = mode;
         }
     }
 
@@ -38,7 +42,7 @@ namespace Gameboy.Emulator.SDL
 
         private static int RunProgram(CommandLineOptions options)
         {
-            var device = new Device(CartridgeFactory.CreateCartridge(File.ReadAllBytes(options.RomFilePath)));
+            var device = new Device(CartridgeFactory.CreateCartridge(File.ReadAllBytes(options.RomFilePath)), options.Mode);
 
             if (options.SkipBootRom) device.SkipBootRom();
 
