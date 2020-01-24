@@ -27,7 +27,7 @@ steps:
   inputs:
     command: 'test'
     projects: 'Gameboy.VM.Tests/Gameboy.VM.Tests.csproj'
-    arguments: /p:CollectCoverage=true /p:CoverletOputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\
+    arguments: /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\
 
 - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
   displayName: ReportGenerator
