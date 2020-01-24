@@ -1,4 +1,5 @@
 [![Build Status](https://dev.azure.com/DavidATyler/Gameboy%20Emulator/_apis/build/status/DaveTCode.gameboy-emulator-dotnet?branchName=master)](https://dev.azure.com/DavidATyler/Gameboy%20Emulator/_build/latest?definitionId=2&branchName=master)
+[![Code Coverage](https://img.shields.io/azure-devops/coverage/DavidATyler/Gameboy%20Emulator/2)](https://img.shields.io/azure-devops/coverage/DavidATyler/Gameboy%20Emulator/2)
 
 # Gameboy Emulator in C# 8
 
