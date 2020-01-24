@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/DavidATyler/Gameboy%20Emulator/_apis/build/status/DaveTCode.gameboy-emulator-dotnet?branchName=master)](https://dev.azure.com/DavidATyler/Gameboy%20Emulator/_build/latest?definitionId=2&branchName=master)
+
 # Gameboy Emulator in C# 8
 
 Gameboy emulator written in C# as an educational exercise (not as a production emulator).
