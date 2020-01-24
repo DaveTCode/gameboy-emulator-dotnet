@@ -41,16 +41,6 @@ namespace Gameboy.VM.LCD
             _device = device;
         }
 
-        internal void Clear()
-        {
-            _currentCycle = 0;
-            _vRamBank = 0;
-            Array.Clear(_frameBuffer, 0, _frameBuffer.Length);
-            Array.Clear(_vRamBank0, 0, _vRamBank0.Length);
-            Array.Clear(_vRamBank1, 0, _vRamBank1.Length);
-            Array.Clear(_oamRam, 0, _oamRam.Length);
-        }
-
         internal byte GetVRAMBankRegister()
         {
             return _vRamBank == 1 ? (byte) 0xFF : (byte) 0xFE;
@@ -58,7 +48,7 @@ namespace Gameboy.VM.LCD
 
         internal void SetVRAMBankRegister(byte value)
         {
-            if (_device.Mode == DeviceMode.DMG) return;
+            if (_device.Mode == DeviceType.DMG) return;
 
             _vRamBank = (byte) (value & 0x1); // Only bottom bit is important
         }

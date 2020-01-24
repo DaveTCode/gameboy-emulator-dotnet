@@ -4,15 +4,15 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 ## CGB branch known requirements
 
-- WRAM banks - DONE
-- VRAM banks - DONE
 - Speed mode
-- Change boot up state, different boot rom and different initial register values
 - Palettes - DONE (needs thorough testing)
-- HDMA
 - CGB only registers
 - Actual rendering of tiles (attributes etc)
-
+- HDMA Tests
+- WRAM banks - DONE
+- VRAM banks - DONE
+- Change boot up state, different boot rom and different initial register values - DONE
+- HDMA - DONE
 
 ## State
 
@@ -32,7 +32,6 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - STOP instruction implementation
 - Thorough testing all opcodes through cartridges
 - Test timer subsystem
-- DMA testing/DMA delay
 - Proper configurable serial port support
 - Prevent pressing multiple buttons (just direction keys?) at a time
 - APU :(
@@ -88,8 +87,8 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 | Mooneye - Instr - daa                       | :white_check_mark:    |       |
 | Mooneye - Interrupts - ie_push              | :x:                   | Subtle bug relating to interrupt causing the PC to get put into the interrupt flag, not emulated |
 | Mooneye - OAM_DMA - basic                   | :white_check_mark:    |       |
-| Mooneye - OAM_DMA - reg_read                | :x:                   | OAM DMA currently single cycle rather than ~160 so all timing bugs expected      |
-| Mooneye - OAM_DMA - sources-GS              | :x:                   | OAM DMA currently single cycle rather than ~160 so all timing bugs expected      |
+| Mooneye - OAM_DMA - reg_read                | :white_check_mark:    |       |
+| Mooneye - OAM_DMA - sources-GS              | :x:                   | Not supposed to pass on CGB, not really clear what this actually _does_      |
 | Mooneye - PPU - hblank_ly_scx_timing-GS     | :x:                   | Likely all specific timings relating to the PPU are broken, we're emulating at single instruction atomicity instead of clock cycles      |
 | Mooneye - PPU - intr_1_2_timing-GS          | :x:                   | Hangs |
 | Mooneye - PPU - intr_2_0_timing-GS          | :x:                   | Fails |
@@ -123,3 +122,44 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 | Mooneye - Timing - halt_ime1_timing2-GS     | :x:    | Unknown      |
 | Mooneye - Timing - if_ie_registers          | :white_check_mark:    |       |
 | Mooneye - Timing - intr_timing              | :white_check_mark:    |       |
+| Mooneye - General - add_sp_e_timing         |:x:                    |       |
+| Mooneye - General - boot_div-dmg0           |:x:                    |       |
+| Mooneye - General - boot_div-dmgABCmgb      |:x:                    |       |
+| Mooneye - General - boot_div-S              |:x:                    |       |
+| Mooneye - General - boot_div2-S             |:x:                    |       |
+| Mooneye - General - boot_hwio-dmg0          |:x:                    |       |
+| Mooneye - General - boot_hwio-dmgABCmgb     |:x:                    |       |
+| Mooneye - General - boot_hwio-S             |:x:                    |       |
+| Mooneye - General - boot_regs-dmg0          |:x:                    |       |
+| Mooneye - General - boot_regs-dmgABC        |:x:                    |       |
+| Mooneye - General - boot_regs-mgb           |:x:                    |       |
+| Mooneye - General - boot_regs-sgb           |:x:                    |       |
+| Mooneye - General - boot_regs-sgb2          |:x:                    |       |
+| Mooneye - General - call_cc_timing          |:x:                    |       |
+| Mooneye - General - call_cc_timing2         |:x:                    |       |
+| Mooneye - General - call_timing             |:x:                    |       |
+| Mooneye - General - call_timing2            |:x:                    |       |
+| Mooneye - General - div_timing              |:white_check_mark:     |       |
+| Mooneye - General - di_timing-GS            |:x:                    |       |
+| Mooneye - General - ei_sequence             |:white_check_mark:     |       |
+| Mooneye - General - ei_timing               |:white_check_mark:     |       |
+| Mooneye - General - halt_ime0_ei            |:x:                    |       |
+| Mooneye - General - halt_ime0_nointr_timing |:x:                    |       |
+| Mooneye - General - halt_ime1_timing        |:x:                    |       |
+| Mooneye - General - halt_ime1_timing2-GS    |:x:                    |       |
+| Mooneye - General - if_ie_registers         |:white_check_mark:     |       |
+| Mooneye - General - intr_timing             |:white_check_mark:     |       |
+| Mooneye - General - jp_cc_timing            |:x:                    |       |
+| Mooneye - General - jp_timing               |:x:                    |       |
+| Mooneye - General - ld_hl_sp_e_timing       |:x:                    |       |
+| Mooneye - General - oam_dma_restart         |:x:                    |       |
+| Mooneye - General - oam_dma_start           |:x:                    |       |
+| Mooneye - General - oam_dma_timing          |:x:                    |       |
+| Mooneye - General - pop_timing              |:x:                    |       |
+| Mooneye - General - push_timing             |:x:                    |       |
+| Mooneye - General - rapid_di_ei             |:white_check_mark:     |       |
+| Mooneye - General - reti_intr_timing        |:x:                    |       |
+| Mooneye - General - reti_timing             |:x:                    |       |
+| Mooneye - General - ret_cc_timing           |:x:                    |       |
+| Mooneye - General - ret_timing              |:x:                    |       |
+| Mooneye - General - rst_timing              |:x:                    |       |

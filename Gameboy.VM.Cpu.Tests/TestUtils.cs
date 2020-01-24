@@ -16,7 +16,7 @@ namespace Gameboy.VM.Tests
         /// Optional parameter to change the device to CGB mode
         /// </param>
         /// <returns></returns>
-        internal static Device CreateTestDevice(byte[] additionalBytes = null, DeviceMode mode = DeviceMode.DMG)
+        internal static Device CreateTestDevice(byte[] additionalBytes = null, DeviceType mode = DeviceType.DMG)
         {
             var l = new List<byte>(File.ReadAllBytes(Path.Join("ROMs", "base.gb")));
             if (additionalBytes != null) l.AddRange(additionalBytes);

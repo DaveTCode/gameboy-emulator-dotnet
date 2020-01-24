@@ -34,6 +34,8 @@ namespace Gameboy.VM.CPU
         /// </returns>
         internal int CheckForInterrupts()
         {
+            if (_device.DMAController.BlockInterrupts()) return 0;
+
             var cycles = 0;
 
             // Note that the priority ordering is the same as the bit ordering so this works
@@ -86,7 +88,9 @@ namespace Gameboy.VM.CPU
         {
             //_device.Log.Information(_device.ToString());
 
-            if (_isHalted) return 4; // TODO - Right number of cycles? Or do we still count cycles in HALT
+            // TODO - Both of the below indicate that the CPU is paused but that the clock is still going, better m-cycle emulation would not need this as the clock would be controlled outside of the CPU
+            if (_isHalted) return 4;
+            if (_device.DMAController.HaltCpu()) return 4;
 
             // EI instruction doesn't enable interrupts until after the _next_ instruction, quirk of hardware
             if (_enableInterruptsAfterNextCpuInstruction)

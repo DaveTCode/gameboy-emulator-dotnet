@@ -47,7 +47,8 @@ namespace Gameboy.VM
             0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50
         };
 
-        internal readonly DeviceMode Mode;
+        internal readonly DeviceType Mode;
+        internal readonly DeviceType Type;
         internal readonly MMU MMU;
         internal readonly CPU.CPU CPU;
         internal readonly ControlRegisters ControlRegisters;
@@ -64,12 +65,28 @@ namespace Gameboy.VM
 
         public ExternalVBlankHandler VBlankHandler { get; set; }
 
-        public Device(Cartridge.Cartridge cartridge, DeviceMode mode)
+        public Device(Cartridge.Cartridge cartridge, DeviceType type)
         {
             Log = new LoggerConfiguration()
                 .MinimumLevel.Warning()
                 .WriteTo.File("log.txt", buffered: true)
                 .CreateLogger();
+
+            // A bit of double checking that we're loading a valid cartridge for the device type
+            if (cartridge.CGBSupportCode == CGBSupportCode.CGBExclusive && type == DeviceType.DMG)
+            {
+                Log.Error("Cartridge can't be loaded because it's CGB only and this device was created as DMG");
+                throw new ApplicationException();
+            }
+
+            Type = type;
+            Mode = cartridge.CGBSupportCode switch
+            {
+                CGBSupportCode.CGBExclusive => DeviceType.CGB,
+                CGBSupportCode.CGBCompatible => type,
+                CGBSupportCode.CGBIncompatible => DeviceType.DMG,
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
             InterruptRegisters = new InterruptRegisters();
             ControlRegisters = new ControlRegisters();
@@ -82,21 +99,6 @@ namespace Gameboy.VM
             Timer = new Timer(this);
             DMAController = new DMAController(this);
             JoypadHandler = new JoypadHandler(this);
-
-            // A bit of double checking that we're loading a valid cartridge for the device type
-            if (cartridge.CGBSupportCode == CGBSupportCode.CGBExclusive && mode == DeviceMode.DMG)
-            {
-                Log.Error("Cartridge can't be loaded because it's CGB only and this device was created as DMG");
-                throw new ApplicationException();
-            }
-
-            Mode = cartridge.CGBSupportCode switch
-            {
-                CGBSupportCode.CGBExclusive => DeviceMode.CGB,
-                CGBSupportCode.CGBCompatible => mode,
-                CGBSupportCode.CGBIncompatible => DeviceMode.DMG,
-                _ => throw new ArgumentOutOfRangeException()
-            };
         }
 
         public (byte[], byte[]) DumpVRAM()
@@ -121,10 +123,31 @@ namespace Gameboy.VM
         public void SkipBootRom()
         {
             // Set up registers
-            CPU.Registers.AF = (ushort) (Mode == DeviceMode.CGB ? 0x11B0 : 0x01B0); // TODO - Surely more than this needs changing based on boot rom??
-            CPU.Registers.BC = 0x0013;
-            CPU.Registers.DE = 0x00D8;
-            CPU.Registers.HL = 0x014D;
+            switch (Type, Mode)
+            {
+                case (DeviceType.DMG, DeviceType.DMG): // DMG device running a DMG cartridge
+                    CPU.Registers.AF = 0x01B0;
+                    CPU.Registers.BC = 0x0013;
+                    CPU.Registers.DE = 0x00D8;
+                    CPU.Registers.HL = 0x014D;
+                    break;
+                case (DeviceType.CGB, DeviceType.DMG): // CGB device running a DMG cartridge
+                    CPU.Registers.AF = 0x1180;
+                    CPU.Registers.BC = 0x0000;
+                    CPU.Registers.DE = 0x0008;
+                    CPU.Registers.HL = 0x007C;
+                    break;
+                case (DeviceType.CGB, DeviceType.CGB): // CGB device running a CGB cartridge
+                    CPU.Registers.AF = 0x1180;
+                    CPU.Registers.BC = 0x0000;
+                    CPU.Registers.DE = 0xFF56;
+                    CPU.Registers.HL = 0x000D;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            
+            // Same across all device types to the best available knowledge
             CPU.Registers.ProgramCounter = 0x0100;
             CPU.Registers.StackPointer = 0xFFFE;
 
@@ -166,11 +189,11 @@ namespace Gameboy.VM
         }
 
         /// <summary>
-        /// Performs a update to all subsystems returning the number of CPU
-        /// cycles taken.
+        /// Performs a update to all subsystems returning the number of t-cycles
+        /// taken.
         /// </summary>
         /// <returns>
-        /// The total number of CPU cycles taken by the step.
+        /// The total number of t-cycles taken by the step.
         /// </returns>
         public int Step()
         {
@@ -180,10 +203,13 @@ namespace Gameboy.VM
             // Step 2: Atomically run the next operation
             tCycles += CPU.Step();
 
-            // Step 3: Update the LCD subsystem to sync with the new number of cycles
+            // Step 3: Run the DMA controller to move bytes directly into VRAM/OAM
+            DMAController.Step(tCycles);
+
+            // Step 4: Update the LCD subsystem to sync with the new number of cycles
             LCDDriver.Step(tCycles);
 
-            // Step 4: Update the timer controller with the number of cycles
+            // Step 5: Update the timer controller with the number of cycles
             Timer.Step(tCycles);
 
             return tCycles; // Machine cycles translation

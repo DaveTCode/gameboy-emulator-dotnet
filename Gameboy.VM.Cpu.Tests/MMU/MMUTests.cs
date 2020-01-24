@@ -73,7 +73,7 @@ namespace Gameboy.VM.Tests.MMU
         [Fact]
         public void TestCGBRamBank()
         {
-            var device = TestUtils.CreateTestDevice(mode: DeviceMode.CGB);
+            var device = TestUtils.CreateTestDevice(mode: DeviceType.CGB);
 
             device.MMU.WriteByte(0xC000, 0x1); // Bank 0 value
             device.MMU.WriteByte(0xE001, 0xA); // Bank 0 value in mirror ram

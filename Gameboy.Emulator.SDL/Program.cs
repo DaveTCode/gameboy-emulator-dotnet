@@ -19,10 +19,10 @@ namespace Gameboy.Emulator.SDL
         [Option('p', "pixelSize", Default = 2, HelpText = "The size of the square that we use to represent a single pixel")]
         public int PixelSize { get; }
 
-        [Option("mode", Default = DeviceMode.DMG, HelpText = "Use to select the device mode from CGB/DMG")]
-        public DeviceMode Mode { get; }
+        [Option("mode", Default = DeviceType.DMG, HelpText = "Use to select the device mode from CGB/DMG")]
+        public DeviceType Mode { get; }
 
-        public CommandLineOptions(string romFilePath, bool skipBootRom, int framesPerSecond, int pixelSize, DeviceMode mode)
+        public CommandLineOptions(string romFilePath, bool skipBootRom, int framesPerSecond, int pixelSize, DeviceType mode)
         {
             RomFilePath = romFilePath;
             SkipBootRom = skipBootRom;

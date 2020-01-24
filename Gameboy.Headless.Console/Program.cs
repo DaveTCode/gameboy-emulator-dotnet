@@ -14,10 +14,10 @@ namespace Gameboy.Headless.Console
         [Option("skipBootRom", Default = false, HelpText = "Set to true if you want to skip the boot rom check (e.g. if the rom is not a valid gameboy cartridge)")]
         public bool SkipBootRom { get; }
 
-        [Option("mode", Default = DeviceMode.DMG, HelpText = "Use to select the device mode from CGB/DMG")]
-        public DeviceMode Mode { get; }
+        [Option("mode", Default = DeviceType.DMG, HelpText = "Use to select the device mode from CGB/DMG")]
+        public DeviceType Mode { get; }
 
-        public CommandLineOptions(string romFilePath, bool skipBootRom, DeviceMode mode)
+        public CommandLineOptions(string romFilePath, bool skipBootRom, DeviceType mode)
         {
             RomFilePath = romFilePath;
             SkipBootRom = skipBootRom;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
 using Gameboy.VM.LCD;
 
 namespace Gameboy.VM
@@ -28,17 +27,10 @@ namespace Gameboy.VM
 
             _workingRam = device.Mode switch
             {
-                DeviceMode.DMG => new byte[WRAMSizeDmg],
-                DeviceMode.CGB => new byte[WRAMSizeCgb],
+                DeviceType.DMG => new byte[WRAMSizeDmg],
+                DeviceType.CGB => new byte[WRAMSizeCgb],
                 _ => throw new ArgumentOutOfRangeException()
             };
-        }
-
-        internal void Clear()
-        {
-            Array.Clear(_workingRam, 0, _workingRam.Length);
-            Array.Clear(_hRam, 0, _hRam.Length);
-            Array.Clear(_waveRam, 0, _waveRam.Length);
         }
 
         internal byte ReadByte(ushort address)
@@ -68,10 +60,9 @@ namespace Gameboy.VM
                 return ReadFromRam((ushort) (address - 0x2000));
             if (address <= 0xFE9F) // Read from sprite attribute table
             {
-                // OAM RAM is unreadable by the CPU during STAT mode 2 & 3                                              
-                if (_device.LCDRegisters.StatMode == StatMode.OAMRAMPeriod || _device.LCDRegisters.StatMode == StatMode.TransferringDataToDriver)
+                // OAM RAM is unreadable by the CPU during STAT mode 2 & 3 and during OAM DMA
+                if (_device.LCDRegisters.StatMode == StatMode.OAMRAMPeriod || _device.LCDRegisters.StatMode == StatMode.TransferringDataToDriver || _device.DMAController.BlocksOAMRAM())
                 {
-                    _device.Log.Information("CPU attempted to read OAM RAM ({0:X2}) during stat mode {1}", address, _device.LCDRegisters.StatMode);
                     return 0xFF; // May not be 100% correct, based on speculative information on the internet
                 }
 
@@ -118,9 +109,7 @@ namespace Gameboy.VM
             if (address == 0xFF45) // LYC Register
                 return _device.LCDRegisters.LYCompare;
             if (address == 0xFF46) // DMA Register
-            {
-                return 0x0; // TODO - Is this right? Can one read from DMA register?
-            }
+                return _device.DMAController.DMA;
             if (address == 0xFF47) // Background Palette Register
                 return _device.LCDRegisters.BackgroundPaletteData;
             if (address == 0xFF48) // Object 0 Palette Register
@@ -190,10 +179,10 @@ namespace Gameboy.VM
             else if (address >= 0xC000 && address <= 0xDFFF) // Write to the 8kB internal RAM
                 WriteToRam(address, value);
             else if (address >= 0xE000 && address <= 0xFDFF) // Write to the 8kB internal RAM
-                WriteToRam((ushort) (address - 0x2000), value);
+                WriteToRam((ushort)(address - 0x2000), value);
             else if (address >= 0xFE00 && address <= 0xFE9F) // Write to the sprite attribute table
             {
-                if (_device.LCDRegisters.StatMode != StatMode.OAMRAMPeriod && _device.LCDRegisters.StatMode != StatMode.TransferringDataToDriver)
+                if (_device.LCDRegisters.StatMode != StatMode.OAMRAMPeriod && _device.LCDRegisters.StatMode != StatMode.TransferringDataToDriver && !_device.DMAController.BlocksOAMRAM())
                 {
                     _device.LCDDriver.WriteOAMByte(address, value);
                 }
@@ -247,9 +236,7 @@ namespace Gameboy.VM
             else if (address == 0xFF45)
                 _device.LCDRegisters.LYCompare = value;
             else if (address == 0xFF46) // DMA register
-            {
-                _device.DMAController.InitiateDMATransfer(value);
-            }
+                _device.DMAController.DMA = value;
             else if (address == 0xFF47)
                 _device.LCDRegisters.BackgroundPaletteData = value;
             else if (address == 0xFF48)
@@ -266,6 +253,16 @@ namespace Gameboy.VM
                 _device.LCDDriver.SetVRAMBankRegister(value);
             else if (address == 0xFF50) // Undocumented register to unmap ROM and map cartridge
                 _device.ControlRegisters.RomDisabledRegister = value;
+            else if (address == 0xFF51) // HDMA1
+                _device.DMAController.HDMA1 = value;
+            else if (address == 0xFF52) // HDMA2
+                _device.DMAController.HDMA2 = value;
+            else if (address == 0xFF53) // HDMA3
+                _device.DMAController.HDMA3 = value;
+            else if (address == 0xFF54) // HDMA4
+                _device.DMAController.HDMA4 = value;
+            else if (address == 0xFF55) // HDMA5
+                _device.DMAController.HDMA5 = value;
             else if (address == 0xFF68)
                 _device.LCDRegisters.CGBBackgroundPalette.PaletteIndex = value;
             else if (address == 0xFF69)
@@ -275,7 +272,7 @@ namespace Gameboy.VM
             else if (address == 0xFF6B)
                 _device.LCDRegisters.CGBSpritePalette.WritePaletteMemory(value);
             else if (address == 0xFF70) // RAM Bank register - only bits 0-2 valid
-                _wramBank = (byte) (value & 0x7);
+                _wramBank = (byte)(value & 0x7);
             else if (address >= 0xFF51 && address <= 0xFF7F) // Unused addresses (TODO - some used in CGB)
                 _device.Log.Information("Write to unused address {0:X4}", address);
             else if (address >= 0xFF80 && address <= 0xFFFE)  // Write to HRAM
@@ -304,9 +301,10 @@ namespace Gameboy.VM
 
         private void WriteToRam(ushort address, byte value)
         {
-            if (_device.Mode == DeviceMode.DMG || address < 0xD000)
+            if (_device.Mode == DeviceType.DMG || address < 0xD000)
             {
                 _workingRam[address - 0xC000] = value;
+                return;
             }
 
             _workingRam[address - 0xD000 + _wramBank * 0x1000] = value;
@@ -314,7 +312,7 @@ namespace Gameboy.VM
 
         private byte ReadFromRam(ushort address)
         {
-            if (_device.Mode == DeviceMode.DMG || address < 0xD000)
+            if (_device.Mode == DeviceType.DMG || address < 0xD000)
             {
                 return _workingRam[address - 0xC000];
             }

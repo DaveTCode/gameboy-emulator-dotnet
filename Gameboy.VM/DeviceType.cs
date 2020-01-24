@@ -1,6 +1,6 @@
 ﻿namespace Gameboy.VM
 {
-    public enum DeviceMode
+    public enum DeviceType
     {
         DMG,
         CGB

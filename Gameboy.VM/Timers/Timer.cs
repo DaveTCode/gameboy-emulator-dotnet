@@ -1,4 +1,6 @@
-﻿namespace Gameboy.VM.Timers
+﻿using System;
+
+namespace Gameboy.VM.Timers
 {
     internal class Timer
     {
@@ -15,7 +17,19 @@
 
         internal void Reset(bool skipBootrom)
         {
-            SystemCounter = (ushort)(skipBootrom ? 0xABCC : 0x0000);
+            if (!skipBootrom)
+            {
+                SystemCounter = 0x0;
+                return;
+            }
+
+            SystemCounter = (_device.Type, _device.Mode) switch
+            {
+                (DeviceType.DMG, DeviceType.DMG) => 0xABCC,
+                (DeviceType.CGB, DeviceType.DMG) => 0x267C,
+                (DeviceType.CGB, DeviceType.CGB) => 0x1EA0,
+                _ => throw new ArgumentOutOfRangeException(nameof(_device.Type), $"Invalid device type & mode combination ({_device.Type}, {_device.Mode})")
+            };
         }
 
         internal void Step(int tCycles)
