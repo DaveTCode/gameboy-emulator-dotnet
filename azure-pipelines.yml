@@ -8,33 +8,37 @@ steps:
     packageType: sdk
     version: 3.1.100
     installationPath: $(Agent.ToolsDirectory)/dotnet
+
 - task: DotNetCoreCLI@2
   displayName: 'Restore Packages'
   inputs:
     command: 'restore'
     projects: '**/*.csproj'
     feedsToUse: 'select'
+
 - task: DotNetCoreCLI@2
   displayName: 'Build test project'
   inputs:
     command: 'build'
     projects: 'Gameboy.VM.Tests/Gameboy.VM.Tests.csproj'
+
 - task: DotNetCoreCLI@2
   displayName: 'Run all integration tests'
   inputs:
     command: 'test'
     projects: 'Gameboy.VM.Tests/Gameboy.VM.Tests.csproj'
-    arguments: -c $(BuildConfiguration) --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
-- task: DotNetCoreCLI@2
+    arguments: –configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\
+
+- task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
+  displayName: ReportGenerator
   inputs:
-    command: custom
-    custom: tool
-    arguments: install --tool-path . dotnet-reportgenerator-globaltool
-  displayName: Install ReportGenerator tool
-- script: dotnet reportgenerator -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/coverlet/reports -reporttypes:"Cobertura"
-  displayName: Create reports 
+    reports: '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
+    targetdir: '$(Build.SourcesDirectory)/TestResults/Coverage'
+    sourcedirs: '$(Build.SourcesDirectory)'
+
 - task: PublishCodeCoverageResults@1
-  displayName: 'Publish code coverage'
+  displayName: 'Publish code coverage results'
   inputs:
     codeCoverageTool: Cobertura
-    summaryFileLocation: $(Build.SourcesDirectory)/coverlet/reports/Cobertura.xml  
+    summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/*cobertura.xml'
+    reportDirectory: '$(Build.SourcesDirectory)/TestResults/Coverage'
