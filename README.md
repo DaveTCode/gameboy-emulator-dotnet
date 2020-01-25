@@ -10,8 +10,9 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - Speed mode
 - Palettes - DONE (needs thorough testing)
 - CGB only registers
-- Actual rendering of tiles (attributes etc)
+- Actual rendering of tiles (attributes etc) - IN PROGRESS
 - HDMA Tests
+- Updated debugging spreadsheet
 - WRAM banks - DONE
 - VRAM banks - DONE
 - Change boot up state, different boot rom and different initial register values - DONE

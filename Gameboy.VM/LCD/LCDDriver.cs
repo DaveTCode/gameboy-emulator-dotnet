@@ -168,9 +168,9 @@ namespace Gameboy.VM.LCD
             }
         }
 
-        internal (byte[], byte[]) DumpVRAM()
+        internal (byte[], byte[], byte[]) DumpVRAM()
         {
-            return (_vRamBank0, _oamRam);
+            return (_vRamBank0, _vRamBank1, _oamRam);
         }
 
         private void DrawSprites()
@@ -259,11 +259,11 @@ namespace Gameboy.VM.LCD
                 var flagsByte = _device.Mode == DeviceType.CGB 
                     ? _vRamBank1[(tileDataAddress + tileLine) & 0xFFFF - 0x8000] 
                     : 0x0;
-                var paletteNumber = flagsByte & 0x7; // TODO
+                var paletteNumber = flagsByte & 0x7;
                 var vramBankNumber = (flagsByte & 0x8) >> 3;
                 var xFlip = (flagsByte & 0x20) >> 5 != 0;
                 var yFlip = (flagsByte & 0x40) >> 6 != 0;
-                var bgToOamPriority = (flagsByte & 0x80) >> 7; // TODO
+                var bgToOamPriority = (flagsByte & 0x80) >> 7;
 
                 var tileDataAddressAdjustedForYFlip = yFlip
                     ? tileDataAddress + 14 - tileLine

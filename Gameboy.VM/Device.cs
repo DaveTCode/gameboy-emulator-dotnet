@@ -60,7 +60,7 @@ namespace Gameboy.VM
         internal readonly Timer Timer;
         internal readonly DMAController DMAController;
         internal readonly JoypadHandler JoypadHandler;
-        
+
         // TODO - This isn't actually used to imply double speed anywhere yet
         internal bool DoubleSpeed = false;
 
@@ -104,9 +104,28 @@ namespace Gameboy.VM
             JoypadHandler = new JoypadHandler(this);
         }
 
-        public (byte[], byte[]) DumpVRAM()
+        /// <summary>
+        /// Debug information about the LCD driver & registers
+        /// </summary>
+        /// <returns>
+        /// 1. The contents of VRAM bank 0
+        /// 2. The contents of VRAM bank 1
+        /// 3. The contents of OAM RAM
+        /// 3. The contents of the CGB BG Palette
+        /// 4. The contents of the CGB Sprite Palette
+        /// 5. The contents of the framebuffer
+        /// </returns>
+        public (byte[], byte[], byte[], (byte, byte, byte)[], (byte, byte, byte)[], (byte, byte, byte)[]) DumpLcdDebugInformation()
         {
-            return LCDDriver.DumpVRAM();
+            var (bank0, bank1, oam) = LCDDriver.DumpVRAM();
+            return (
+                bank0,
+                bank1,
+                oam,
+                LCDRegisters.CGBBackgroundPalette.Palette,
+                LCDRegisters.CGBSpritePalette.Palette,
+                LCDDriver.GetCurrentFrame()
+            );
         }
 
         public (byte, byte, byte)[] GetCurrentFrame()
@@ -149,7 +168,7 @@ namespace Gameboy.VM
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            
+
             // Same across all device types to the best available knowledge
             CPU.Registers.ProgramCounter = 0x0100;
             CPU.Registers.StackPointer = 0xFFFE;

@@ -74,13 +74,18 @@ namespace Gameboy.Emulator.SDL
                     case SDL2.SDL_EventType.SDL_KEYUP:
                         if (e.key.keysym.sym == SDL2.SDL_Keycode.SDLK_F2)
                         {
-                            var (vram, oamram) = _device.DumpVRAM();
-                            var frameBuffer = _device.GetCurrentFrame();
+                            var (vramBank0, vramBank1, oamRam, cgbBgPalette, cgbSpritePalette, frameBuffer) = _device.DumpLcdDebugInformation();
                             using var fbFile = System.IO.File.OpenWrite("framebuffer");
-                            using var vramFile = System.IO.File.OpenWrite("VRAM.csv");
+                            using var vramBank0File = System.IO.File.OpenWrite("VRAMBank0.csv");
+                            using var vramBank1File = System.IO.File.OpenWrite("VRAMBank1.csv");
                             using var oamFile = System.IO.File.OpenWrite("OAMRAM.csv");
-                            vramFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", vram)));
-                            oamFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", oamram)));
+                            using var cgbBgPaletteFile = System.IO.File.OpenWrite("CGB_BG_PALETTE.csv");
+                            using var cgbSpritePaletteFile = System.IO.File.OpenWrite("CGB_SPRITE_PALETTE.csv");
+                            vramBank0File.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", vramBank0)));
+                            vramBank1File.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", vramBank1)));
+                            oamFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", oamRam)));
+                            cgbBgPaletteFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", cgbBgPalette)));
+                            cgbSpritePaletteFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", cgbSpritePalette)));
                             fbFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(color => color.Item1 + "," + color.Item2 + "," + color.Item3))));
                             Console.WriteLine(_device.ToString());
                         }
