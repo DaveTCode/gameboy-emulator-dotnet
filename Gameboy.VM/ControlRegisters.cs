@@ -18,6 +18,8 @@
             }
         }
 
+        internal bool SpeedSwitchRequested { get; set; }
+
         // Serial Cable Registers
         internal byte SerialTransferData { get; set; }
 

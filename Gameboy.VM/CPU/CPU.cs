@@ -9,6 +9,7 @@ namespace Gameboy.VM.CPU
         private readonly Device _device;
 
         private bool _isHalted;
+        private bool _isStopped;
         private bool _enableInterruptsAfterNextCpuInstruction;
 
         internal Registers Registers { get; }
@@ -49,7 +50,13 @@ namespace Gameboy.VM.CPU
                         _isHalted = false;
                         cycles += 4;
                     }
-                    _isHalted = false; // Disable halt mode even if interrupts are disabled globally
+                    
+                    // TODO - Not really sure what STOP mode actually means, presumably this is correct
+                    if (_isStopped)
+                    {
+                        _isStopped = false;
+                        cycles += 4;
+                    }
 
                     if (_device.InterruptRegisters.AreInterruptsEnabledGlobally)
                     {
@@ -88,9 +95,8 @@ namespace Gameboy.VM.CPU
         {
             //_device.Log.Information(_device.ToString());
 
-            // TODO - Both of the below indicate that the CPU is paused but that the clock is still going, better m-cycle emulation would not need this as the clock would be controlled outside of the CPU
-            if (_isHalted) return 4;
-            if (_device.DMAController.HaltCpu()) return 4;
+            // TODO - All the below cases indicate that the CPU is paused but that the clock is still going, better m-cycle emulation would not need this as the clock would be controlled outside of the CPU
+            if (_isHalted || _isStopped || _device.DMAController.HaltCpu()) return 4;
 
             // EI instruction doesn't enable interrupts until after the _next_ instruction, quirk of hardware
             if (_enableInterruptsAfterNextCpuInstruction)
@@ -674,8 +680,24 @@ namespace Gameboy.VM.CPU
 
         private int Stop()
         {
-            // TODO
-            var _ = FetchByte();
+            var extraByte = FetchByte();
+
+            if (extraByte != 0x0)
+            {
+                // TODO - Should turn the LCD on I think
+            }
+
+            // Are we waiting to switch speed in GBC mode?
+            if (_device.ControlRegisters.SpeedSwitchRequested)
+            {
+                _device.ControlRegisters.SpeedSwitchRequested = false;
+                _device.DoubleSpeed = true;
+            }
+            else
+            {
+                _isStopped = true;
+            }
+            
             return 8;
         }
     }

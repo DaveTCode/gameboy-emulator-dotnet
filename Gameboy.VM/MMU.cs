@@ -120,6 +120,12 @@ namespace Gameboy.VM
                 return _device.LCDRegisters.WindowY;
             if (address == 0xFF4B) // WX Register
                 return _device.LCDRegisters.WindowX;
+            if (address == 0xFF4D) // Speed switch register
+            {
+                if (_device.Mode == DeviceType.DMG) return 0xFF;
+                
+                return (byte)(_device.DoubleSpeed ? 0x80 : _device.ControlRegisters.SpeedSwitchRequested ? 0x1 : 0x0);
+            }
             if (address >= 0xFF4C && address <= 0xFF4E) // Unused addresses (TODO 0xFF4D used in CGB)
                 return ReadUnusedAddress(address);
             if (address == 0xFF4F)
@@ -247,7 +253,9 @@ namespace Gameboy.VM
                 _device.LCDRegisters.WindowY = value;
             else if (address == 0xFF4B)
                 _device.LCDRegisters.WindowX = value;
-            else if (address >= 0xFF4C && address <= 0xFF4E) // Unused addresses (TODO 0xFF4D used in CGB)
+            else if (address == 0xFF4D) // Speed switch register 
+                _device.ControlRegisters.SpeedSwitchRequested = (value & 0x1) == 0x1;
+            else if (address >= 0xFF4C && address <= 0xFF4E) // Unused addresses
                 _device.Log.Information("Write to unused address {0:X4}", address);
             else if (address == 0xFF4F)
                 _device.LCDDriver.SetVRAMBankRegister(value);

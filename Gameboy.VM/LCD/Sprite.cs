@@ -15,5 +15,9 @@
         internal bool XFlip { get; set; } = false;
 
         internal bool UsePalette1 { get; set; } = false;
+
+        internal int VRAMBankNumber { get; set; } = 0;
+
+        internal int CGBPaletteNumber { get; set; } = 0;
     }
 }

@@ -72,6 +72,14 @@
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/real/Kirby's Pinball Land (USA, Europe).gb\" -s 60 -p 2 --skipBootRom"
     },
+    "Game Boy Color Promotional Demo (DMG device)": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/real/Game Boy Color Promotional Demo.gbc\" -s 60 -p 2 --skipBootRom --mode DMG"
+    },
+    "Game Boy Color Promotional Demo (CGB device)": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/real/Game Boy Color Promotional Demo.gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+    },
     "Pokemon Crystal (MBC3, GBC)": {
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/real/Pokemon - Crystal Version (USA, Europe) (Rev A).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"

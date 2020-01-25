@@ -31,7 +31,7 @@ namespace Gameboy.VM.LCD
             new Sprite(), new Sprite(), new Sprite(), new Sprite(), new Sprite(), new Sprite(), new Sprite(), new Sprite(), new Sprite(), new Sprite()
         };
 
-        private readonly Grayscale[] _frameBuffer = new Grayscale[Device.ScreenHeight * Device.ScreenWidth];
+        private readonly (byte, byte, byte)[] _frameBuffer = new (byte, byte, byte)[Device.ScreenHeight * Device.ScreenWidth];
 
         // Current state of LCD driver
         private int _currentCycle;
@@ -92,11 +92,13 @@ namespace Gameboy.VM.LCD
                     _sprites[spriteNumber].YFlip = (value & 0x40) == 0x40;
                     _sprites[spriteNumber].XFlip = (value & 0x20) == 0x20;
                     _sprites[spriteNumber].UsePalette1 = (value & 0x10) == 0x10;
+                    _sprites[spriteNumber].VRAMBankNumber = (value & 0x8) >> 3;
+                    _sprites[spriteNumber].CGBPaletteNumber = value & 0x7;
                     break;
             }
         }
 
-        internal Grayscale[] GetCurrentFrame()
+        internal (byte, byte, byte)[] GetCurrentFrame()
         {
             return _frameBuffer;
         }
@@ -104,17 +106,20 @@ namespace Gameboy.VM.LCD
         /// <summary>
         /// Internal state to avoid allocation during scanlines, used by sprites to tell whether to draw over bg
         /// </summary>
-        private readonly Grayscale[] _scanline = new Grayscale[Device.ScreenWidth];
+        private readonly (byte, byte, byte)[] _scanline = new (byte, byte, byte)[Device.ScreenWidth];
+        private readonly bool[] _scanlineBgPriority = new bool[Device.ScreenWidth];
 
         /// <summary>
-        /// Proceed by <see cref="cycles"/> number of cycles.
+        /// Proceed by <see cref="tCycles"/> number of cycles.
         ///
         /// Note that this is all a bit sketchy IMO. It's only drawing whole
         /// scanlines at a time instead of doing pixel based timings. But I
         /// don't know enough to achieve that yet
         /// </summary>
-        /// <param name="cycles">The number of cycles since the last step was called.</param>
-        internal void Step(int cycles)
+        /// <param name="tCycles">
+        /// The number of cycles since the last step was called.
+        /// </param>
+        internal void Step(int tCycles)
         {
             if (!_device.LCDRegisters.IsLcdOn)
             {
@@ -122,7 +127,7 @@ namespace Gameboy.VM.LCD
                 return;
             }
 
-            _currentCycle += cycles;
+            _currentCycle += tCycles;
 
             var currentScanLine = _device.LCDRegisters.LCDCurrentScanline;
 
@@ -142,7 +147,8 @@ namespace Gameboy.VM.LCD
                 // Clear scanline
                 for (var ii = 0; ii < Device.ScreenWidth; ii++)
                 {
-                    _scanline[ii] = Grayscale.White;
+                    _scanline[ii] = Grayscale.White.BaseRgb();
+                    _scanlineBgPriority[ii] = false;
                 }
 
                 if (_device.LCDRegisters.IsBackgroundEnabled)
@@ -195,7 +201,8 @@ namespace Gameboy.VM.LCD
                 {
                     var pixel = sprite.X + x;
                     if (pixel < 0 || pixel >= Device.ScreenWidth) continue;
-                    
+                    if (_scanlineBgPriority[pixel]) continue; // Don't overwrite high priority background tiles
+
                     // Convert the tile data spread over two bytes into the
                     // specific color value for this pixel.
                     var colorBit = sprite.XFlip ? x : 7 - x;
@@ -205,10 +212,14 @@ namespace Gameboy.VM.LCD
                         ((b1 & colorBitMask) == colorBitMask ? 1 : 0);
 
                     if (colorNumber == 0) continue; // Don't draw pixels if they're color 0 (transparent)
-                    var color = _device.LCDRegisters.GetColorFromNumberPalette(colorNumber, palette);
+
+                    // Retrieve the actual color to be used from the palette
+                    var color = _device.Mode == DeviceType.CGB
+                        ? _device.LCDRegisters.CGBBackgroundPalette.Palette[sprite.CGBPaletteNumber * 4 + colorNumber]
+                        : _device.LCDRegisters.GetColorFromNumberPalette(colorNumber, palette).BaseRgb();
 
                     if (sprite.SpriteToBgPriority == SpriteToBgPriority.BehindColors123 &&
-                        _scanline[pixel] != Grayscale.White) continue; // Don't draw low priority sprites over background
+                        _scanline[pixel] != Grayscale.White.BaseRgb()) continue; // Don't draw low priority sprites over background
 
                     _scanline[pixel] = color;
                 }
@@ -224,18 +235,18 @@ namespace Gameboy.VM.LCD
                 ? _device.LCDRegisters.WindowTileMapOffset
                 : _device.LCDRegisters.BackgroundTileMapOffset;
             var yPosition = UsingWindowForScanline
-                ? ((_device.LCDRegisters.LCDCurrentScanline - _device.LCDRegisters.WindowY) & 0xFF)
-                : ((_device.LCDRegisters.LCDCurrentScanline + _device.LCDRegisters.ScrollY) & 0xFF);
-            var tileRow = (yPosition / 8) * 32;
-            var tileLine = (yPosition % 8) * 2;
+                ? (_device.LCDRegisters.LCDCurrentScanline - _device.LCDRegisters.WindowY) & 0xFF
+                : (_device.LCDRegisters.LCDCurrentScanline + _device.LCDRegisters.ScrollY) & 0xFF;
+            var tileRow = yPosition / 8 * 32;
+            var tileLine = yPosition % 8 * 2;
 
             for (var pixel = 0; pixel < Device.ScreenWidth; pixel++)
             {
                 // Determine the x position relative to whether we're in the window or the background
                 // taking into account scrolling.
-                var xPos = (UsingWindowForScanline && pixel >= _device.LCDRegisters.WindowX) ?
-                    ((pixel - _device.LCDRegisters.WindowX + 7) & 0xFF) :
-                    ((pixel + _device.LCDRegisters.ScrollX) & 0xFF);
+                var xPos = UsingWindowForScanline && pixel >= _device.LCDRegisters.WindowX ?
+                    (pixel - _device.LCDRegisters.WindowX + 7) & 0xFF :
+                    (pixel + _device.LCDRegisters.ScrollX) & 0xFF;
 
                 var tileCol = xPos / 8;
 
@@ -244,22 +255,43 @@ namespace Gameboy.VM.LCD
                 var tileNumber = _vRamBank0[tileNumberAddress - 0x8000];
 
                 var tileDataAddress = GetTileDataAddress(tileNumber);
-                var byte1 = _vRamBank0[(tileDataAddress + tileLine) & 0xFFFF - 0x8000];
-                var byte2 = _vRamBank0[(tileDataAddress + tileLine + 1) & 0xFFFF - 0x8000];
+
+                var flagsByte = _device.Mode == DeviceType.CGB 
+                    ? _vRamBank1[(tileDataAddress + tileLine) & 0xFFFF - 0x8000] 
+                    : 0x0;
+                var paletteNumber = flagsByte & 0x7; // TODO
+                var vramBankNumber = (flagsByte & 0x8) >> 3;
+                var xFlip = (flagsByte & 0x20) >> 5 != 0;
+                var yFlip = (flagsByte & 0x40) >> 6 != 0;
+                var bgToOamPriority = (flagsByte & 0x80) >> 7; // TODO
+
+                var tileDataAddressAdjustedForYFlip = yFlip
+                    ? tileDataAddress + 14 - tileLine
+                    : tileDataAddress + tileLine;
+
+                var byte1 = vramBankNumber == 0
+                    ? _vRamBank0[tileDataAddressAdjustedForYFlip & 0xFFFF - 0x8000]
+                    : _vRamBank1[tileDataAddressAdjustedForYFlip & 0xFFFF - 0x8000];
+                var byte2 = vramBankNumber == 0
+                    ? _vRamBank0[(tileDataAddressAdjustedForYFlip + 1) & 0xFFFF - 0x8000]
+                    : _vRamBank1[(tileDataAddressAdjustedForYFlip + 1) & 0xFFFF - 0x8000];
 
                 // Convert the tile data spread over two bytes into the
                 // specific color value for this pixel.
-                var colorBit = ((xPos % 8) - 7) * -1;
+                var colorBit = xFlip ? xPos % 8 : 7 - xPos % 8;
                 var colorBitMask = 1 << colorBit;
                 var colorNumber =
                     ((byte2 & colorBitMask) == colorBitMask ? 2 : 0) +
                     ((byte1 & colorBitMask) == colorBitMask ? 1 : 0);
 
                 // Retrieve the actual color to be used from the palette
-                var color = _device.LCDRegisters.GetColorFromNumberPalette(colorNumber, _device.LCDRegisters.BackgroundPaletteData);
+                var color = _device.Mode == DeviceType.CGB
+                    ? _device.LCDRegisters.CGBBackgroundPalette.Palette[paletteNumber * 4 + colorNumber]
+                    : _device.LCDRegisters.GetColorFromNumberPalette(colorNumber, _device.LCDRegisters.BackgroundPaletteData).BaseRgb();
 
-                // Finally set the pixel to the appropriate color
+                // Finally set the pixel to the appropriate color and flag whether this color can be overwritten by sprites
                 _scanline[pixel] = color;
+                _scanlineBgPriority[pixel] = bgToOamPriority == 1;
             }
         }
 

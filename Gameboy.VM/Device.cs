@@ -22,7 +22,7 @@ namespace Gameboy.VM
         public const int ScreenHeight = 144;
         public const int ClockCyclesPerFrame = 70224;
 
-        public delegate void ExternalVBlankHandler(Grayscale[] frameBuffer);
+        public delegate void ExternalVBlankHandler((byte, byte, byte)[] frameBuffer);
 
         /// <summary>
         /// Original ROM from a DMG, used to set initial values of registers
@@ -60,6 +60,9 @@ namespace Gameboy.VM
         internal readonly Timer Timer;
         internal readonly DMAController DMAController;
         internal readonly JoypadHandler JoypadHandler;
+        
+        // TODO - This isn't actually used to imply double speed anywhere yet
+        internal bool DoubleSpeed = false;
 
         internal readonly Logger Log;
 
@@ -68,7 +71,7 @@ namespace Gameboy.VM
         public Device(Cartridge.Cartridge cartridge, DeviceType type)
         {
             Log = new LoggerConfiguration()
-                .MinimumLevel.Warning()
+                .MinimumLevel.Error()
                 .WriteTo.File("log.txt", buffered: true)
                 .CreateLogger();
 
@@ -106,7 +109,7 @@ namespace Gameboy.VM
             return LCDDriver.DumpVRAM();
         }
 
-        public Grayscale[] GetCurrentFrame()
+        public (byte, byte, byte)[] GetCurrentFrame()
         {
             return LCDDriver.GetCurrentFrame();
         }

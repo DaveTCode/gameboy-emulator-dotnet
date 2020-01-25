@@ -81,7 +81,7 @@ namespace Gameboy.Emulator.SDL
                             using var oamFile = System.IO.File.OpenWrite("OAMRAM.csv");
                             vramFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", vram)));
                             oamFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", oamram)));
-                            fbFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(f => (int)f))));
+                            fbFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(color => color.Item1 + "," + color.Item2 + "," + color.Item3))));
                             Console.WriteLine(_device.ToString());
                         }
                         else if (_keyMap.ContainsKey(e.key.keysym.sym))
@@ -99,14 +99,14 @@ namespace Gameboy.Emulator.SDL
             }
         }
 
-        public void HandleVBlankEvent(Grayscale[] frameBuffer)
+        public void HandleVBlankEvent((byte, byte, byte)[] frameBuffer)
         {
             // TODO - Should do this more than once per VBlank (particularly since VBlank not fired during HALT/STOP!
             CheckForInput();
 
             for (var pixel = 0; pixel < frameBuffer.Length; pixel++)
             {
-                var (red, green, blue) = _grayscaleColorMap[frameBuffer[pixel]];
+                var (red, green, blue) = frameBuffer[pixel];
                 SDL2.SDL_SetRenderDrawColor(_renderer, red, green, blue, 255);
 
                 var x = pixel % Device.ScreenWidth;
