@@ -10,29 +10,13 @@ namespace Gameboy.Emulator.SDL
 {
     internal class SDL2Application : IDisposable
     {
-        private readonly Dictionary<Grayscale, (byte, byte, byte)> _grayscaleColorMap = new Dictionary<Grayscale, (byte, byte, byte)>
+        private readonly Dictionary<(byte, byte, byte), (byte, byte, byte)> _grayscaleColorMap = new Dictionary<(byte, byte, byte), (byte, byte, byte)>
         {
-            { Grayscale.White, (236, 237, 176) },
-            { Grayscale.LightGray, (187, 187, 24) },
-            { Grayscale.DarkGray, (107, 110, 0) },
-            { Grayscale.Black, (16, 55, 0) },
+            { GrayscaleExtensions.GrayscaleWhite, (236, 237, 176) },
+            { GrayscaleExtensions.GrayscaleLightGray, (187, 187, 24) },
+            { GrayscaleExtensions.GrayscaleDarkGray, (107, 110, 0) },
+            { GrayscaleExtensions.GrayscaleBlack, (16, 55, 0) },
         };
-
-        /// <summary>
-        /// Adjust colors for modern LCD screens from original device palettes
-        /// </summary>
-        /// <param name="r"></param>
-        /// <param name="g"></param>
-        /// <param name="b"></param>
-        /// <returns>(r,g,b)</returns>
-        private (byte, byte, byte) ColorAdjust(byte r, byte g, byte b)
-        {
-            return ((byte, byte, byte)) (
-                (r * 13 + g * 2 + b) >> 1,
-                (g * 3 + b) << 1,
-                (r * 3 + g * 2 + b * 11) >> 1
-            );
-        }
 
         private readonly Dictionary<SDL2.SDL_Keycode, DeviceKey> _keyMap = new Dictionary<SDL2.SDL_Keycode, DeviceKey>
         {
@@ -152,6 +136,23 @@ namespace Gameboy.Emulator.SDL
                 SDL2.SDL_Delay((uint)msToSleep);
             }
             _stopwatch.Restart();
+        }
+
+        /// <summary>
+        /// Adjust colors for modern LCD screens from original device palettes
+        /// </summary>
+        private (byte, byte, byte) ColorAdjust(byte r, byte g, byte b)
+        {
+            if (_device.Type == DeviceType.DMG)
+            {
+                return _grayscaleColorMap[(r, g, b)];
+            }
+
+            return ((byte, byte, byte))(
+                (r * 13 + g * 2 + b) >> 1,
+                (g * 3 + b) << 1,
+                (r * 3 + g * 2 + b * 11) >> 1
+            );
         }
 
         public void ExecuteProgram()

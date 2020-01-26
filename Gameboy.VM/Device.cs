@@ -47,8 +47,8 @@ namespace Gameboy.VM
             0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50
         };
 
-        internal readonly DeviceType Mode;
-        internal readonly DeviceType Type;
+        public readonly DeviceType Mode;
+        public readonly DeviceType Type;
         internal readonly MMU MMU;
         internal readonly CPU.CPU CPU;
         internal readonly ControlRegisters ControlRegisters;
