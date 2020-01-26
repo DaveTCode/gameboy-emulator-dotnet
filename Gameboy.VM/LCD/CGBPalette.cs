@@ -42,11 +42,13 @@
             if (_paletteIndex % 2 == 0) // Low byte in pair
             {
                 Palette[colorIndex].Item1 = (byte) (value & 0b11111); // Red is the bottom 5 bits
-                Palette[colorIndex].Item2 = (byte) ((Palette[colorIndex].Item2 & 0b11000) | ((value & 0b11100000) >> 5)); // Green has some bits in this byte
+                Palette[colorIndex].Item2 = (byte) (((Palette[colorIndex].Item2 & 0b00011) << 3) | ((value & 0b11100000) >> 5)); // Green has some bits in this byte
             }
-
-            Palette[colorIndex].Item2 = (byte) ((Palette[colorIndex].Item2 & 0b111) | ((value & 0b11) << 2)); // Green has the rest of the bits in this byte
-            Palette[colorIndex].Item3 = (byte) ((value & 0b1111100) >> 2); // Blue is the bits 2-6 of the byte
+            else
+            {
+                Palette[colorIndex].Item2 = (byte)((Palette[colorIndex].Item2 & 0b111) | ((value & 0b11) << 3)); // Green has the rest of the bits in this byte
+                Palette[colorIndex].Item3 = (byte)((value & 0b1111100) >> 2); // Blue is the bits 2-6 of the byte
+            }
 
             // Increment the index register if so configured
             if (_autoIncrement) PaletteIndex += 1;
