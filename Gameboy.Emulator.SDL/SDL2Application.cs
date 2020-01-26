@@ -18,6 +18,22 @@ namespace Gameboy.Emulator.SDL
             { Grayscale.Black, (16, 55, 0) },
         };
 
+        /// <summary>
+        /// Adjust colors for modern LCD screens from original device palettes
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name="g"></param>
+        /// <param name="b"></param>
+        /// <returns>(r,g,b)</returns>
+        private (byte, byte, byte) ColorAdjust(byte r, byte g, byte b)
+        {
+            return ((byte, byte, byte)) (
+                (r * 13 + g * 2 + b) >> 1,
+                (g * 3 + b) << 1,
+                (r * 3 + g * 2 + b * 11) >> 1
+            );
+        }
+
         private readonly Dictionary<SDL2.SDL_Keycode, DeviceKey> _keyMap = new Dictionary<SDL2.SDL_Keycode, DeviceKey>
         {
             {SDL2.SDL_Keycode.SDLK_RIGHT, DeviceKey.Right},
@@ -112,6 +128,7 @@ namespace Gameboy.Emulator.SDL
             for (var pixel = 0; pixel < frameBuffer.Length; pixel++)
             {
                 var (red, green, blue) = frameBuffer[pixel];
+                (red, green, blue) = ColorAdjust(red, green, blue);
 
                 SDL2.SDL_SetRenderDrawColor(_renderer, red, green, blue, 255);
 
