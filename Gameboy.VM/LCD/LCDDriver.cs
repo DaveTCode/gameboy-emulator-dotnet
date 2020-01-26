@@ -107,7 +107,7 @@ namespace Gameboy.VM.LCD
         /// Internal state to avoid allocation during scanlines, used by sprites to tell whether to draw over bg
         /// </summary>
         private readonly (byte, byte, byte)[] _scanline = new (byte, byte, byte)[Device.ScreenWidth];
-        private readonly bool[] _scanlineBgPriority = new bool[Device.ScreenWidth];
+        private readonly ScanlineBgPriority[] _scanlineBgPriority = new ScanlineBgPriority[Device.ScreenWidth];
 
         /// <summary>
         /// Proceed by <see cref="tCycles"/> number of cycles.
@@ -148,7 +148,7 @@ namespace Gameboy.VM.LCD
                 for (var ii = 0; ii < Device.ScreenWidth; ii++)
                 {
                     _scanline[ii] = Grayscale.White.BaseRgb();
-                    _scanlineBgPriority[ii] = false;
+                    _scanlineBgPriority[ii] = ScanlineBgPriority.Normal;
                 }
 
                 if (_device.LCDRegisters.IsBackgroundEnabled)
@@ -194,14 +194,18 @@ namespace Gameboy.VM.LCD
                 var tileAddress = sprite.YFlip ? 
                     tileNumber * 16 + (spriteSize - 1 - (line - sprite.Y)) * 2 :
                     tileNumber * 16 + (line - sprite.Y) * 2;
-                var b1 = _vRamBank0[tileAddress];
-                var b2 = _vRamBank0[tileAddress + 1];
+                var b1 = sprite.VRAMBankNumber == 0
+                    ? _vRamBank0[tileAddress]
+                    : _vRamBank1[tileAddress];
+                var b2 = sprite.VRAMBankNumber == 0
+                    ? _vRamBank0[tileAddress + 1]
+                    : _vRamBank1[tileAddress + 1];
 
                 for (var x = 0; x < 8; x++)
                 {
                     var pixel = sprite.X + x;
                     if (pixel < 0 || pixel >= Device.ScreenWidth) continue;
-                    if (_scanlineBgPriority[pixel]) continue; // Don't overwrite high priority background tiles
+                    if (_scanlineBgPriority[pixel] == ScanlineBgPriority.Priority) continue; // Don't overwrite high priority background tiles
 
                     // Convert the tile data spread over two bytes into the
                     // specific color value for this pixel.
@@ -215,11 +219,12 @@ namespace Gameboy.VM.LCD
 
                     // Retrieve the actual color to be used from the palette
                     var color = _device.Mode == DeviceType.CGB
-                        ? _device.LCDRegisters.CGBBackgroundPalette.Palette[sprite.CGBPaletteNumber * 4 + colorNumber]
+                        ? _device.LCDRegisters.CGBSpritePalette.Palette[sprite.CGBPaletteNumber * 4 + colorNumber]
                         : _device.LCDRegisters.GetColorFromNumberPalette(colorNumber, palette).BaseRgb();
 
+                    // Don't draw low priority sprites over background unless background is transparent
                     if (sprite.SpriteToBgPriority == SpriteToBgPriority.BehindColors123 &&
-                        _scanline[pixel] != Grayscale.White.BaseRgb()) continue; // Don't draw low priority sprites over background
+                        _scanlineBgPriority[pixel] == ScanlineBgPriority.Normal) continue;
 
                     _scanline[pixel] = color;
                 }
@@ -291,7 +296,10 @@ namespace Gameboy.VM.LCD
 
                 // Finally set the pixel to the appropriate color and flag whether this color can be overwritten by sprites
                 _scanline[pixel] = color;
-                _scanlineBgPriority[pixel] = bgToOamPriority == 1;
+
+                if (bgToOamPriority == 1) _scanlineBgPriority[pixel] = ScanlineBgPriority.Priority;
+                else if (colorNumber == 0) _scanlineBgPriority[pixel] = ScanlineBgPriority.Color0;
+                else _scanlineBgPriority[pixel] = ScanlineBgPriority.Normal;
             }
         }
 
@@ -370,5 +378,12 @@ namespace Gameboy.VM.LCD
         }
 
         #endregion
+
+        private enum ScanlineBgPriority
+        {
+            Color0, // Sprites always go on top
+            Priority, // Background always goes over
+            Normal // Sprites go on top unless they say not to
+        }
     }
 }

@@ -112,6 +112,7 @@ namespace Gameboy.Emulator.SDL
             for (var pixel = 0; pixel < frameBuffer.Length; pixel++)
             {
                 var (red, green, blue) = frameBuffer[pixel];
+
                 SDL2.SDL_SetRenderDrawColor(_renderer, red, green, blue, 255);
 
                 var x = pixel % Device.ScreenWidth;
