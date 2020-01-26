@@ -128,11 +128,6 @@ namespace Gameboy.VM
             );
         }
 
-        public (byte, byte, byte)[] GetCurrentFrame()
-        {
-            return LCDDriver.GetCurrentFrame();
-        }
-
         public string GetCartridgeTitle()
         {
             return Cartridge.GameTitle;

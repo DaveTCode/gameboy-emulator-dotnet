@@ -120,18 +120,30 @@ namespace Gameboy.VM
                 return _device.LCDRegisters.WindowY;
             if (address == 0xFF4B) // WX Register
                 return _device.LCDRegisters.WindowX;
+            if (address == 0xFF4C) // Unused address
+                return ReadUnusedAddress(address);
             if (address == 0xFF4D) // Speed switch register
             {
                 if (_device.Mode == DeviceType.DMG) return 0xFF;
                 
                 return (byte)(_device.DoubleSpeed ? 0x80 : _device.ControlRegisters.SpeedSwitchRequested ? 0x1 : 0x0);
             }
-            if (address >= 0xFF4C && address <= 0xFF4E) // Unused addresses (TODO 0xFF4D used in CGB)
+            if (address == 0xFF4E) // Unused address
                 return ReadUnusedAddress(address);
             if (address == 0xFF4F)
                 return _device.LCDDriver.GetVRAMBankRegister();
             if (address == 0xFF50) // Is device ROM enabled?
                 return _device.ControlRegisters.RomDisabledRegister;
+            if (address == 0xFF51) // HDMA1
+                return _device.DMAController.HDMA1;
+            if (address == 0xFF52) // HDMA2
+                return _device.DMAController.HDMA2;
+            if (address == 0xFF53) // HDMA3
+                return _device.DMAController.HDMA3;
+            if (address == 0xFF54) // HDMA4
+                return _device.DMAController.HDMA4;
+            if (address == 0xFF55) // HDMA5
+                return _device.DMAController.HDMA5;
             if (address == 0xFF68) // BCPS register
                 return _device.LCDRegisters.CGBBackgroundPalette.PaletteIndex;
             if (address == 0xFF69) // BCPD register

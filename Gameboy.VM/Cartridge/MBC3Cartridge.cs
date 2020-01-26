@@ -40,7 +40,7 @@ namespace Gameboy.VM.Cartridge
             }
             else if (address >= 0x2000 && address <= 0x3FFF)
             {
-                RomBank = value % ROMSize.NumberBanks();
+                RomBank = (value & 0x7f) % ROMSize.NumberBanks();
                 if (RomBank == 0x0) RomBank = 0x1;
             }
             else if (address >= 0x4000 && address < 0x5FFF)

@@ -93,7 +93,7 @@ namespace Gameboy.VM.CPU
         /// </returns>
         internal int Step()
         {
-            //_device.Log.Information(_device.ToString());
+            //_device.Log.Information(Registers.ProgramCounter.ToString("X4"));
 
             // TODO - All the below cases indicate that the CPU is paused but that the clock is still going, better m-cycle emulation would not need this as the clock would be controlled outside of the CPU
             if (_isHalted || _isStopped || _device.DMAController.HaltCpu()) return 4;

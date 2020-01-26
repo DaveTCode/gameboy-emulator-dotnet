@@ -8,15 +8,16 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 ## CGB branch known requirements
 
 - Speed mode
-- Palettes - DONE (needs thorough testing)
 - CGB only registers
-- Actual rendering of tiles (attributes etc) - IN PROGRESS
-- HDMA Tests
+- HDMA Tests - DONE GDMA, HDMA UNTESTED
 - Updated debugging spreadsheet
 - WRAM banks - DONE
 - VRAM banks - DONE
 - Change boot up state, different boot rom and different initial register values - DONE
 - HDMA - DONE
+- Palettes - DONE
+- Actual rendering of tiles (attributes etc) - DONE
+- Tetris DX working/playable
 
 ## State
 
@@ -29,7 +30,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 ### Fixes
 
 - Lots of test failures specified in the table below
-- Something funny going on with the way that I choose to render, why is every vblank causing 30fps?? Missing chars during rendering certain tests?? Sounds like PPU/CPU not in sync
+- Window looks slightly off in the bottom left (GTA & Zelda) probably just an off by one error on rendering
 
 ### Specific
 

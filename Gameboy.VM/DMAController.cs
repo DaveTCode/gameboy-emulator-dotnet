@@ -130,16 +130,6 @@ namespace Gameboy.VM
 
         private void StepHDMATransfer(int tCycles)
         {
-            // First 4 t-cycles are DMA set up and don't move any bytes
-            if (_hdmaTransferState == DMATransferState.Requested || _hdmaTransferState == DMATransferState.SettingUp)
-            {
-                tCycles -= 4;
-                _hdmaTransferState = _hdmaTransferState == DMATransferState.Requested ? DMATransferState.SettingUp : DMATransferState.Running;
-                _gdmaState = GDMAState.AwaitingHBlank;
-                
-                // TODO - If an existing HDMA transfer is running do we do a final byte here? We do for OAM
-            }
-
             // Handle GDMA state machine
             if (_hdmaMode == HDMAMode.GDMA)
             {
@@ -153,6 +143,16 @@ namespace Gameboy.VM
                     _gdmaState = GDMAState.Copying;
                     _gdmaBytesRemainingThisCopy = 16;
                 }
+            }
+
+            // First 4 t-cycles are DMA set up and don't move any bytes
+            if (_hdmaTransferState == DMATransferState.Requested || _hdmaTransferState == DMATransferState.SettingUp)
+            {
+                tCycles -= 4;
+                _hdmaTransferState = _hdmaTransferState == DMATransferState.Requested ? DMATransferState.SettingUp : DMATransferState.Running;
+                _gdmaState = GDMAState.AwaitingHBlank;
+                
+                // TODO - If an existing HDMA transfer is running do we do a final byte here? We do for OAM
             }
 
             if (_gdmaState == GDMAState.Copying || _hdmaMode == HDMAMode.HDMA)
@@ -177,6 +177,7 @@ namespace Gameboy.VM
                         if (_hdmaTransferSize == 0)
                         {
                             _hdmaTransferState = DMATransferState.Stopped;
+                            _hdma5 = 0xFF; // Reset HDMA5 on completion
                             tCycles = 0;
                             break;
                         }
