@@ -258,11 +258,8 @@ namespace Gameboy.VM.LCD
                 var tileNumberAddress = (ushort)((tileMapAddress + tileRow + tileCol) & 0xFFFF);
 
                 var tileNumber = _vRamBank0[tileNumberAddress - 0x8000];
-
-                var tileDataAddress = GetTileDataAddress(tileNumber);
-
-                var flagsByte = _device.Mode == DeviceType.CGB 
-                    ? _vRamBank1[(tileDataAddress + tileLine) & 0xFFFF - 0x8000] 
+                var flagsByte = _device.Mode == DeviceType.CGB
+                    ? _vRamBank1[tileNumberAddress - 0x8000]
                     : 0x0;
                 var paletteNumber = flagsByte & 0x7;
                 var vramBankNumber = (flagsByte & 0x8) >> 3;
@@ -270,16 +267,16 @@ namespace Gameboy.VM.LCD
                 var yFlip = (flagsByte & 0x40) >> 6 != 0;
                 var bgToOamPriority = (flagsByte & 0x80) >> 7;
 
-                var tileDataAddressAdjustedForYFlip = yFlip
-                    ? tileDataAddress + 14 - tileLine
-                    : tileDataAddress + tileLine;
+                var tileDataAddress = yFlip
+                    ? GetTileDataAddress(tileNumber) + 14 - tileLine
+                    : GetTileDataAddress(tileNumber) + tileLine;
 
                 var byte1 = vramBankNumber == 0
-                    ? _vRamBank0[tileDataAddressAdjustedForYFlip & 0xFFFF - 0x8000]
-                    : _vRamBank1[tileDataAddressAdjustedForYFlip & 0xFFFF - 0x8000];
+                    ? _vRamBank0[tileDataAddress & 0xFFFF - 0x8000]
+                    : _vRamBank1[tileDataAddress & 0xFFFF - 0x8000];
                 var byte2 = vramBankNumber == 0
-                    ? _vRamBank0[(tileDataAddressAdjustedForYFlip + 1) & 0xFFFF - 0x8000]
-                    : _vRamBank1[(tileDataAddressAdjustedForYFlip + 1) & 0xFFFF - 0x8000];
+                    ? _vRamBank0[(tileDataAddress + 1) & 0xFFFF - 0x8000]
+                    : _vRamBank1[(tileDataAddress + 1) & 0xFFFF - 0x8000];
 
                 // Convert the tile data spread over two bytes into the
                 // specific color value for this pixel.
