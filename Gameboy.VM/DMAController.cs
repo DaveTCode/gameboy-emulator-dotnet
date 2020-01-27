@@ -89,7 +89,7 @@ namespace Gameboy.VM
         private HDMAMode _hdmaMode;
         private int _hdmaTransferBlocks;
         private int _hdmaTransferSize;
-        private GDMAState _gdmaState;
+        private HDMAState _hdmaState;
         private int _gdmaBytesRemainingThisCopy;
 
         private DMATransferState _hdmaTransferState = DMATransferState.Stopped;
@@ -130,17 +130,17 @@ namespace Gameboy.VM
 
         private void StepHDMATransfer(int tCycles)
         {
-            // Handle GDMA state machine
-            if (_hdmaMode == HDMAMode.GDMA)
+            // Handle HDMA state machine
+            if (_hdmaMode == HDMAMode.HDMA)
             {
-                if (_gdmaState == GDMAState.FinishedLine && _device.LCDRegisters.StatMode != StatMode.HBlankPeriod)
+                if (_hdmaState == HDMAState.FinishedLine && _device.LCDRegisters.StatMode != StatMode.HBlankPeriod)
                 {
-                    _gdmaState = GDMAState.AwaitingHBlank;
+                    _hdmaState = HDMAState.AwaitingHBlank;
                 }
 
-                if (_gdmaState == GDMAState.AwaitingHBlank && _device.LCDRegisters.StatMode == StatMode.HBlankPeriod)
+                if (_hdmaState == HDMAState.AwaitingHBlank && _device.LCDRegisters.StatMode == StatMode.HBlankPeriod)
                 {
-                    _gdmaState = GDMAState.Copying;
+                    _hdmaState = HDMAState.Copying;
                     _gdmaBytesRemainingThisCopy = 16;
                 }
             }
@@ -150,12 +150,12 @@ namespace Gameboy.VM
             {
                 tCycles -= 4;
                 _hdmaTransferState = _hdmaTransferState == DMATransferState.Requested ? DMATransferState.SettingUp : DMATransferState.Running;
-                _gdmaState = GDMAState.AwaitingHBlank;
+                _hdmaState = HDMAState.AwaitingHBlank;
                 
                 // TODO - If an existing HDMA transfer is running do we do a final byte here? We do for OAM
             }
 
-            if (_gdmaState == GDMAState.Copying || _hdmaMode == HDMAMode.HDMA)
+            if (_hdmaState == HDMAState.Copying || _hdmaMode == HDMAMode.GDMA)
             {
                 // Since we're using instruction step speed there might be more than one copy in this step
                 while (tCycles > 0)
@@ -182,13 +182,13 @@ namespace Gameboy.VM
                             break;
                         }
 
-                        if (_hdmaMode == HDMAMode.GDMA)
+                        if (_hdmaMode == HDMAMode.HDMA)
                         {
                             _gdmaBytesRemainingThisCopy -= 1;
                             // Stop transfer if we've finished the 16 bytes for this HBlank period
                             if (_gdmaBytesRemainingThisCopy == 0)
                             {
-                                _gdmaState = GDMAState.FinishedLine;
+                                _hdmaState = HDMAState.FinishedLine;
                                 tCycles = 0;
                                 break;
                             }
@@ -246,10 +246,11 @@ namespace Gameboy.VM
             {
                 _hdma5 = value;
                 _hdmaMode = (HDMAMode)(value >> 7);
-                _gdmaState = GDMAState.AwaitingHBlank;
+                _hdmaState = HDMAState.AwaitingHBlank;
                 _hdmaTransferBlocks = value & 0b0111_1111;
                 _hdmaTransferSize = (_hdmaTransferBlocks + 1) * 16; // (Blocks + 1) * 16
                 _hdmaTransferState = DMATransferState.Requested;
+                _device.Log.Information("Requesting HDMA transfer from {0} to {1} of {2} bytes", _hdmaSourceAddress, _hdmaDestinationAddress, _hdmaTransferSize);
             }
         }
 
@@ -267,7 +268,7 @@ namespace Gameboy.VM
             HDMA = 0x1
         }
 
-        private enum GDMAState
+        private enum HDMAState
         {
             AwaitingHBlank,
             Copying,
