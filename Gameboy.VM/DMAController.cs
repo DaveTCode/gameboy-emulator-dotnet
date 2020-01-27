@@ -1,4 +1,5 @@
-﻿using Gameboy.VM.LCD;
+﻿using System;
+using Gameboy.VM.LCD;
 
 namespace Gameboy.VM
 {
@@ -90,7 +91,7 @@ namespace Gameboy.VM
         private int _hdmaTransferBlocks;
         private int _hdmaTransferSize;
         private HDMAState _hdmaState;
-        private int _gdmaBytesRemainingThisCopy;
+        private int _hdmaBytesRemainingThisCopy;
 
         private DMATransferState _hdmaTransferState = DMATransferState.Stopped;
 
@@ -133,70 +134,85 @@ namespace Gameboy.VM
             // Handle HDMA state machine
             if (_hdmaMode == HDMAMode.HDMA)
             {
-                if (_hdmaState == HDMAState.FinishedLine && _device.LCDRegisters.StatMode != StatMode.HBlankPeriod)
+                switch (_hdmaState)
                 {
-                    _hdmaState = HDMAState.AwaitingHBlank;
-                }
-
-                if (_hdmaState == HDMAState.AwaitingHBlank && _device.LCDRegisters.StatMode == StatMode.HBlankPeriod)
-                {
-                    _hdmaState = HDMAState.Copying;
-                    _gdmaBytesRemainingThisCopy = 16;
+                    case HDMAState.FinishedLine when _device.LCDRegisters.StatMode != StatMode.HBlankPeriod:
+                        _hdmaState = HDMAState.AwaitingHBlank;
+                        break;
+                    case HDMAState.AwaitingHBlank when _device.LCDRegisters.StatMode == StatMode.HBlankPeriod:
+                        _hdmaState = HDMAState.Copying;
+                        _hdmaBytesRemainingThisCopy = 16;
+                        break;
+                    case HDMAState.Copying:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
 
-            // First 4 t-cycles are DMA set up and don't move any bytes
-            if (_hdmaTransferState == DMATransferState.Requested || _hdmaTransferState == DMATransferState.SettingUp)
+            while (tCycles > 0)
             {
-                tCycles -= 4;
-                _hdmaTransferState = _hdmaTransferState == DMATransferState.Requested ? DMATransferState.SettingUp : DMATransferState.Running;
-                _hdmaState = HDMAState.AwaitingHBlank;
-                
-                // TODO - If an existing HDMA transfer is running do we do a final byte here? We do for OAM
-            }
-
-            if (_hdmaState == HDMAState.Copying || _hdmaMode == HDMAMode.GDMA)
-            {
-                // Since we're using instruction step speed there might be more than one copy in this step
-                while (tCycles > 0)
+                switch (_hdmaTransferState)
                 {
-                    // HDMA works at 2 bytes per m-cycle
-                    for (var ii = 0; ii < 2; ii++)
-                    {
-                        // Copy the next byte directly to VRAM without going through MMU
-                        _device.LCDDriver.WriteVRAMByte(_hdmaDestinationAddress, _device.MMU.ReadByte(_hdmaSourceAddress));
-
-                        // Note that we deliberately use the source/destination addresses to track the pointer to where DMA is accessing
-                        // to emulate that a DMA followed by another without changing source/destination continues on from where it left
-                        // off.
-                        _hdmaDestinationAddress++;
-                        _hdmaSourceAddress++;
-                        _hdmaTransferSize -= 1;
-
-                        // Stop transfer when we have reached the correct transfer size
-                        if (_hdmaTransferSize == 0)
+                    case DMATransferState.Requested:
+                        tCycles -= 4;
+                        _hdmaTransferState = DMATransferState.SettingUp;
+                        break;
+                    case DMATransferState.SettingUp:
+                        tCycles -= 4;
+                        _hdmaState = HDMAState.AwaitingHBlank;
+                        _hdmaTransferState = DMATransferState.Running;
+                        break;
+                    case DMATransferState.Running:
+                        if ((_hdmaState == HDMAState.Copying && _hdmaMode == HDMAMode.HDMA) || _hdmaMode == HDMAMode.GDMA)
                         {
-                            _hdmaTransferState = DMATransferState.Stopped;
-                            _hdma5 = 0xFF; // Reset HDMA5 on completion
-                            tCycles = 0;
-                            break;
-                        }
-
-                        if (_hdmaMode == HDMAMode.HDMA)
-                        {
-                            _gdmaBytesRemainingThisCopy -= 1;
-                            // Stop transfer if we've finished the 16 bytes for this HBlank period
-                            if (_gdmaBytesRemainingThisCopy == 0)
+                            // HDMA works at 2 bytes per m-cycle
+                            for (var ii = 0; ii < 2; ii++)
                             {
-                                _hdmaState = HDMAState.FinishedLine;
-                                tCycles = 0;
-                                break;
+                                // Copy the next byte directly to VRAM without going through MMU
+                                _device.LCDDriver.WriteVRAMByte(_hdmaDestinationAddress, _device.MMU.ReadByte(_hdmaSourceAddress));
+
+                                // Note that we deliberately use the source/destination addresses to track the pointer to where DMA is accessing
+                                // to emulate that a DMA followed by another without changing source/destination continues on from where it left
+                                // off.
+                                _hdmaDestinationAddress++;
+                                _hdmaSourceAddress++;
+                                _hdmaTransferSize -= 1;
+
+                                // Stop transfer when we have reached the correct transfer size
+                                if (_hdmaTransferSize == 0)
+                                {
+                                    _hdmaTransferState = DMATransferState.Stopped;
+                                    _hdma5 = 0xFF; // Reset HDMA5 on completion
+                                    tCycles = 0;
+                                    break;
+                                }
+
+                                if (_hdmaMode == HDMAMode.HDMA)
+                                {
+                                    _hdmaBytesRemainingThisCopy -= 1;
+                                    // Stop transfer if we've finished the 16 bytes for this HBlank period
+                                    if (_hdmaBytesRemainingThisCopy == 0)
+                                    {
+                                        _hdmaState = HDMAState.FinishedLine;
+                                        tCycles = 0;
+                                        break;
+                                    }
+                                }
                             }
+
+                            tCycles -= 4;
                         }
-                    }
-
-
-                    tCycles -= 4;
+                        else
+                        {
+                            tCycles = 0;
+                        }
+                        break;
+                    case DMATransferState.Stopped:
+                        tCycles = 0;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
         }
