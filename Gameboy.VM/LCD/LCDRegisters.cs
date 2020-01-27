@@ -178,21 +178,6 @@ namespace Gameboy.VM.LCD
         }
         #endregion
 
-        internal void Clear()
-        {
-            LCDControlRegister = 0x0;
-            StatRegister = 0x0;
-            ScrollY = 0x0;
-            ScrollX = 0x0;
-            LCDCurrentScanline = 0x0;
-            LYCompare = 0x0;
-            BackgroundPaletteData = 0x0;
-            ObjectPaletteData0 = 0x0;
-            ObjectPaletteData1 = 0x0;
-            WindowY = 0x0;
-            WindowX = 0x7; // Values 0-6 should never be set for WindowX - TODO, what happens if they are?
-        }
-
         private void CheckLYLCInterrupt()
         {
             if (IsLcdOn && IsLYLCCheckEnabled && _lcdCurrentScanline == _lyCompare)
