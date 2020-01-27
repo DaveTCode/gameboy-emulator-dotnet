@@ -175,6 +175,7 @@ namespace Gameboy.VM
                                 // Note that we deliberately use the source/destination addresses to track the pointer to where DMA is accessing
                                 // to emulate that a DMA followed by another without changing source/destination continues on from where it left
                                 // off.
+                                // TODO - There's claim that if the address overflows destination area the transfer halts rather than wrapping (current behavior)
                                 _hdmaDestinationAddress++;
                                 _hdmaSourceAddress++;
                                 _hdmaTransferSize -= 1;

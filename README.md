@@ -35,12 +35,10 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 ### Specific
 
-- STOP instruction implementation
+- APU :(
 - Thorough testing all opcodes through cartridges
 - Test timer subsystem
-- Proper configurable serial port support
 - Prevent pressing multiple buttons (just direction keys?) at a time
-- APU :(
 - RTC for MBC3 pretends to exist but doesn't really
 
 ### Ideas/Future
@@ -50,6 +48,8 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - Native debugger with winforms/wpf?
 - CGB/SGB support
 - Cycle accuracy rather than opcode atomicity assumption
+- Proper configurable serial port support
+- IR port configuration
 
 ### Known Tests
 
