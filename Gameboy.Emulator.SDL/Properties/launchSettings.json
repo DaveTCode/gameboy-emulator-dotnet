@@ -14,7 +14,7 @@
     },
     "Blarg Interrupt Timing": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/blargg/interrupt_time/interrupt_time.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/blargg/interrupt_time/interrupt_time.gb --skipBootRom -s 60 -p 2 --mode CGB"
     },
     "Mooneye IE Push": {
       "commandName": "Project",
@@ -82,11 +82,15 @@
     },
     "Pokemon Crystal (MBC3, GBC)": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Pokemon - Crystal Version (USA, Europe) (Rev 1).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+      "commandLineArgs": "\"../../../../Roms/real/Pokemon - Crystal Version (USA, Europe) (Rev A).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
     },
     "Drymouth (GBC)": {
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/real/DRYMOUTH.gb\" -s 60 -p 2 --skipBootRom --mode CGB"
-    }
+    },
+    "Prince of Persia (USA, Europe) (En,Fr,De,Es,It) (GB Compatible).gbc": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/real/Prince of Persia (USA, Europe) (En,Fr,De,Es,It) (GB Compatible).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+    } 
   }
 }

@@ -64,22 +64,30 @@ namespace Gameboy.VM
         // TODO - This isn't actually used to imply double speed anywhere yet
         internal bool DoubleSpeed = false;
 
-        internal readonly Logger Log;
+        internal Logger Log;
 
         public ExternalVBlankHandler VBlankHandler { get; set; }
+
+        public void SetDebugMode()
+        {
+            Console.WriteLine("Setting debug mode");
+            Log = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.File("log-debug.txt", outputTemplate: "{Message}{NewLine}", rollOnFileSizeLimit: true, buffered: true)
+                .CreateLogger();
+        }
 
         public Device(Cartridge.Cartridge cartridge, DeviceType type)
         {
             Log = new LoggerConfiguration()
                 .MinimumLevel.Error()
-                .WriteTo.File("log.txt", buffered: true)
                 .CreateLogger();
 
             // A bit of double checking that we're loading a valid cartridge for the device type
             if (cartridge.CGBSupportCode == CGBSupportCode.CGBExclusive && type == DeviceType.DMG)
             {
                 Log.Error("Cartridge can't be loaded because it's CGB only and this device was created as DMG");
-                throw new ApplicationException();
+                throw new ApplicationException("Cartridge can't be loaded because it's CGB only and this device was created as DMG");
             }
 
             Type = type;
@@ -214,6 +222,8 @@ namespace Gameboy.VM
         /// </returns>
         public int Step()
         {
+            //Log.Information("{0}",ToString());
+
             // Step 1: Check for interrupts
             var tCycles = CPU.CheckForInterrupts();
 

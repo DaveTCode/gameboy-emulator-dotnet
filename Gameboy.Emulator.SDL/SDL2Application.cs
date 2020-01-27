@@ -89,6 +89,10 @@ namespace Gameboy.Emulator.SDL
                             fbFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(color => color.Item1 + "," + color.Item2 + "," + color.Item3))));
                             Console.WriteLine(_device.ToString());
                         }
+                        else if (e.key.keysym.sym == SDL2.SDL_Keycode.SDLK_F3)
+                        {
+                            _device.SetDebugMode();
+                        }
                         else if (_keyMap.ContainsKey(e.key.keysym.sym))
                         {
                             _device.HandleKeyUp(_keyMap[e.key.keysym.sym]);

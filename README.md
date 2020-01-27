@@ -8,9 +8,9 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 ## CGB branch known requirements
 
 - Speed mode
-- CGB only registers
 - HDMA Tests - DONE GDMA, HDMA UNTESTED
 - Updated debugging spreadsheet
+- CGB only registers - DONE
 - WRAM banks - DONE
 - VRAM banks - DONE
 - Change boot up state, different boot rom and different initial register values - DONE
@@ -18,6 +18,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - Palettes - DONE
 - Actual rendering of tiles (attributes etc) - DONE
 - Tetris DX working/playable - DONE
+- Gameboy color demo mostly appears to be working - DONE
 
 ## State
 
@@ -56,7 +57,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 | ------------------------------------------- |:---------------------:| -----:|
 | Blargg - cpu_instrs                         | :white_check_mark:    |       |
 | Blargg - instr_timing                       | :white_check_mark:    |       |
-| Blargg - interrupt_time                     | :x:                   | Hangs but ALSO REQUIRES CGB APPARENTLY!       |
+| Blargg - interrupt_time                     | :x:                   | Black screen       |
 | Blargg - mem_timing                         | :x:                   | Broken because CPU is using instruction atomicity       |
 | Blargg - mem_timing2                        | :x:                   | Broken because CPU is using instruction atomicity       |
 | Mooneye - MBC1 - bits_bank1                 | :white_check_mark:    |       |
