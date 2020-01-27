@@ -22,7 +22,7 @@
             }
             else if (address >= 0x3000 && address <= 0x3FFF)
             {
-                _romb1 = (byte)(value & 0b00000001); // Only bottom 1 bit is used AFAICT
+                _romb1 = (byte)(value & 0b0000_0001); // Only bottom 1 bit is used AFAICT
                 RomBank = ((_romb1 << 8) | _romb0) % ROMSize.NumberBanks();
             }
             else if (address >= 0x4000 && address <= 0x5FFF)
