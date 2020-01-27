@@ -204,7 +204,7 @@ namespace Gameboy.VM
         /// <returns>The number of cpu cycles taken to write</returns>
         internal int WriteByte(ushort address, byte value)
         {
-            _device.Log.Information("Writing {0:X2} to {1:X4}", value, address);
+            //_device.Log.Information("Writing {0:X2} to {1:X4}", value, address);
 
             if (address <= 0x7FFF) // Write to the 8kB ROM on the cartridge
                 _device.Cartridge.WriteRom(address, value);
@@ -328,7 +328,10 @@ namespace Gameboy.VM
             else if (address >= 0xFF6D && address <= 0xFF6F)
                 _device.Log.Information("Write to unused address {0:X4}", address);
             else if (address == 0xFF70) // RAM Bank register - only bits 0-2 valid
+            {
                 _wramBank = (byte)(value & 0x7);
+                if (_wramBank == 0) _wramBank = 1; // RAM Bank can't be 0
+            }
             else if (address == 0xFF71)
                 _device.Log.Information("Write to unused address {0:X4}", address);
             else if (address == 0xFF72)
