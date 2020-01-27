@@ -159,6 +159,8 @@ namespace Gameboy.VM
                 return _device.LCDRegisters.CGBSpritePalette.ReadPaletteMemory();
             if (address == 0xFF6C) // Unused control register
                 return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF6C : (byte) 0xFF;
+            if (address >= 0xFF6D && address <= 0xFF6F)
+                return ReadUnusedAddress(address);
             if (address == 0xFF70) // RAM Bank register
                 return _wramBank;
             if (address == 0xFF71) // Unused memory address
@@ -202,13 +204,14 @@ namespace Gameboy.VM
         /// <returns>The number of cpu cycles taken to write</returns>
         internal int WriteByte(ushort address, byte value)
         {
-            //_device.Log.Information("Writing {0:X2} to {1:X4}", value, address);
+            _device.Log.Information("Writing {0:X2} to {1:X4}", value, address);
 
             if (address <= 0x7FFF) // Write to the 8kB ROM on the cartridge
                 _device.Cartridge.WriteRom(address, value);
             else if (address >= 0x8000 && address <= 0x9FFF) // Write to the 8kB Video RAM
             {
-                if (_device.LCDRegisters.StatMode != StatMode.TransferringDataToDriver)
+                // TODO - Under precisely what circumstances do we not allow CPU writes to VRAM? During HDMA?
+                if (!_device.LCDRegisters.IsLcdOn || _device.LCDRegisters.StatMode != StatMode.TransferringDataToDriver)
                 {
                     _device.LCDDriver.WriteVRAMByte(address, value);
                 }
@@ -221,7 +224,10 @@ namespace Gameboy.VM
                 WriteToRam((ushort)(address - 0x2000), value);
             else if (address >= 0xFE00 && address <= 0xFE9F) // Write to the sprite attribute table
             {
-                if (_device.LCDRegisters.StatMode != StatMode.OAMRAMPeriod && _device.LCDRegisters.StatMode != StatMode.TransferringDataToDriver && !_device.DMAController.BlocksOAMRAM())
+                // TODO - Under precisely what circumstances do we not allow CPU writes to OAM RAM?
+                if ((!_device.LCDRegisters.IsLcdOn || 
+                     _device.LCDRegisters.StatMode == StatMode.HBlankPeriod || 
+                     _device.LCDRegisters.StatMode == StatMode.VBlankPeriod) && !_device.DMAController.BlocksOAMRAM())
                 {
                     _device.LCDDriver.WriteOAMByte(address, value);
                 }
