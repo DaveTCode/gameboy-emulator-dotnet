@@ -1,5 +1,6 @@
 ﻿using System;
 using Gameboy.VM.LCD;
+using Serilog;
 
 namespace Gameboy.VM
 {
@@ -37,7 +38,7 @@ namespace Gameboy.VM
         {
             if (address <= 0xFF)
                 return _device.ControlRegisters.RomDisabledRegister == 0
-                    ? _rom[address]                     // Read from device ROM if in that state
+                    ? _rom[address]                            // Read from device ROM if in that state
                     : _device.Cartridge.ReadRom(address);      // Read from the 8kB ROM on the cartridge
             if (address <= 0x7FFF) // Read from the 8kB ROM on the cartridge
                 return _device.Cartridge.ReadRom(address);
@@ -144,6 +145,10 @@ namespace Gameboy.VM
                 return _device.DMAController.HDMA4;
             if (address == 0xFF55) // HDMA5
                 return _device.DMAController.HDMA5;
+            if (address == 0xFF56) // TODO - Infra red port address
+                return 0xFF;
+            if (address >= 0xFF57 && address <= 0xFF67) // Unused addresses
+                return ReadUnusedAddress(address);
             if (address == 0xFF68) // BCPS register
                 return _device.LCDRegisters.CGBBackgroundPalette.PaletteIndex;
             if (address == 0xFF69) // BCPD register
@@ -152,9 +157,25 @@ namespace Gameboy.VM
                 return _device.LCDRegisters.CGBSpritePalette.PaletteIndex;
             if (address == 0xFF6B) // OCPD register
                 return _device.LCDRegisters.CGBSpritePalette.ReadPaletteMemory();
+            if (address == 0xFF6C) // Unused control register
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF6C : (byte) 0xFF;
             if (address == 0xFF70) // RAM Bank register
                 return _wramBank;
-            if (address >= 0xFF51 && address <= 0xFF7F) // Unused addresses (TODO some used in CGB)
+            if (address == 0xFF71) // Unused memory address
+                return ReadUnusedAddress(address);
+            if (address == 0xFF72) // Unused memory address
+                return _device.ControlRegisters.FF72;
+            if (address == 0xFF73) // Unused memory address
+                return _device.ControlRegisters.FF73;
+            if (address == 0xFF74) // Unused memory address
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF74 : (byte) 0xFF;
+            if (address == 0xFF75) // Unused memory address
+                return _device.ControlRegisters.FF75;
+            if (address == 0xFF76) // PCM12 - PCM amplitudes 1 & 2
+                return _device.SoundRegisters.PCM12;
+            if (address == 0xFF77) // PCM34 - PCM amplitudes 3 & 4
+                return _device.SoundRegisters.PCM34;
+            if (address >= 0xFF78 && address <= 0xFF7F) // Unused IO port addresses
                 return ReadUnusedAddress(address);
             if (address >= 0xFF80 && address <= 0xFFFE) // Read from HRAM
                 return _hRam[address - 0xFF80];
@@ -283,6 +304,10 @@ namespace Gameboy.VM
                 _device.DMAController.HDMA4 = value;
             else if (address == 0xFF55) // HDMA5
                 _device.DMAController.HDMA5 = value;
+            else if (address == 0xFF56) // RP - Infrared port address
+                Log.Information("Infrared port not yet implemented");
+            else if (address >= 0xFF57 && address <= 0xFF67)
+                _device.Log.Information("Write to unused address {0:X4}", address);
             else if (address == 0xFF68)
                 _device.LCDRegisters.CGBBackgroundPalette.PaletteIndex = value;
             else if (address == 0xFF69)
@@ -291,9 +316,31 @@ namespace Gameboy.VM
                 _device.LCDRegisters.CGBSpritePalette.PaletteIndex = value;
             else if (address == 0xFF6B)
                 _device.LCDRegisters.CGBSpritePalette.WritePaletteMemory(value);
+            else if (address == 0xFF6C)
+                if (_device.Mode == DeviceType.CGB) _device.ControlRegisters.FF6C = value;
+                else _device.Log.Information("Write to unused address {0:X4}", address);
+            else if (address >= 0xFF6D && address <= 0xFF6F)
+                _device.Log.Information("Write to unused address {0:X4}", address);
             else if (address == 0xFF70) // RAM Bank register - only bits 0-2 valid
                 _wramBank = (byte)(value & 0x7);
-            else if (address >= 0xFF51 && address <= 0xFF7F) // Unused addresses (TODO - some used in CGB)
+            else if (address == 0xFF71)
+                _device.Log.Information("Write to unused address {0:X4}", address);
+            else if (address == 0xFF72)
+                _device.ControlRegisters.FF72 = value;
+            else if (address == 0xFF73)
+                _device.ControlRegisters.FF73 = value;
+            else if (address == 0xFF74)
+            {
+                if (_device.Mode == DeviceType.CGB) _device.ControlRegisters.FF74 = value;
+                else _device.Log.Information("Write to unused address {0:X4}", address);
+            }
+            else if (address == 0xFF75)
+                _device.ControlRegisters.FF75 = value;
+            else if (address == 0xFF76)
+                _device.Log.Information("Can't write to PCM12 register");
+            else if (address == 0xFF77)
+                _device.Log.Information("Can't write to PCM34 register");
+            else if (address >= 0xFF78 && address <= 0xFF7F)
                 _device.Log.Information("Write to unused address {0:X4}", address);
             else if (address >= 0xFF80 && address <= 0xFFFE)  // Write to HRAM
                 _hRam[address - 0xFF80] = value;

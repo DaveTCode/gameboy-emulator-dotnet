@@ -43,6 +43,10 @@ namespace Gameboy.VM.Sound
         internal byte NR52 { get; private set; } = 0b01110000;
         #endregion
 
+        // TODO - Implement when sound work completed
+        internal byte PCM12 { get; set; }
+        internal byte PCM34 { get; set; }
+
         internal void Clear()
         {
 

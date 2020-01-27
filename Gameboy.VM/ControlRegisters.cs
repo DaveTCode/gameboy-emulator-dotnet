@@ -18,6 +18,43 @@
             }
         }
 
+        // ReSharper disable once InconsistentNaming
+        private byte _ff6c = 0xFE;
+        // ReSharper disable once InconsistentNaming
+        /// <summary>
+        /// Unused register FF6C, in CGB mode bit 0 is read/write.
+        /// </summary>
+        internal byte FF6C
+        {
+            get => _ff6c;
+            set => _ff6c = (byte)(value | 0xFE);
+        }
+
+        /// <summary>
+        /// FF72 - Unused but read/write register
+        /// </summary>
+        internal byte FF72 { get; set; }
+
+        /// <summary>
+        /// FF72 - Unused but read/write register
+        /// </summary>
+        internal byte FF73 { get; set; }
+
+        /// <summary>
+        /// FF72 - Unused but read/write register
+        /// </summary>
+        internal byte FF74 { get; set; }
+
+        private byte _ff75 = 0b1000_1111;
+        /// <summary>
+        /// Unused register with bits 4-6 writeable
+        /// </summary>
+        internal byte FF75
+        {
+            get => _ff75;
+            set => _ff75 = (byte)(value | 0b1000_1111);
+        }
+
         internal bool SpeedSwitchRequested { get; set; }
 
         // Serial Cable Registers
@@ -25,13 +62,6 @@
 
         private byte _serialTransferControl = 0b01111110;
         internal byte SerialTransferControl { get => _serialTransferControl; set => _serialTransferControl = (byte) (0b01111110 | value); }
-
-        public void Clear()
-        {
-            SerialTransferData = 0x0;
-            SerialTransferControl = 0x0; // TODO - Is this right? Manual says bit 1 always 1 and cannot be changed
-            RomDisabledRegister = 0x0;
-        }
 
         public override string ToString()
         {

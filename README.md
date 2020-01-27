@@ -17,7 +17,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - HDMA - DONE
 - Palettes - DONE
 - Actual rendering of tiles (attributes etc) - DONE
-- Tetris DX working/playable
+- Tetris DX working/playable - DONE
 
 ## State
 
