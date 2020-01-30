@@ -5,11 +5,16 @@ using System.Linq;
 using Gameboy.VM;
 using Gameboy.VM.Joypad;
 using Gameboy.VM.LCD;
+using NAudio.Wave;
 
 namespace Gameboy.Emulator.SDL
 {
     internal class SDL2Application : IDisposable
     {
+        private const int AudioFrequency = 44100;
+        private const int AudioSamples = 4096;
+        private const int DownSampleCount = Device.CyclesPerSecondHz / AudioFrequency;
+
         private readonly Dictionary<(byte, byte, byte), (byte, byte, byte)> _grayscaleColorMap = new Dictionary<(byte, byte, byte), (byte, byte, byte)>
         {
             { GrayscaleExtensions.GrayscaleWhite, (236, 237, 176) },
@@ -38,15 +43,19 @@ namespace Gameboy.Emulator.SDL
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
         private readonly int _msPerFrame;
 
+        private readonly BufferedWaveProvider _waveProvider;
+        private readonly IWavePlayer _wavePlayer;
+
         internal SDL2Application(Device device, int pixelSize, int framesPerSecond)
         {
             _device = device;
             _device.VBlankHandler = HandleVBlankEvent;
+            _device.SoundHandler = PlaySoundByte;
             _pixelSize = pixelSize;
             var screenWidth = Device.ScreenWidth * pixelSize;
             var screenHeight = Device.ScreenHeight * pixelSize;
 
-            SDL2.SDL_Init(SDL2.SDL_INIT_VIDEO);
+            SDL2.SDL_Init(SDL2.SDL_INIT_VIDEO | SDL2.SDL_INIT_AUDIO);
 
             SDL2.SDL_CreateWindowAndRenderer(
                 screenWidth,
@@ -58,7 +67,12 @@ namespace Gameboy.Emulator.SDL
             SDL2.SDL_RenderClear(_renderer);
             SDL2.SDL_SetWindowTitle(_window, $"{device.GetCartridgeTitle()} 59.7fps");
 
-            _msPerFrame = (int) ((1.0 / framesPerSecond) * 1000);
+            _waveProvider = new BufferedWaveProvider(new WaveFormat(AudioFrequency, 2));
+            _wavePlayer = new WaveOutEvent();
+            _wavePlayer.Init(_waveProvider);
+            _wavePlayer.Play();
+
+            _msPerFrame = (int)((1.0 / framesPerSecond) * 1000);
         }
 
         private void CheckForInput()
@@ -105,6 +119,33 @@ namespace Gameboy.Emulator.SDL
                         }
                         break;
                 }
+            }
+        }
+
+        private int _sampleCount;
+        private readonly byte[] _soundBuffer = new byte[AudioSamples * 4]; // 2 bytes per channel
+        private int _soundBufferIndex;
+        public void PlaySoundByte(int left, int right)
+        {
+            _sampleCount++;
+            if (_sampleCount < DownSampleCount) return;
+            _sampleCount = 0;
+
+            // Apply gain
+            left *= 5000;
+            right *= 5000;
+
+            _soundBuffer[_soundBufferIndex] = (byte)left;
+            _soundBuffer[_soundBufferIndex + 1] = (byte)(left >> 8);
+            _soundBuffer[_soundBufferIndex + 2] = (byte)right;
+            _soundBuffer[_soundBufferIndex + 3] = (byte)(right >> 8);
+            _soundBufferIndex += 4;
+
+            if (_soundBufferIndex == _soundBuffer.Length)
+            {
+                _waveProvider.AddSamples(_soundBuffer, 0, _soundBufferIndex);
+                _soundBufferIndex = 0;
+                Array.Clear(_soundBuffer, 0, _soundBuffer.Length);
             }
         }
 
@@ -169,6 +210,7 @@ namespace Gameboy.Emulator.SDL
 
         public void Dispose()
         {
+            _wavePlayer.Dispose();
             SDL2.SDL_DestroyRenderer(_renderer);
             SDL2.SDL_DestroyWindow(_window);
             SDL2.SDL_Quit();

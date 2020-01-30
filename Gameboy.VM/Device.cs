@@ -20,9 +20,10 @@ namespace Gameboy.VM
     {
         public const int ScreenWidth = 160;
         public const int ScreenHeight = 144;
-        public const int ClockCyclesPerFrame = 70224;
+        public const int CyclesPerSecondHz = 4_194_304; // 4.194304 MHz
 
         public delegate void ExternalVBlankHandler((byte, byte, byte)[] frameBuffer);
+        public delegate void ExternalSoundHandler(int left, int right);
 
         /// <summary>
         /// Original ROM from a DMG, used to set initial values of registers
@@ -52,7 +53,7 @@ namespace Gameboy.VM
         internal readonly MMU MMU;
         internal readonly CPU.CPU CPU;
         internal readonly ControlRegisters ControlRegisters;
-        internal readonly SoundRegisters SoundRegisters;
+        internal readonly APU APU;
         internal readonly LCDRegisters LCDRegisters;
         internal readonly InterruptRegisters InterruptRegisters;
         internal readonly Cartridge.Cartridge Cartridge;
@@ -67,6 +68,7 @@ namespace Gameboy.VM
         internal Logger Log;
 
         public ExternalVBlankHandler VBlankHandler { get; set; }
+        public ExternalSoundHandler SoundHandler { get; set; }
 
         public void SetDebugMode()
         {
@@ -101,7 +103,7 @@ namespace Gameboy.VM
 
             InterruptRegisters = new InterruptRegisters();
             ControlRegisters = new ControlRegisters();
-            SoundRegisters = new SoundRegisters();
+            APU = new APU(this);
             LCDRegisters = new LCDRegisters(this);
             Cartridge = cartridge;
             MMU = new MMU(DmgRomContents, this);
@@ -238,6 +240,9 @@ namespace Gameboy.VM
 
             // Step 5: Update the timer controller with the number of cycles
             Timer.Step(tCycles);
+
+            // Step 6: Step audio subsystem
+            APU.Step(tCycles);
 
             return tCycles; // Machine cycles translation
         }

@@ -134,6 +134,7 @@ namespace Gameboy.VM
             // Handle HDMA state machine
             if (_hdmaMode == HDMAMode.HDMA)
             {
+                // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
                 switch (_hdmaState)
                 {
                     case HDMAState.FinishedLine when _device.LCDRegisters.StatMode != StatMode.HBlankPeriod:
@@ -143,10 +144,6 @@ namespace Gameboy.VM
                         _hdmaState = HDMAState.Copying;
                         _hdmaBytesRemainingThisCopy = 16;
                         break;
-                    case HDMAState.Copying:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
                 }
             }
 

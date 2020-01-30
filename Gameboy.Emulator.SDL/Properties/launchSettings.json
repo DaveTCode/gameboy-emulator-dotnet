@@ -1,9 +1,5 @@
 {
   "profiles": {
-    "Bootrom": {
-      "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/DMG_ROM.bin --skipBootRom -s 60 -p 2"
-    },
     "Blarg CPU Tests - All (MBC1)": {
       "commandName": "Project",
       "commandLineArgs": "../../../../Roms/tests/blargg/cpu_instrs/cpu_instrs.gb --skipBootRom -s 60 -p 2"
@@ -56,9 +52,9 @@
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/real/Dr. Mario (World).gb\" -s 60 -p 2 --skipBootRom"
     },
-    "Zelda - Link's Awakening": {
+    "Zelda - Link's Awakening (bootrom)": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev B).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev B).gb\" -s 60 -p 2"
     },
     "Super Mario Land": {
       "commandName": "Project",

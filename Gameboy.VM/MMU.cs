@@ -9,7 +9,7 @@ namespace Gameboy.VM
         private const int WRAMSizeDmg = 0x2000;
         private const int WRAMSizeCgb = 0x8000;
         private const int HRAMSize = 0x7F;
-        private const int WaveRAMSize = 0x10;
+        
 
         private readonly Device _device;
 
@@ -17,8 +17,7 @@ namespace Gameboy.VM
 
         private readonly byte[] _workingRam;
         private readonly byte[] _hRam = new byte[HRAMSize];
-        private readonly byte[] _waveRam = new byte[WaveRAMSize];
-        
+
         private byte _wramBank = 1;
 
         public MMU(byte[] rom, Device device)
@@ -91,12 +90,8 @@ namespace Gameboy.VM
                 return ReadUnusedAddress(address);
             if (address == 0xFF0F) // IF Register
                 return _device.InterruptRegisters.InterruptFlags;
-            if (address >= 0xFF10 && address <= 0xFF26) // Sound registers
-                return _device.SoundRegisters.ReadFromRegister(address);
-            if (address >= 0xFF27 && address <= 0xFF2F) // Unused addresses - all reads return 0
-                return ReadUnusedAddress(address);
-            if (address >= 0xFF30 && address <= 0xFF3F) // Wave Pattern RAM
-                return _waveRam[address - 0xFF30];
+            if (address >= 0xFF10 && address <= 0xFF3F) // APU registers & wave RAM
+                return _device.APU.Read(address);
             if (address == 0xFF40) // LCDC Register
                 return _device.LCDRegisters.LCDControlRegister;
             if (address == 0xFF41) // STAT Register
@@ -174,9 +169,9 @@ namespace Gameboy.VM
             if (address == 0xFF75) // Unused memory address
                 return _device.ControlRegisters.FF75;
             if (address == 0xFF76) // PCM12 - PCM amplitudes 1 & 2
-                return _device.SoundRegisters.PCM12;
+                return _device.APU.PCM12;
             if (address == 0xFF77) // PCM34 - PCM amplitudes 3 & 4
-                return _device.SoundRegisters.PCM34;
+                return _device.APU.PCM34;
             if (address >= 0xFF78 && address <= 0xFF7F) // Unused IO port addresses
                 return ReadUnusedAddress(address);
             if (address >= 0xFF80 && address <= 0xFFFE) // Read from HRAM
@@ -262,12 +257,8 @@ namespace Gameboy.VM
                 _device.Log.Information("Unusable address {0:X4} for write", address);
             else if (address == 0xFF0F)
                 _device.InterruptRegisters.InterruptFlags = value;
-            else if (address >= 0xFF10 && address <= 0xFF26)
-                _device.SoundRegisters.WriteToRegister(address, value);
-            else if (address >= 0xFF27 && address <= 0xFF2F) // Unused addresses
-                _device.Log.Information("Unusable address {0:X4} for write", address);
-            else if (address >= 0xFF30 && address <= 0xFF3F) // Waveform RAM
-                _waveRam[address - 0xFF30] = value;
+            else if (address >= 0xFF10 && address <= 0xFF3F)
+                _device.APU.Write(address, value);
             else if (address == 0xFF40)
                 _device.LCDRegisters.LCDControlRegister = value;
             else if (address == 0xFF41)
