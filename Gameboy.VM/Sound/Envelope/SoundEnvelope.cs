@@ -6,9 +6,8 @@
     /// </summary>
     internal class SoundEnvelope
     {
-        private byte _registerValue;
-
-        internal int LengthOfEnvelopeSteps { get; private set; }
+        private int _currentPeriod;
+        internal int Period { get; private set; }
 
         internal EnvelopeUpDown EnvelopeUpDown { get; private set; }
 
@@ -16,15 +15,16 @@
 
         internal int Volume;
 
-        private int _internalTimer;
-
         internal byte Register
         {
-            get => _registerValue;
+            get =>
+                (byte) (Period |
+                        (EnvelopeUpDown == EnvelopeUpDown.Amplify ? 0x8 : 0x0) |
+                        InitialVolume << 4);
             set
             {
-                _registerValue = value;
-                LengthOfEnvelopeSteps = value & 0x7;
+                Period = value & 0x7;
+                ResetCurrentPeriod();
                 EnvelopeUpDown = (value & 0x8) == 0x8 ? EnvelopeUpDown.Amplify : EnvelopeUpDown.Attenuate;
                 InitialVolume = value >> 4;
                 Volume = InitialVolume;
@@ -33,10 +33,15 @@
 
         internal void Reset()
         {
-            LengthOfEnvelopeSteps = 0x0;
+            Period = 0x0;
+            ResetCurrentPeriod();
             EnvelopeUpDown = EnvelopeUpDown.Attenuate;
             InitialVolume = 0x0;
-            _registerValue = 0x0;
+        }
+
+        private void ResetCurrentPeriod()
+        {
+            _currentPeriod = Period == 0 ? 8 : Period;
         }
 
         internal void Step()
@@ -47,12 +52,19 @@
                 return;
             }
 
-            _internalTimer++;
-            if (_internalTimer == LengthOfEnvelopeSteps * Device.CyclesPerSecondHz / 64)
+            _currentPeriod--;
+            if (_currentPeriod == 0)
             {
-                _internalTimer = 0;
+                ResetCurrentPeriod();
+                if (_currentPeriod == 0) _currentPeriod = 8; // Special case, 0 isn't a valid period
                 Volume += EnvelopeUpDown == EnvelopeUpDown.Amplify ? 1 : -1;
             }
+        }
+
+        internal void Trigger()
+        {
+            ResetCurrentPeriod();
+            Volume = InitialVolume;
         }
     }
 }

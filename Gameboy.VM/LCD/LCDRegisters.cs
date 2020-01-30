@@ -51,7 +51,7 @@ namespace Gameboy.VM.LCD
 
         internal byte IncrementLineBeingProcessed()
         {
-            LCDCurrentScanline = (byte)((LCDCurrentScanline + 1) & 0xFF);
+            LCDCurrentScanline = (byte)((LCDCurrentScanline + 1) % 154);
             return LCDCurrentScanline;
         }
 

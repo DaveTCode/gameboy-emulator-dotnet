@@ -25,6 +25,8 @@ namespace Gameboy.VM
         public delegate void ExternalVBlankHandler((byte, byte, byte)[] frameBuffer);
         public delegate void ExternalSoundHandler(int left, int right);
 
+        public long TCycles = 0;
+
         /// <summary>
         /// Original ROM from a DMG, used to set initial values of registers
         /// </summary>
@@ -243,6 +245,8 @@ namespace Gameboy.VM
 
             // Step 6: Step audio subsystem
             APU.Step(tCycles);
+
+            TCycles += tCycles;
 
             return tCycles; // Machine cycles translation
         }

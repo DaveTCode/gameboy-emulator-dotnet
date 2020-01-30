@@ -264,7 +264,6 @@ namespace Gameboy.VM
                 _hdmaTransferBlocks = value & 0b0111_1111;
                 _hdmaTransferSize = (_hdmaTransferBlocks + 1) * 16; // (Blocks + 1) * 16
                 _hdmaTransferState = DMATransferState.Requested;
-                _device.Log.Information("Requesting HDMA transfer from {0} to {1} of {2} bytes", _hdmaSourceAddress, _hdmaDestinationAddress, _hdmaTransferSize);
             }
         }
 

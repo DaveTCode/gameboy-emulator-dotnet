@@ -20,6 +20,12 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - Tetris DX working/playable - DONE
 - Gameboy color demo mostly appears to be working - DONE
 
+## APU Known State
+
+- Sound 1 playing through NAudio but all sorts of things are wrong
+- Sound 2 might work but is untested
+- Sound3/4 are currently unimplemented
+
 ## State
 
 - Passing test roms section at bottom of readme
@@ -35,8 +41,6 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 ### Specific
 
-- APU :(
-- Thorough testing all opcodes through cartridges
 - Test timer subsystem
 - Prevent pressing multiple buttons (just direction keys?) at a time
 - RTC for MBC3 pretends to exist but doesn't really

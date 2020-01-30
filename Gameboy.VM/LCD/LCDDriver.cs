@@ -335,7 +335,7 @@ namespace Gameboy.VM.LCD
                             _device.InterruptRegisters.RequestInterrupt(Interrupt.LCDSTAT);
                         }
                         return true; // Entering HBlank so redraw scanline
-                    case StatMode.VBlankPeriod:
+                    case StatMode.VBlankPeriod: // Entering VBlank so draw whole screen
                         _device.VBlankHandler?.Invoke(_frameBuffer);
                         _device.InterruptRegisters.RequestInterrupt(Interrupt.VerticalBlank); // TODO - VBlank interrupt but do we need an LCDSTAT interrupt as well?
                         return false;

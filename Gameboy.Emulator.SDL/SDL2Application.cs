@@ -13,7 +13,7 @@ namespace Gameboy.Emulator.SDL
     {
         private const int AudioFrequency = 44100;
         private const int AudioSamples = 4096;
-        private const int DownSampleCount = Device.CyclesPerSecondHz / AudioFrequency;
+        private const int DownSampleCount = Device.CyclesPerSecondHz / AudioFrequency / 4;
 
         private readonly Dictionary<(byte, byte, byte), (byte, byte, byte)> _grayscaleColorMap = new Dictionary<(byte, byte, byte), (byte, byte, byte)>
         {
@@ -149,6 +149,8 @@ namespace Gameboy.Emulator.SDL
             }
         }
 
+        private long _prevFrameTCycles;
+
         public void HandleVBlankEvent((byte, byte, byte)[] frameBuffer)
         {
             // TODO - Should do this more than once per VBlank (particularly since VBlank not fired during HALT/STOP!
@@ -176,9 +178,11 @@ namespace Gameboy.Emulator.SDL
             SDL2.SDL_RenderPresent(_renderer);
 
             var msToSleep = _msPerFrame - (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000;
+            Console.WriteLine("Frame took {0}ms and {1} t-cycles", (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000, _device.TCycles - _prevFrameTCycles);
+            _prevFrameTCycles = _device.TCycles;
             if (msToSleep > 0)
             {
-                SDL2.SDL_Delay((uint)msToSleep);
+                //SDL2.SDL_Delay((uint)msToSleep);
             }
             _stopwatch.Restart();
         }

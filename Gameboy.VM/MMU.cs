@@ -46,7 +46,6 @@ namespace Gameboy.VM
                 // Video RAM is unreadable by the CPU during STAT mode 3
                 if (_device.LCDRegisters.StatMode == StatMode.TransferringDataToDriver)
                 {
-                    _device.Log.Information("CPU attempted to read VRAM ({0:X2}) during stat mode 3", address);
                     return 0xFF; // May not be 100% correct, based on speculative information on the internet
                 }
 
@@ -184,7 +183,7 @@ namespace Gameboy.VM
 
         private byte ReadUnusedAddress(ushort address)
         {
-            _device.Log.Warning("Attempt to read from unused memory location {0:X4}", address);
+            //_device.Log.Warning("Attempt to read from unused memory location {0:X4}", address);
             return 0xFF;
         }
 
@@ -302,7 +301,7 @@ namespace Gameboy.VM
             else if (address == 0xFF55) // HDMA5
                 _device.DMAController.HDMA5 = value;
             else if (address == 0xFF56) // RP - Infrared port address
-                Log.Information("Infrared port not yet implemented");
+                _device.Log.Information("Infrared port not yet implemented");
             else if (address >= 0xFF57 && address <= 0xFF67)
                 _device.Log.Information("Write to unused address {0:X4}", address);
             else if (address == 0xFF68)

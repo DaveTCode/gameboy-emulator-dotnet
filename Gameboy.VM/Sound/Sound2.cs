@@ -11,10 +11,10 @@ namespace Gameboy.VM.Sound
         // NR22 Register
         internal SoundEnvelope Envelope { get; } = new SoundEnvelope();
 
-        private int _frequencyDivider;
+        private int _frequencyPeriod;
         private int _lastOutput;
 
-        private int FrequencyDividerStart => (2048 - FrequencyData) * 4;
+        private int SoundFrequency => 131072 / (2048 - FrequencyData);
 
         internal override void Reset()
         {
@@ -24,10 +24,10 @@ namespace Gameboy.VM.Sound
 
         internal override void Step()
         {
-            _frequencyDivider--;
-            if (_frequencyDivider == 0)
+            _frequencyPeriod--;
+            if (_frequencyPeriod == 0)
             {
-                _frequencyDivider = FrequencyDividerStart;
+                _frequencyPeriod = SoundFrequency;
 
                 if (IsEnabled)
                 {
@@ -39,8 +39,9 @@ namespace Gameboy.VM.Sound
         internal override void Trigger()
         {
             base.Trigger();
-            _frequencyDivider = FrequencyDividerStart;
+            _frequencyPeriod = SoundFrequency;
             _lastOutput = 0;
+            Envelope.Trigger();
         }
 
         internal override int GetOutputVolume()

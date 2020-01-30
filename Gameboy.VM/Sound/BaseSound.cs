@@ -10,8 +10,6 @@
 
         internal abstract int GetOutputVolume();
 
-        internal abstract void Trigger();
-
         internal abstract void Reset();
 
         internal abstract void Step();

@@ -9,16 +9,22 @@ namespace Gameboy.VM.Sound
     /// </summary>
     internal class Sound1 : SquareWave.SquareWave
     {
+        internal Sound1()
+        {
+            Sweep = new FrequencySweep(this);
+            Envelope = new SoundEnvelope();
+        }
+
         // NR10 register
-        internal FrequencySweep Sweep { get; } = new FrequencySweep();
+        internal FrequencySweep Sweep { get; }
 
         // NR12 register
-        internal SoundEnvelope Envelope { get; } = new SoundEnvelope();
+        internal SoundEnvelope Envelope { get; }
 
-        private int _frequencyDivider;
+        private int _frequencyPeriod;
         private int _lastOutput;
 
-        private int FrequencyDividerStart => (2048 - FrequencyData) * 4;
+        private int SoundFrequency => 131072 / (2048 - FrequencyData);
 
         internal override void Reset()
         {
@@ -29,10 +35,10 @@ namespace Gameboy.VM.Sound
 
         internal override void Step()
         {
-            _frequencyDivider--;
-            if (_frequencyDivider < 0)
+            _frequencyPeriod--;
+            if (_frequencyPeriod < 0)
             {
-                _frequencyDivider = FrequencyDividerStart;
+                _frequencyPeriod = SoundFrequency;
 
                 if (IsEnabled)
                 {
@@ -44,8 +50,10 @@ namespace Gameboy.VM.Sound
         internal override void Trigger()
         {
             base.Trigger();
-            _frequencyDivider = FrequencyDividerStart;
+            _frequencyPeriod = SoundFrequency;
             _lastOutput = 0;
+            Envelope.Trigger();
+            Sweep.Trigger(SoundFrequency);
         }
 
         internal override int GetOutputVolume()

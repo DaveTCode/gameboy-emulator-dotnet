@@ -60,7 +60,7 @@ namespace Gameboy.VM.Sound
             }
         }
 
-        internal override void Trigger()
+        internal void Trigger()
         {
             IsEnabled = true;
             if (SoundLength == 0)

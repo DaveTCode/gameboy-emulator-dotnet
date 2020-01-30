@@ -78,7 +78,7 @@
             }
         }
 
-        internal override void Trigger()
+        internal void Trigger()
         {
             // TODO - Unimplemented
         }

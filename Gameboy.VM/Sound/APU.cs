@@ -4,11 +4,11 @@ namespace Gameboy.VM.Sound
 {
     internal class APU
     {
+        public const int CyclesPerOutputClock1Mhz = 4;
         private const byte ControlMasterMask = 0b0111_0000;
-        private const int CyclesPerClock = 8192;
 
-        private int _frameSequencerCountDown = CyclesPerClock;
-        private int _frameSequence;
+        private const int FrameSequencerTimer512Hz = Device.CyclesPerSecondHz / 512;
+        private int _frameSequencerTimer = FrameSequencerTimer512Hz;
 
         private bool _isEnabled;
         private readonly Sound1 _sound1;
@@ -211,68 +211,85 @@ namespace Gameboy.VM.Sound
             };
         }
 
+        private int _frameSequence;
+        /// <summary>
+        /// 512 Hz timer clocking sweep, envelope and length functions of the
+        /// different channels.
+        /// <ul>
+        /// <li>Length at 256Hz</li>
+        /// <li>Volume Envelope at 64Hz</li>
+        /// <li>Sweep at 128Hz</li>
+        /// </ul>
+        /// </summary>
+        private void StepFrameSequencer()
+        {
+            if (_frameSequence % 2 == 0)
+            {
+                foreach (var sound in _sounds)
+                {
+                    if (sound.IsEnabled) sound.StepLength();
+                }
+            }
+
+            switch (_frameSequence)
+            {
+                case 2:
+                case 6:
+                    if (_sound1.IsEnabled) _sound1.Sweep.Step();
+                    break;
+                case 7:
+                    if (_sound1.IsEnabled) _sound1.Envelope.Step();
+                    if (_sound2.IsEnabled) _sound2.Envelope.Step();
+                    if (_sound4.IsEnabled) _sound4.Envelope.Step();
+                    break;
+            }
+
+            _frameSequence = (_frameSequence + 1) % 8;
+        }
+
+        private int _outputPeriod = CyclesPerOutputClock1Mhz;
         internal void Step(int tCycles)
         {
-            var mCycles = tCycles / 4;
-
-            while (mCycles > 0)
+            while (tCycles > 0)
             {
-                mCycles--;
+                tCycles--;
 
-                // Various parts of the subsystem are clocked differently.
-                // Overall a 512hz timer with:
-                // - Length at 256Hz
-                // - Volume Envelope at 64Hz
-                // - Sweep at 128Hz
-                _frameSequencerCountDown--;
-                if (_frameSequencerCountDown == 0)
+                _frameSequencerTimer--;
+                if (_frameSequencerTimer == 0)
                 {
-                    if (_frameSequence % 2 == 0)
+                    _frameSequencerTimer = FrameSequencerTimer512Hz;
+
+                    StepFrameSequencer();
+                }
+
+                // Stepping the sounds generates the next output volume in each
+                foreach (var sound in _sounds)
+                {
+                    sound.Step();
+                }
+
+                // TODO - This is outputting at 1Mhz which is still a bit daft if technically accurate, we should output somewhere closer to 44Khz like the final audio device is
+                _outputPeriod--;
+                if (_outputPeriod == 0)
+                {
+                    _outputPeriod = CyclesPerOutputClock1Mhz;
+                    var left = 0;
+                    var right = 0;
+
+                    foreach (var (sound, (rightOn, leftOn)) in _soundChannels)
                     {
-                        foreach (var sound in _sounds)
+                        if (sound.IsEnabled)
                         {
-                            sound.StepLength();
+                            if (rightOn) right += sound.GetOutputVolume();
+                            if (leftOn) left += sound.GetOutputVolume();
                         }
                     }
 
-                    switch (_frameSequence)
-                    {
-                        case 2:
-                        case 6:
-                            _sound1.Sweep.Step();
-                            break;
-                        case 7:
-                            _sound1.Envelope.Step();
-                            _sound2.Envelope.Step();
-                            _sound4.Envelope.Step();
-                            break;
-                    }
+                    left *= _leftOutputVolume;
+                    right *= _rightOutputVolume;
 
-                    _frameSequence = (_frameSequence + 1) % 8;
+                    _device.SoundHandler?.Invoke(left, right);
                 }
-
-
-                for (var sound = 0; sound < 4; sound++)
-                {
-                    _sounds[sound].Step();
-                }
-
-                var left = 0;
-                var right = 0;
-
-                foreach (var (sound, (rightOn, leftOn)) in _soundChannels)
-                {
-                    if (sound.IsEnabled)
-                    {
-                        if (rightOn) right += sound.GetOutputVolume();
-                        if (leftOn) left += sound.GetOutputVolume();
-                    }
-                }
-
-                left *= _leftOutputVolume;
-                right *= _rightOutputVolume;
-
-                _device.SoundHandler(left, right);
             }
         }
     }

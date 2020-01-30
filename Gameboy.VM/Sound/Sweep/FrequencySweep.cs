@@ -2,50 +2,93 @@
 {
     internal class FrequencySweep
     {
+        private readonly Sound1 _sound;
+
+        internal FrequencySweep(Sound1 sound)
+        {
+            _sound = sound;
+        }
+
         private const byte RegisterMask = 0b1000_0000;
-        private const int Divider = Device.CyclesPerSecondHz / 128;
 
-        #region Internal state tracking
-        private int _internalCounter;
-        #endregion
+        private bool _isEnabled;
 
-        private byte _registerValue = RegisterMask;
+        private bool _isSweepDecrease;
+        private int _sweepPeriod;
+        private int _sweepShiftNumber;
+        private int _shadowRegister;
+
+        private int _currentPeriod;
+
         internal byte Register
         {
-            get => _registerValue;
+            get =>
+                (byte) (RegisterMask |
+                        (_isSweepDecrease ? 0x8 : 0x0) |
+                        (_sweepPeriod << 4) |
+                        _sweepShiftNumber);
             set
             {
-                _registerValue = (byte)(RegisterMask | value);
-                SweepShiftNumber = value & 0x7;
-                SweepIncreaseDecrease = (value & 0x8) == 0x8 ? SweepIncreaseDecrease.Subtraction : SweepIncreaseDecrease.Addition;
-                SweepTime = (SweepTime)((value >> 4) & 0x8);
+                _sweepShiftNumber = value & 0x7;
+                _isSweepDecrease = (value & 0x8) == 0x8;
+                _sweepPeriod = (value >> 4) & 0x7;
             }
         }
 
-        internal int SweepShiftNumber { get; private set; }
+        internal void Trigger(int squareWaveFrequency)
+        {
+            _shadowRegister = squareWaveFrequency;
+            _currentPeriod = _sweepPeriod;
 
-        internal SweepIncreaseDecrease SweepIncreaseDecrease { get; private set; }
+            _isEnabled = (_currentPeriod != 0 || _sweepShiftNumber != 0);
 
-        internal SweepTime SweepTime { get; private set; }
+            if (_sweepShiftNumber != 0)
+            {
+                SweepCalculation();
+            }
+        }
 
         internal void Reset()
         {
-            _registerValue = RegisterMask;
-            SweepShiftNumber = 0x0;
-            SweepIncreaseDecrease = SweepIncreaseDecrease.Addition;
-            SweepTime = SweepTime.Off;
+            _sweepShiftNumber = 0x0;
+            _isSweepDecrease = false;
+            _sweepPeriod = 0;
         }
 
         internal void Step()
         {
-            _internalCounter++;
-
-            if (_internalCounter == Divider)
+            _currentPeriod--;
+            if (_currentPeriod == 0)
             {
-                _internalCounter = 0;
+                _currentPeriod = _sweepPeriod;
+                if (_currentPeriod == 0) _currentPeriod = 8;
 
-                // TODO - More implementation to do here
+                if (_isEnabled && _sweepPeriod > 0)
+                {
+                    SweepCalculation();
+                }
             }
+        }
+
+        private void SweepCalculation()
+        {
+            var workingValue = _shadowRegister >> _sweepShiftNumber;
+            if (_isSweepDecrease)
+            {
+                workingValue = _shadowRegister - workingValue;
+            }
+            else
+            {
+                workingValue = _shadowRegister + workingValue;
+            }
+
+            if (workingValue > 2047)
+            {
+                _sound.IsEnabled = false;
+            }
+
+            _shadowRegister = workingValue;
+            _sound.FrequencyData = workingValue;
         }
     }
 }
