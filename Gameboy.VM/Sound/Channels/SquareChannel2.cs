@@ -1,20 +1,24 @@
-﻿using Gameboy.VM.Sound.Envelope;
+﻿using System;
+using Gameboy.VM.Sound.Envelope;
 
-namespace Gameboy.VM.Sound
+namespace Gameboy.VM.Sound.Channels
 {
     /// <summary>
     /// SOUND 2
     /// Rectangular waveform with envelope but no sweep function
     /// </summary>
-    internal class Sound2 : SquareWave.SquareWave
+    internal class SquareChannel2 : SquareWave.SquareWave
     {
+        internal SquareChannel2()
+        {
+            Envelope = new SoundEnvelope(this);
+        }
+
         // NR22 Register
-        internal SoundEnvelope Envelope { get; } = new SoundEnvelope();
+        internal SoundEnvelope Envelope { get; }
 
         private int _frequencyPeriod;
         private int _lastOutput;
-
-        private int SoundFrequency => 131072 / (2048 - FrequencyData);
 
         internal override void Reset()
         {
@@ -27,7 +31,7 @@ namespace Gameboy.VM.Sound
             _frequencyPeriod--;
             if (_frequencyPeriod == 0)
             {
-                _frequencyPeriod = SoundFrequency;
+                _frequencyPeriod = FrequencyPeriod;
 
                 if (IsEnabled)
                 {
@@ -39,9 +43,10 @@ namespace Gameboy.VM.Sound
         internal override void Trigger()
         {
             base.Trigger();
-            _frequencyPeriod = SoundFrequency;
+            _frequencyPeriod = FrequencyPeriod;
             _lastOutput = 0;
             Envelope.Trigger();
+            Console.WriteLine("Triggering sound 2 with frequency {0}Hz period {1}, envelope ({2})", ActualFrequencyHz, FrequencyPeriod, Envelope);
         }
 
         internal override int GetOutputVolume()

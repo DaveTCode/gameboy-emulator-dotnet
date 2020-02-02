@@ -5,21 +5,6 @@
 
 Gameboy emulator written in C# as an educational exercise (not as a production emulator).
 
-## CGB branch known requirements
-
-- Speed mode
-- HDMA Tests - DONE GDMA, HDMA UNTESTED
-- Updated debugging spreadsheet
-- CGB only registers - DONE
-- WRAM banks - DONE
-- VRAM banks - DONE
-- Change boot up state, different boot rom and different initial register values - DONE
-- HDMA - DONE
-- Palettes - DONE
-- Actual rendering of tiles (attributes etc) - DONE
-- Tetris DX working/playable - DONE
-- Gameboy color demo mostly appears to be working - DONE
-
 ## APU Known State
 
 - Sound 1 playing through NAudio but all sorts of things are wrong
@@ -38,19 +23,24 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 - Lots of test failures specified in the table below
 - Window looks slightly off in the bottom left (GTA & Zelda) probably just an off by one error on rendering
+- Audio is probably totally broken
 
 ### Specific
 
+- Implement speed mode from CGB
+- Add HDMA transfer tests
 - Test timer subsystem
 - Prevent pressing multiple buttons (just direction keys?) at a time
 - RTC for MBC3 pretends to exist but doesn't really
+- Fully update debugging spreadsheets for CGB and Audio
+- Move to using streaming pixels into a texture for SDL to get performance above 30fps
 
 ### Ideas/Future
 
 - Integration testing using headless runner and comparing frame buffer to known good values for variety of roms? Specifically all test roms?
 - Display FPS using SDL text rendering?
 - Native debugger with winforms/wpf?
-- CGB/SGB support
+- SGB support
 - Cycle accuracy rather than opcode atomicity assumption
 - Proper configurable serial port support
 - IR port configuration
@@ -64,6 +54,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 | Blargg - interrupt_time                     | :x:                   | Black screen       |
 | Blargg - mem_timing                         | :x:                   | Broken because CPU is using instruction atomicity       |
 | Blargg - mem_timing2                        | :x:                   | Broken because CPU is using instruction atomicity       |
+| Blargg - dmg_sound                          | :x:                   | All 12 fail, but this also fails on a CGB console so doesn't matter too much |
 | Mooneye - MBC1 - bits_bank1                 | :white_check_mark:    |       |
 | Mooneye - MBC1 - bits_bank2                 | :white_check_mark:    |       |
 | Mooneye - MBC1 - bits_mode                  | :white_check_mark:    |       |

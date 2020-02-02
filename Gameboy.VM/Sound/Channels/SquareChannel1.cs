@@ -1,18 +1,19 @@
-﻿using Gameboy.VM.Sound.Envelope;
+﻿using System;
+using Gameboy.VM.Sound.Envelope;
 using Gameboy.VM.Sound.Sweep;
 
-namespace Gameboy.VM.Sound
+namespace Gameboy.VM.Sound.Channels
 {
     /// <summary>
     /// SOUND 1
     /// Rectangular waveform with sweep and envelope functions
     /// </summary>
-    internal class Sound1 : SquareWave.SquareWave
+    internal class SquareChannel1 : SquareWave.SquareWave
     {
-        internal Sound1()
+        internal SquareChannel1()
         {
             Sweep = new FrequencySweep(this);
-            Envelope = new SoundEnvelope();
+            Envelope = new SoundEnvelope(this);
         }
 
         // NR10 register
@@ -21,10 +22,8 @@ namespace Gameboy.VM.Sound
         // NR12 register
         internal SoundEnvelope Envelope { get; }
 
-        private int _frequencyPeriod;
+        private int _currentFrequencyPeriod;
         private int _lastOutput;
-
-        private int SoundFrequency => 131072 / (2048 - FrequencyData);
 
         internal override void Reset()
         {
@@ -35,10 +34,10 @@ namespace Gameboy.VM.Sound
 
         internal override void Step()
         {
-            _frequencyPeriod--;
-            if (_frequencyPeriod < 0)
+            _currentFrequencyPeriod--;
+            if (_currentFrequencyPeriod < 0)
             {
-                _frequencyPeriod = SoundFrequency;
+                _currentFrequencyPeriod = FrequencyPeriod;
 
                 if (IsEnabled)
                 {
@@ -50,10 +49,12 @@ namespace Gameboy.VM.Sound
         internal override void Trigger()
         {
             base.Trigger();
-            _frequencyPeriod = SoundFrequency;
+            _currentFrequencyPeriod = FrequencyPeriod;
             _lastOutput = 0;
             Envelope.Trigger();
-            Sweep.Trigger(SoundFrequency);
+            Sweep.Trigger(FrequencyPeriod);
+
+            Console.WriteLine("Triggering sound 1 with frequency {0}Hz period {1}, envelope ({2}), sweep ({3})", ActualFrequencyHz, FrequencyPeriod, Envelope, Sweep);
         }
 
         internal override int GetOutputVolume()

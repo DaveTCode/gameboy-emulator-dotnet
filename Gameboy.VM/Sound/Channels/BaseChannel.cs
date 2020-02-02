@@ -1,6 +1,6 @@
-﻿namespace Gameboy.VM.Sound
+﻿namespace Gameboy.VM.Sound.Channels
 {
-    internal abstract class BaseSound
+    internal abstract class BaseChannel
     {
         internal bool IsEnabled { get; set; }
 

@@ -1,17 +1,23 @@
-﻿namespace Gameboy.VM.Sound.SquareWave
+﻿using Gameboy.VM.Sound.Channels;
+
+namespace Gameboy.VM.Sound.SquareWave
 {
     /// <summary>
     /// Both sound 1 & 2 are square waves, this provides the common code to
     /// represent the square wave in both cases.
     /// </summary>
-    internal abstract class SquareWave : BaseSound
+    internal abstract class SquareWave : BaseChannel
     {
         private const byte ControlByteMask = 0b0011_1111;
         private const byte HighByteMask = 0b1011_1111;
 
         internal int FrequencyData { get; set; }
 
-        internal WaveDuty DutyCycle { get; private set; }
+        protected int ActualFrequencyHz => 131072 / (2048 - FrequencyData);
+
+        protected int FrequencyPeriod => 4 * (2048 - FrequencyData);
+
+        protected WaveDuty DutyCycle { get; private set; }
 
         private int _dutyCycleBit;
 

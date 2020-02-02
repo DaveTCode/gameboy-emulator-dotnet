@@ -1,10 +1,10 @@
-﻿namespace Gameboy.VM.Sound
+﻿namespace Gameboy.VM.Sound.Channels
 {
     /// <summary>
     /// SOUND 3
     /// Outputs waveforms from waveform RAM
     /// </summary>
-    internal class Sound3 : BaseSound
+    internal class WaveChannel : BaseChannel
     {
         private const byte NR30Mask = 0b0111_1111;
         private const byte NR32Mask = 0b1001_1111;

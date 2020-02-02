@@ -12,8 +12,8 @@ namespace Gameboy.Emulator.SDL
     internal class SDL2Application : IDisposable
     {
         private const int AudioFrequency = 44100;
-        private const int AudioSamples = 4096;
-        private const int DownSampleCount = Device.CyclesPerSecondHz / AudioFrequency / 4;
+        private const int AudioSamples = 2048;
+        private const int DownSampleCount = Device.CyclesPerSecondHz / AudioFrequency / 32;
 
         private readonly Dictionary<(byte, byte, byte), (byte, byte, byte)> _grayscaleColorMap = new Dictionary<(byte, byte, byte), (byte, byte, byte)>
         {
@@ -37,6 +37,7 @@ namespace Gameboy.Emulator.SDL
 
         private readonly IntPtr _window;
         private readonly IntPtr _renderer;
+        private readonly IntPtr _texture;
         private readonly int _pixelSize;
         private readonly Device _device;
         private bool _quit;
@@ -67,7 +68,14 @@ namespace Gameboy.Emulator.SDL
             SDL2.SDL_RenderClear(_renderer);
             SDL2.SDL_SetWindowTitle(_window, $"{device.GetCartridgeTitle()} 59.7fps");
 
-            _waveProvider = new BufferedWaveProvider(new WaveFormat(AudioFrequency, 2));
+            _texture = SDL2.SDL_CreateTexture(
+                renderer: _renderer,
+                format: SDL2.SDL_PIXELFORMAT_RGB888,
+                access: (int)SDL2.SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING,
+                w: Device.ScreenWidth, 
+                h: Device.ScreenHeight);
+
+            _waveProvider = new BufferedWaveProvider(new WaveFormat(AudioFrequency, 16, 2));
             _wavePlayer = new WaveOutEvent();
             _wavePlayer.Init(_waveProvider);
             _wavePlayer.Play();
@@ -143,8 +151,11 @@ namespace Gameboy.Emulator.SDL
 
             if (_soundBufferIndex == _soundBuffer.Length)
             {
+                //Console.WriteLine(_waveProvider.BufferedBytes);
+                //_waveProvider.ClearBuffer();
                 _waveProvider.AddSamples(_soundBuffer, 0, _soundBufferIndex);
                 _soundBufferIndex = 0;
+                //Console.WriteLine(string.Join(",", _soundBuffer));
                 Array.Clear(_soundBuffer, 0, _soundBuffer.Length);
             }
         }
@@ -155,6 +166,7 @@ namespace Gameboy.Emulator.SDL
         {
             // TODO - Should do this more than once per VBlank (particularly since VBlank not fired during HALT/STOP!
             CheckForInput();
+            var rect = new SDL2.SDL_Rect();
 
             for (var pixel = 0; pixel < frameBuffer.Length; pixel++)
             {
@@ -165,24 +177,21 @@ namespace Gameboy.Emulator.SDL
 
                 var x = pixel % Device.ScreenWidth;
                 var y = pixel / Device.ScreenWidth;
-                var rect = new SDL2.SDL_Rect
-                {
-                    x = x * _pixelSize,
-                    y = y * _pixelSize,
-                    h = _pixelSize,
-                    w = _pixelSize,
-                };
+                rect.x = x * _pixelSize;
+                rect.y = y * _pixelSize;
+                rect.w = _pixelSize;
+                rect.h = _pixelSize;
                 SDL2.SDL_RenderFillRect(_renderer, ref rect);
             }
 
             SDL2.SDL_RenderPresent(_renderer);
 
             var msToSleep = _msPerFrame - (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000;
-            Console.WriteLine("Frame took {0}ms and {1} t-cycles", (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000, _device.TCycles - _prevFrameTCycles);
+            Console.WriteLine("Frame took {0:F1}ms and {1:D} t-cycles", (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000, _device.TCycles - _prevFrameTCycles);
             _prevFrameTCycles = _device.TCycles;
             if (msToSleep > 0)
             {
-                //SDL2.SDL_Delay((uint)msToSleep);
+                SDL2.SDL_Delay((uint)msToSleep);
             }
             _stopwatch.Restart();
         }

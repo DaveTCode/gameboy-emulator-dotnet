@@ -1,10 +1,12 @@
-﻿namespace Gameboy.VM.Sound.Sweep
+﻿using Gameboy.VM.Sound.Channels;
+
+namespace Gameboy.VM.Sound.Sweep
 {
     internal class FrequencySweep
     {
-        private readonly Sound1 _sound;
+        private readonly SquareChannel1 _sound;
 
-        internal FrequencySweep(Sound1 sound)
+        internal FrequencySweep(SquareChannel1 sound)
         {
             _sound = sound;
         }

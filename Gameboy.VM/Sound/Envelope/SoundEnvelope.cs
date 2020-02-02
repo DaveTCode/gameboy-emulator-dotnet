@@ -1,4 +1,6 @@
-﻿namespace Gameboy.VM.Sound.Envelope
+﻿using Gameboy.VM.Sound.Channels;
+
+namespace Gameboy.VM.Sound.Envelope
 {
     /// <summary>
     /// The envelope on different sound channels behaves consistently so the
@@ -6,6 +8,13 @@
     /// </summary>
     internal class SoundEnvelope
     {
+        private readonly BaseChannel _channel;
+
+        internal SoundEnvelope(BaseChannel channel)
+        {
+            _channel = channel;
+        }
+
         private int _currentPeriod;
         internal int Period { get; private set; }
 
@@ -28,6 +37,11 @@
                 EnvelopeUpDown = (value & 0x8) == 0x8 ? EnvelopeUpDown.Amplify : EnvelopeUpDown.Attenuate;
                 InitialVolume = value >> 4;
                 Volume = InitialVolume;
+
+                if ((value & 0b1111_1000) == 0)
+                {
+                    _channel.IsEnabled = false; // DAC disabled so turn sound off
+                }
             }
         }
 
@@ -65,6 +79,11 @@
         {
             ResetCurrentPeriod();
             Volume = InitialVolume;
+        }
+
+        public override string ToString()
+        {
+            return $"Initial Volume: {InitialVolume}, EnvelopeDirection {EnvelopeUpDown}, Period {Period}";
         }
     }
 }
