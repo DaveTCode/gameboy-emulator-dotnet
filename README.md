@@ -3,13 +3,14 @@
 
 # Gameboy Emulator in C# 8
 
-Gameboy emulator written in C# as an educational exercise (not as a production emulator).
+Gameboy emulator written in C# as an educational exercise (not as a production emulator). Uses SDL2 for windowing & graphics and NAudio for playing raw audio samples.
 
 ## APU Known State
 
 - Sound 1 playing through NAudio but all sorts of things are wrong
 - Sound 2 might work but is untested
-- Sound3/4 are currently unimplemented
+- Sound 3 unimplemented and unsure which ROMs use it to test
+- Sound 4 implemented but same issues with frequencies as others
 
 ## State
 
@@ -23,7 +24,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 - Lots of test failures specified in the table below
 - Window looks slightly off in the bottom left (GTA & Zelda) probably just an off by one error on rendering
-- Audio is probably totally broken
+- Audio is completely broken
 
 ### Specific
 
