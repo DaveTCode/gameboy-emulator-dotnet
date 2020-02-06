@@ -6,7 +6,7 @@ using Gameboy.VM.LCD;
 
 namespace Gameboy.Emulator.SDL
 {
-    public class SDL2Renderer : IRenderer
+    public class SDL2Renderer : IRenderer, IDisposable
     {
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
         private readonly int _msPerFrame;
@@ -76,6 +76,11 @@ namespace Gameboy.Emulator.SDL
                 SDL2.SDL_Delay((uint)msToSleep);
             }
             _stopwatch.Restart();
+        }
+
+        public void Dispose()
+        {
+            SDL2.SDL_DestroyTexture(_texture);
         }
     }
 }
