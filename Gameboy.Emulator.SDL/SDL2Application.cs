@@ -40,7 +40,7 @@ namespace Gameboy.Emulator.SDL
             _wavePlayer.Init(_waveProvider);
             _wavePlayer.Play();
 
-            var sdl2Renderer = new SDL2Renderer(_renderer, mode, (int)((1.0 / framesPerSecond) * 1000), pixelSize);
+            var sdl2Renderer = new SDL2Renderer(_renderer, mode, (int)((1.0 / framesPerSecond) * 1000));
             _device = new Device(cartridge, mode, sdl2Renderer) { SoundHandler = PlaySoundByte };
 
             if (skipBootRom) _device.SkipBootRom();

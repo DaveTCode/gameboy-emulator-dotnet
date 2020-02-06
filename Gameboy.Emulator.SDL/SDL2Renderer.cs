@@ -10,7 +10,6 @@ namespace Gameboy.Emulator.SDL
     {
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
         private readonly int _msPerFrame;
-        private readonly int _pixelSize;
         private readonly DeviceType _deviceType;
         private readonly IntPtr _renderer;
         private readonly IntPtr _texture;
@@ -23,10 +22,9 @@ namespace Gameboy.Emulator.SDL
             { GrayscaleExtensions.GrayscaleBlack, (16, 55, 0) },
         };
 
-        public SDL2Renderer(IntPtr renderer, DeviceType deviceType, int msPerFrame, int pixelSize)
+        public SDL2Renderer(IntPtr renderer, DeviceType deviceType, int msPerFrame)
         {
             _msPerFrame = msPerFrame;
-            _pixelSize = pixelSize;
             _renderer = renderer;
             _deviceType = deviceType;
 
