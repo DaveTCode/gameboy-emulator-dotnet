@@ -22,7 +22,7 @@ namespace Gameboy.VM.Tests
             if (additionalBytes != null) l.AddRange(additionalBytes);
             var cartridge = CartridgeFactory.CreateCartridge(l.ToArray());
 
-            var device = new Device(cartridge, mode);
+            var device = new Device(cartridge, mode, new NullRenderer());
             device.SkipBootRom();
             return device;
         }

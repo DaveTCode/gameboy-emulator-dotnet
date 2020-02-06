@@ -34,7 +34,7 @@ namespace Gameboy.VM.Tests.Cartridge
                 cartridgeContents[0x4000 * ii + 0x1000] = (byte) ii;
             }
 
-            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.CGB);
+            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.CGB, new NullRenderer());
             device.SkipBootRom();
 
             Assert.Equal(CartridgeROMSize.A8MB, device.Cartridge.ROMSize);

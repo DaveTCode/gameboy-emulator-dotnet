@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using Gameboy.VM;
+using Gameboy.VM.Cartridge;
 using Gameboy.VM.Joypad;
-using Gameboy.VM.LCD;
 using NAudio.Wave;
 
 namespace Gameboy.Emulator.SDL
@@ -15,13 +13,87 @@ namespace Gameboy.Emulator.SDL
         private const int AudioSamples = 2048;
         private const int DownSampleCount = Device.CyclesPerSecondHz / AudioFrequency / 32;
 
-        private readonly Dictionary<(byte, byte, byte), (byte, byte, byte)> _grayscaleColorMap = new Dictionary<(byte, byte, byte), (byte, byte, byte)>
+        private readonly IntPtr _window;
+        private readonly IntPtr _renderer;
+        private readonly Device _device;
+
+        private readonly BufferedWaveProvider _waveProvider;
+        private readonly IWavePlayer _wavePlayer;
+
+        internal SDL2Application(Cartridge cartridge, DeviceType mode, int pixelSize, bool skipBootRom, int framesPerSecond)
         {
-            { GrayscaleExtensions.GrayscaleWhite, (236, 237, 176) },
-            { GrayscaleExtensions.GrayscaleLightGray, (187, 187, 24) },
-            { GrayscaleExtensions.GrayscaleDarkGray, (107, 110, 0) },
-            { GrayscaleExtensions.GrayscaleBlack, (16, 55, 0) },
-        };
+            SDL2.SDL_Init(SDL2.SDL_INIT_VIDEO | SDL2.SDL_INIT_AUDIO);
+
+            SDL2.SDL_CreateWindowAndRenderer(
+                Device.ScreenWidth * pixelSize,
+                Device.ScreenHeight * pixelSize,
+                0,
+                out _window,
+                out _renderer);
+            SDL2.SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+            SDL2.SDL_RenderClear(_renderer);
+            SDL2.SDL_SetWindowTitle(_window, $"{cartridge.GameTitle} 59.7fps");
+            SDL2.SDL_SetHint(SDL2.SDL_HINT_RENDER_SCALE_QUALITY, "0");
+
+            _waveProvider = new BufferedWaveProvider(new WaveFormat(AudioFrequency, 16, 2));
+            _wavePlayer = new WaveOutEvent();
+            _wavePlayer.Init(_waveProvider);
+            _wavePlayer.Play();
+
+            var sdl2Renderer = new SDL2Renderer(_renderer, mode, (int)((1.0 / framesPerSecond) * 1000), pixelSize);
+            _device = new Device(cartridge, mode, sdl2Renderer) { SoundHandler = PlaySoundByte };
+
+            if (skipBootRom) _device.SkipBootRom();
+        }
+
+        private int _sampleCount;
+        private readonly byte[] _soundBuffer = new byte[AudioSamples * 4]; // 2 bytes per channel
+        private int _soundBufferIndex;
+        private bool _quit;
+
+        public void PlaySoundByte(int left, int right)
+        {
+            _sampleCount++;
+            if (_sampleCount < DownSampleCount) return;
+            _sampleCount = 0;
+
+            // Apply gain
+            left *= 5000;
+            right *= 5000;
+
+            _soundBuffer[_soundBufferIndex] = (byte)left;
+            _soundBuffer[_soundBufferIndex + 1] = (byte)(left >> 8);
+            _soundBuffer[_soundBufferIndex + 2] = (byte)right;
+            _soundBuffer[_soundBufferIndex + 3] = (byte)(right >> 8);
+            _soundBufferIndex += 4;
+
+            if (_soundBufferIndex == _soundBuffer.Length)
+            {
+                //Console.WriteLine(_waveProvider.BufferedBytes);
+                _waveProvider.ClearBuffer();
+                _waveProvider.AddSamples(_soundBuffer, 0, _soundBufferIndex);
+                _soundBufferIndex = 0;
+                //Console.WriteLine(string.Join(",", _soundBuffer));
+                Array.Clear(_soundBuffer, 0, _soundBuffer.Length);
+            }
+        }
+
+        private const int ClocksPerInputCheck = 10000;
+        private int _inputCountdown = ClocksPerInputCheck;
+        public void ExecuteProgram()
+        {
+            while (!_quit)
+            {
+                var clocks = _device.Step();
+
+                _inputCountdown -= clocks;
+                if (_inputCountdown < 0)
+                {
+                    _inputCountdown = ClocksPerInputCheck;
+                    CheckForInput();
+                }
+            }
+        }
 
         private readonly Dictionary<SDL2.SDL_Keycode, DeviceKey> _keyMap = new Dictionary<SDL2.SDL_Keycode, DeviceKey>
         {
@@ -34,54 +106,6 @@ namespace Gameboy.Emulator.SDL
             {SDL2.SDL_Keycode.SDLK_RETURN, DeviceKey.Start},
             {SDL2.SDL_Keycode.SDLK_RSHIFT, DeviceKey.Select}
         };
-
-        private readonly IntPtr _window;
-        private readonly IntPtr _renderer;
-        private readonly IntPtr _texture;
-        private readonly int _pixelSize;
-        private readonly Device _device;
-        private bool _quit;
-        private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
-        private readonly int _msPerFrame;
-
-        private readonly BufferedWaveProvider _waveProvider;
-        private readonly IWavePlayer _wavePlayer;
-
-        internal SDL2Application(Device device, int pixelSize, int framesPerSecond)
-        {
-            _device = device;
-            _device.VBlankHandler = HandleVBlankEvent;
-            _device.SoundHandler = PlaySoundByte;
-            _pixelSize = pixelSize;
-            var screenWidth = Device.ScreenWidth * pixelSize;
-            var screenHeight = Device.ScreenHeight * pixelSize;
-
-            SDL2.SDL_Init(SDL2.SDL_INIT_VIDEO | SDL2.SDL_INIT_AUDIO);
-
-            SDL2.SDL_CreateWindowAndRenderer(
-                screenWidth,
-                screenHeight,
-                0,
-                out _window,
-                out _renderer);
-            SDL2.SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-            SDL2.SDL_RenderClear(_renderer);
-            SDL2.SDL_SetWindowTitle(_window, $"{device.GetCartridgeTitle()} 59.7fps");
-
-            _texture = SDL2.SDL_CreateTexture(
-                renderer: _renderer,
-                format: SDL2.SDL_PIXELFORMAT_RGB888,
-                access: (int)SDL2.SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING,
-                w: Device.ScreenWidth, 
-                h: Device.ScreenHeight);
-
-            _waveProvider = new BufferedWaveProvider(new WaveFormat(AudioFrequency, 16, 2));
-            _wavePlayer = new WaveOutEvent();
-            _wavePlayer.Init(_waveProvider);
-            _wavePlayer.Play();
-
-            _msPerFrame = (int)((1.0 / framesPerSecond) * 1000);
-        }
 
         private void CheckForInput()
         {
@@ -108,7 +132,7 @@ namespace Gameboy.Emulator.SDL
                             oamFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", oamRam)));
                             cgbBgPaletteFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", cgbBgPalette)));
                             cgbSpritePaletteFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", cgbSpritePalette)));
-                            fbFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer.Select(color => color.Item1 + "," + color.Item2 + "," + color.Item3))));
+                            fbFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer)));
                             Console.WriteLine(_device.ToString());
                         }
                         else if (e.key.keysym.sym == SDL2.SDL_Keycode.SDLK_F3)
@@ -127,97 +151,6 @@ namespace Gameboy.Emulator.SDL
                         }
                         break;
                 }
-            }
-        }
-
-        private int _sampleCount;
-        private readonly byte[] _soundBuffer = new byte[AudioSamples * 4]; // 2 bytes per channel
-        private int _soundBufferIndex;
-        public void PlaySoundByte(int left, int right)
-        {
-            _sampleCount++;
-            if (_sampleCount < DownSampleCount) return;
-            _sampleCount = 0;
-
-            // Apply gain
-            left *= 5000;
-            right *= 5000;
-
-            _soundBuffer[_soundBufferIndex] = (byte)left;
-            _soundBuffer[_soundBufferIndex + 1] = (byte)(left >> 8);
-            _soundBuffer[_soundBufferIndex + 2] = (byte)right;
-            _soundBuffer[_soundBufferIndex + 3] = (byte)(right >> 8);
-            _soundBufferIndex += 4;
-
-            if (_soundBufferIndex == _soundBuffer.Length)
-            {
-                //Console.WriteLine(_waveProvider.BufferedBytes);
-                //_waveProvider.ClearBuffer();
-                _waveProvider.AddSamples(_soundBuffer, 0, _soundBufferIndex);
-                _soundBufferIndex = 0;
-                //Console.WriteLine(string.Join(",", _soundBuffer));
-                Array.Clear(_soundBuffer, 0, _soundBuffer.Length);
-            }
-        }
-
-        private long _prevFrameTCycles;
-
-        public void HandleVBlankEvent((byte, byte, byte)[] frameBuffer)
-        {
-            // TODO - Should do this more than once per VBlank (particularly since VBlank not fired during HALT/STOP!
-            CheckForInput();
-            var rect = new SDL2.SDL_Rect();
-
-            for (var pixel = 0; pixel < frameBuffer.Length; pixel++)
-            {
-                var (red, green, blue) = frameBuffer[pixel];
-                (red, green, blue) = ColorAdjust(red, green, blue);
-
-                SDL2.SDL_SetRenderDrawColor(_renderer, red, green, blue, 255);
-
-                var x = pixel % Device.ScreenWidth;
-                var y = pixel / Device.ScreenWidth;
-                rect.x = x * _pixelSize;
-                rect.y = y * _pixelSize;
-                rect.w = _pixelSize;
-                rect.h = _pixelSize;
-                SDL2.SDL_RenderFillRect(_renderer, ref rect);
-            }
-
-            SDL2.SDL_RenderPresent(_renderer);
-
-            var msToSleep = _msPerFrame - (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000;
-            Console.WriteLine("Frame took {0:F1}ms and {1:D} t-cycles", (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000, _device.TCycles - _prevFrameTCycles);
-            _prevFrameTCycles = _device.TCycles;
-            if (msToSleep > 0)
-            {
-                SDL2.SDL_Delay((uint)msToSleep);
-            }
-            _stopwatch.Restart();
-        }
-
-        /// <summary>
-        /// Adjust colors for modern LCD screens from original device palettes
-        /// </summary>
-        private (byte, byte, byte) ColorAdjust(byte r, byte g, byte b)
-        {
-            if (_device.Type == DeviceType.DMG)
-            {
-                return _grayscaleColorMap[(r, g, b)];
-            }
-
-            return ((byte, byte, byte))(
-                (r * 13 + g * 2 + b) >> 1,
-                (g * 3 + b) << 1,
-                (r * 3 + g * 2 + b * 11) >> 1
-            );
-        }
-
-        public void ExecuteProgram()
-        {
-            while (!_quit)
-            {
-                _device.Step();
             }
         }
 

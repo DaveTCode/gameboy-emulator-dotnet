@@ -22,7 +22,6 @@ namespace Gameboy.VM
         public const int ScreenHeight = 144;
         public const int CyclesPerSecondHz = 4_194_304; // 4.194304 MHz
 
-        public delegate void ExternalVBlankHandler((byte, byte, byte)[] frameBuffer);
         public delegate void ExternalSoundHandler(int left, int right);
 
         public long TCycles = 0;
@@ -52,6 +51,7 @@ namespace Gameboy.VM
 
         public readonly DeviceType Mode;
         public readonly DeviceType Type;
+        internal readonly IRenderer Renderer;
         internal readonly MMU MMU;
         internal readonly CPU.CPU CPU;
         internal readonly ControlRegisters ControlRegisters;
@@ -69,7 +69,6 @@ namespace Gameboy.VM
 
         internal Logger Log;
 
-        public ExternalVBlankHandler VBlankHandler { get; set; }
         public ExternalSoundHandler SoundHandler { get; set; }
 
         public void SetDebugMode()
@@ -81,7 +80,7 @@ namespace Gameboy.VM
                 .CreateLogger();
         }
 
-        public Device(Cartridge.Cartridge cartridge, DeviceType type)
+        public Device(Cartridge.Cartridge cartridge, DeviceType type, IRenderer renderer)
         {
             Log = new LoggerConfiguration()
                 .MinimumLevel.Error()
@@ -114,6 +113,7 @@ namespace Gameboy.VM
             Timer = new Timer(this);
             DMAController = new DMAController(this);
             JoypadHandler = new JoypadHandler(this);
+            Renderer = renderer;
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace Gameboy.VM
         /// 4. The contents of the CGB Sprite Palette
         /// 5. The contents of the framebuffer
         /// </returns>
-        public (byte[], byte[], byte[], (byte, byte, byte)[], (byte, byte, byte)[], (byte, byte, byte)[]) DumpLcdDebugInformation()
+        public (byte[], byte[], byte[], (byte, byte, byte)[], (byte, byte, byte)[], byte[]) DumpLcdDebugInformation()
         {
             var (bank0, bank1, oam) = LCDDriver.DumpVRAM();
             return (
