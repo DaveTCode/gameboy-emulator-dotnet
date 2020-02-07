@@ -261,7 +261,7 @@ namespace Gameboy.VM.LCD
                 // Determine the x position relative to whether we're in the window or the background
                 // taking into account scrolling.
                 var xPos = UsingWindowForScanline && pixel >= _device.LCDRegisters.WindowX ?
-                    (pixel - _device.LCDRegisters.WindowX + 7) & 0xFF :
+                    (pixel - _device.LCDRegisters.WindowX + 6) & 0xFF :
                     (pixel + _device.LCDRegisters.ScrollX) & 0xFF;
 
                 var tileCol = xPos / 8;
