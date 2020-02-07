@@ -78,7 +78,7 @@ namespace Gameboy.Emulator.SDL
             }
         }
 
-        private const int ClocksPerInputCheck = 10000;
+        private const int ClocksPerInputCheck = 35000;
         private int _inputCountdown = ClocksPerInputCheck;
         public void ExecuteProgram()
         {
