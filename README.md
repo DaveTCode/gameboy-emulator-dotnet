@@ -23,7 +23,6 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 ### Fixes
 
 - Lots of test failures specified in the table below
-- Window looks slightly off in the bottom left (GTA & Zelda) probably just an off by one error on rendering
 - Audio is completely broken
 
 ### Specific
@@ -34,7 +33,6 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 - Prevent pressing multiple buttons (just direction keys?) at a time
 - RTC for MBC3 pretends to exist but doesn't really
 - Fully update debugging spreadsheets for CGB and Audio
-- Move to using streaming pixels into a texture for SDL to get performance above 30fps
 
 ### Ideas/Future
 
@@ -93,7 +91,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 | Mooneye - OAM_DMA - sources-GS              | :x:                   | Not supposed to pass on CGB, not really clear what this actually _does_      |
 | Mooneye - PPU - hblank_ly_scx_timing-GS     | :x:                   | Likely all specific timings relating to the PPU are broken, we're emulating at single instruction atomicity instead of clock cycles      |
 | Mooneye - PPU - intr_1_2_timing-GS          | :x:                   | Hangs |
-| Mooneye - PPU - intr_2_0_timing-GS          | :x:                   | Fails |
+| Mooneye - PPU - intr_2_0_timing             | :x:                   | Fails |
 | Mooneye - PPU - intr_2_mode0_timing         | :white_check_mark:    |       |
 | Mooneye - PPU - intr_2_mode0_timing_sprites | :x:                   | TEST #00 FAILS      |
 | Mooneye - PPU - intr_2_mode3_timing         | :white_check_mark:    |       |
