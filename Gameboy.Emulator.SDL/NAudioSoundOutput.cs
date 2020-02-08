@@ -1,56 +1,56 @@
 ﻿using System;
-using Gameboy.VM;
 using Gameboy.VM.Sound;
 using NAudio.Wave;
 
 namespace Gameboy.Emulator.SDL
 {
-    public class NAudioSoundOutput : ISoundOutput
+    public class NAudioSoundOutput : ISoundOutput, IDisposable
     {
-        private const int AudioFrequency = 44100;
         private const int AudioSamples = 2048;
-        private const int DownSampleCount = Device.CyclesPerSecondHz / AudioFrequency / 32;
+        private const int Channels = 2;
 
         private readonly BufferedWaveProvider _waveProvider;
         private readonly IWavePlayer _wavePlayer;
 
-        private int _sampleCount;
-        private readonly byte[] _soundBuffer = new byte[AudioSamples * 4]; // 2 bytes per channel
+        private readonly byte[] _soundBuffer = new byte[AudioSamples * Channels];
         private int _soundBufferIndex;
 
         internal NAudioSoundOutput()
         {
-            _waveProvider = new BufferedWaveProvider(new WaveFormat(AudioFrequency, 16, 2));
+            _waveProvider = new BufferedWaveProvider(new WaveFormat(AudioFrequency, 8, Channels));
             _wavePlayer = new WaveOutEvent();
             _wavePlayer.Init(_waveProvider);
             _wavePlayer.Play();
         }
 
+        public int AudioFrequency => 44100;
+
         public void PlaySoundByte(int left, int right)
         {
-            _sampleCount++;
-            if (_sampleCount < DownSampleCount) return;
-            _sampleCount = 0;
-
             // Apply gain
-            left *= 5000;
-            right *= 5000;
+            //left *= 2000;
+            //right *= 2000;
 
             _soundBuffer[_soundBufferIndex] = (byte)left;
-            _soundBuffer[_soundBufferIndex + 1] = (byte)(left >> 8);
-            _soundBuffer[_soundBufferIndex + 2] = (byte)right;
-            _soundBuffer[_soundBufferIndex + 3] = (byte)(right >> 8);
-            _soundBufferIndex += 4;
+            //_soundBuffer[_soundBufferIndex + 1] = (byte)(left >> 8);
+            _soundBuffer[_soundBufferIndex + 1] = (byte)right;
+            //_soundBuffer[_soundBufferIndex + 3] = (byte)(right >> 8);
+            _soundBufferIndex += 2;
 
             if (_soundBufferIndex == _soundBuffer.Length)
             {
-                //Console.WriteLine(_waveProvider.BufferedBytes);
-                _waveProvider.ClearBuffer();
+                Console.WriteLine(_waveProvider.BufferedBytes);
+                //_waveProvider.ClearBuffer();
                 _waveProvider.AddSamples(_soundBuffer, 0, _soundBufferIndex);
                 _soundBufferIndex = 0;
                 //Console.WriteLine(string.Join(",", _soundBuffer));
                 Array.Clear(_soundBuffer, 0, _soundBuffer.Length);
             }
+        }
+
+        public void Dispose()
+        {
+            _wavePlayer?.Dispose();
         }
     }
 }

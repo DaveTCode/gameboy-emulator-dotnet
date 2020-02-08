@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Gameboy.VM;
 using Gameboy.VM.Cartridge;
 using Gameboy.VM.Joypad;
-using NAudio.Wave;
 
 namespace Gameboy.Emulator.SDL
 {
@@ -12,6 +11,7 @@ namespace Gameboy.Emulator.SDL
         private readonly IntPtr _window;
         private readonly IntPtr _renderer;
         private readonly Device _device;
+        private readonly NAudioSoundOutput _soundOutput;
 
         internal SDL2Application(Cartridge cartridge, DeviceType mode, int pixelSize, bool skipBootRom, int framesPerSecond)
         {
@@ -29,8 +29,8 @@ namespace Gameboy.Emulator.SDL
             SDL2.SDL_SetHint(SDL2.SDL_HINT_RENDER_SCALE_QUALITY, "0");
 
             var sdl2Renderer = new SDL2Renderer(_renderer, mode, (int)((1.0 / framesPerSecond) * 1000));
-            var audioOutput = new NAudioSoundOutput();
-            _device = new Device(cartridge, mode, sdl2Renderer, audioOutput);
+            _soundOutput = new NAudioSoundOutput();
+            _device = new Device(cartridge, mode, sdl2Renderer, _soundOutput);
 
             if (skipBootRom) _device.SkipBootRom();
         }
@@ -115,6 +115,7 @@ namespace Gameboy.Emulator.SDL
 
         public void Dispose()
         {
+            _soundOutput?.Dispose();
             SDL2.SDL_DestroyRenderer(_renderer);
             SDL2.SDL_DestroyWindow(_window);
             SDL2.SDL_Quit();

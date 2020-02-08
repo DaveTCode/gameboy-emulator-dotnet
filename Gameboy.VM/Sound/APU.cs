@@ -5,7 +5,6 @@ namespace Gameboy.VM.Sound
 {
     internal class APU
     {
-        public const int CyclesPerOutputClock = 32;
         private const byte ControlMasterMask = 0b0111_0000;
 
         private const int FrameSequencerTimer512Hz = Device.CyclesPerSecondHz / 512;
@@ -22,6 +21,9 @@ namespace Gameboy.VM.Sound
         private bool _leftVinOn;
         private int _rightOutputVolume;
         private bool _rightVinOn;
+
+        // TODO - This isn't really an int, clock / audio freq is not an integer and pretending that it is will screw up audio _slightly_
+        private int _downSampleClock;
 
         private readonly Dictionary<BaseChannel, (bool, bool)> _soundChannels;
 
@@ -42,6 +44,7 @@ namespace Gameboy.VM.Sound
                 { _waveChannel, (false, false) },
                 { _noiseChannel, (false, false) },
             };
+            _downSampleClock = Device.CyclesPerSecondHz / _device.SoundOutput.AudioFrequency;
         }
 
         #region Control Registers
@@ -108,6 +111,7 @@ namespace Gameboy.VM.Sound
             _leftVinOn = false;
             _rightOutputVolume = 0;
             _rightVinOn = false;
+            _downSampleClock = Device.CyclesPerSecondHz / _device.SoundOutput.AudioFrequency;
 
             foreach (var channel in _channels)
             {
@@ -248,7 +252,6 @@ namespace Gameboy.VM.Sound
             _frameSequence = (_frameSequence + 1) % 8;
         }
 
-        private int _outputPeriod = CyclesPerOutputClock;
         internal void Step(int tCycles)
         {
             while (tCycles > 0)
@@ -269,11 +272,11 @@ namespace Gameboy.VM.Sound
                     sound.Step();
                 }
 
-                // TODO - This is outputting at 1Mhz which is still a bit daft if technically accurate, we should output somewhere closer to 44Khz like the final audio device is
-                _outputPeriod--;
-                if (_outputPeriod == 0)
+                // TODO - Is downsampling by just throwing bytes away correct or should we use an average of some sort?
+                _downSampleClock--;
+                if (_downSampleClock == 0)
                 {
-                    _outputPeriod = CyclesPerOutputClock;
+                    _downSampleClock = Device.CyclesPerSecondHz / _device.SoundOutput.AudioFrequency;
                     var left = 0;
                     var right = 0;
 

@@ -99,6 +99,9 @@ namespace Gameboy.VM
                 _ => throw new ArgumentOutOfRangeException()
             };
 
+            Renderer = renderer;
+            SoundOutput = soundOutput;
+
             InterruptRegisters = new InterruptRegisters();
             ControlRegisters = new ControlRegisters();
             APU = new APU(this);
@@ -110,8 +113,6 @@ namespace Gameboy.VM
             Timer = new Timer(this);
             DMAController = new DMAController(this);
             JoypadHandler = new JoypadHandler(this);
-            Renderer = renderer;
-            SoundOutput = soundOutput;
         }
 
         /// <summary>
