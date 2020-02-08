@@ -7,10 +7,9 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 ## APU Known State
 
-- Sound 1 playing through NAudio but all sorts of things are wrong
-- Sound 2 might work but is untested
+- Sound 1 & 2 sound good (albeit with some incorrect assumptions)
 - Sound 3 unimplemented and unsure which ROMs use it to test
-- Sound 4 implemented but same issues with frequencies as others
+- Sound 4 implemented but sounds totally wrong
 
 ## State
 
