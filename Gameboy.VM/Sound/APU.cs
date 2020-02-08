@@ -269,7 +269,10 @@ namespace Gameboy.VM.Sound
                 // Stepping the sounds generates the next output volume in each
                 foreach (var sound in _channels)
                 {
-                    sound.Step();
+                    if (sound.IsEnabled)
+                    {
+                        sound.Step();
+                    }
                 }
 
                 // TODO - Is downsampling by just throwing bytes away correct or should we use an average of some sort?

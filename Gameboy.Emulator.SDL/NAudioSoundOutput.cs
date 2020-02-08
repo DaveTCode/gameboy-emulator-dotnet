@@ -39,11 +39,9 @@ namespace Gameboy.Emulator.SDL
 
             if (_soundBufferIndex == _soundBuffer.Length)
             {
-                Console.WriteLine(_waveProvider.BufferedBytes);
                 //_waveProvider.ClearBuffer();
                 _waveProvider.AddSamples(_soundBuffer, 0, _soundBufferIndex);
                 _soundBufferIndex = 0;
-                //Console.WriteLine(string.Join(",", _soundBuffer));
                 Array.Clear(_soundBuffer, 0, _soundBuffer.Length);
             }
         }

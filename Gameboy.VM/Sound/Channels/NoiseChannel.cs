@@ -24,7 +24,7 @@ namespace Gameboy.VM.Sound.Channels
 
         private int _internalTimerPeriod;
         private int _currentTimerCycle;
-        private byte _lfsr;
+        private int _lfsr;
         private bool _widthModeOn;
         private int _outputVolume;
 
@@ -80,7 +80,7 @@ namespace Gameboy.VM.Sound.Channels
             }
 
             _currentTimerCycle = _internalTimerPeriod;
-            _lfsr = 0xFF;
+            _lfsr = 0x7FFF;
             Console.WriteLine("Triggering Noise Channel with period {0}, length ({1}) enabled {2}, volume: ({3})", _internalTimerPeriod, SoundLength, UseSoundLength, Envelope);
         }
 
@@ -92,7 +92,7 @@ namespace Gameboy.VM.Sound.Channels
             UseSoundLength = false;
             _internalTimerPeriod = 0;
             _currentTimerCycle = 1;
-            _lfsr = 0xFF;
+            _lfsr = 0x7FFF;
             _widthModeOn = false;
             _outputVolume = 0;
         }
@@ -105,12 +105,14 @@ namespace Gameboy.VM.Sound.Channels
                 _currentTimerCycle = _internalTimerPeriod;
 
                 var xorBit = (_lfsr & 0x1) ^ ((_lfsr & 0x2) >> 1);
-                _lfsr = (byte) (
-                    (xorBit << 8) | 
-                    (_widthModeOn ? xorBit << 7 : 0x0) |
-                    (_lfsr >> 1));
+                _lfsr >>= 1;
+                _lfsr |= (xorBit << 14);
+                if (_widthModeOn)
+                {
+                    _lfsr |= (xorBit << 6);
+                }
 
-                _outputVolume = (_lfsr & 0x1) == 0x1 ? 0 : 1;
+                _outputVolume = ~(_lfsr & 0x1);
             }
         }
 
