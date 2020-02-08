@@ -290,7 +290,7 @@ namespace Gameboy.VM.Sound
                     left *= _leftOutputVolume;
                     right *= _rightOutputVolume;
 
-                    _device.SoundHandler?.Invoke(left, right);
+                    _device.SoundOutput.PlaySoundByte(left, right);
                 }
             }
         }

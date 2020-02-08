@@ -9,16 +9,9 @@ namespace Gameboy.Emulator.SDL
 {
     internal class SDL2Application : IDisposable
     {
-        private const int AudioFrequency = 44100;
-        private const int AudioSamples = 2048;
-        private const int DownSampleCount = Device.CyclesPerSecondHz / AudioFrequency / 32;
-
         private readonly IntPtr _window;
         private readonly IntPtr _renderer;
         private readonly Device _device;
-
-        private readonly BufferedWaveProvider _waveProvider;
-        private readonly IWavePlayer _wavePlayer;
 
         internal SDL2Application(Cartridge cartridge, DeviceType mode, int pixelSize, bool skipBootRom, int framesPerSecond)
         {
@@ -35,48 +28,14 @@ namespace Gameboy.Emulator.SDL
             SDL2.SDL_SetWindowTitle(_window, $"{cartridge.GameTitle} 59.7fps");
             SDL2.SDL_SetHint(SDL2.SDL_HINT_RENDER_SCALE_QUALITY, "0");
 
-            _waveProvider = new BufferedWaveProvider(new WaveFormat(AudioFrequency, 16, 2));
-            _wavePlayer = new WaveOutEvent();
-            _wavePlayer.Init(_waveProvider);
-            _wavePlayer.Play();
-
             var sdl2Renderer = new SDL2Renderer(_renderer, mode, (int)((1.0 / framesPerSecond) * 1000));
-            _device = new Device(cartridge, mode, sdl2Renderer) { SoundHandler = PlaySoundByte };
+            var audioOutput = new NAudioSoundOutput();
+            _device = new Device(cartridge, mode, sdl2Renderer, audioOutput);
 
             if (skipBootRom) _device.SkipBootRom();
         }
 
-        private int _sampleCount;
-        private readonly byte[] _soundBuffer = new byte[AudioSamples * 4]; // 2 bytes per channel
-        private int _soundBufferIndex;
         private bool _quit;
-
-        public void PlaySoundByte(int left, int right)
-        {
-            _sampleCount++;
-            if (_sampleCount < DownSampleCount) return;
-            _sampleCount = 0;
-
-            // Apply gain
-            left *= 5000;
-            right *= 5000;
-
-            _soundBuffer[_soundBufferIndex] = (byte)left;
-            _soundBuffer[_soundBufferIndex + 1] = (byte)(left >> 8);
-            _soundBuffer[_soundBufferIndex + 2] = (byte)right;
-            _soundBuffer[_soundBufferIndex + 3] = (byte)(right >> 8);
-            _soundBufferIndex += 4;
-
-            if (_soundBufferIndex == _soundBuffer.Length)
-            {
-                //Console.WriteLine(_waveProvider.BufferedBytes);
-                _waveProvider.ClearBuffer();
-                _waveProvider.AddSamples(_soundBuffer, 0, _soundBufferIndex);
-                _soundBufferIndex = 0;
-                //Console.WriteLine(string.Join(",", _soundBuffer));
-                Array.Clear(_soundBuffer, 0, _soundBuffer.Length);
-            }
-        }
 
         private const int ClocksPerInputCheck = 35000;
         private int _inputCountdown = ClocksPerInputCheck;
@@ -156,7 +115,6 @@ namespace Gameboy.Emulator.SDL
 
         public void Dispose()
         {
-            _wavePlayer.Dispose();
             SDL2.SDL_DestroyRenderer(_renderer);
             SDL2.SDL_DestroyWindow(_window);
             SDL2.SDL_Quit();

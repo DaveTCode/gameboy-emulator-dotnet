@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Gameboy.VM.Cartridge;
+using Gameboy.VM.LCD;
+using Gameboy.VM.Sound;
 using Xunit;
 
 namespace Gameboy.VM.Tests.Cartridge
@@ -29,7 +31,7 @@ namespace Gameboy.VM.Tests.Cartridge
         [Fact]
         public void TestRamAccessNoBanks()
         {
-            var device = new Device(CartridgeFactory.CreateCartridge(_cartridgeBaseContents), DeviceType.DMG, new NullRenderer());
+            var device = new Device(CartridgeFactory.CreateCartridge(_cartridgeBaseContents), DeviceType.DMG, new NullRenderer(), new NullSoundOutput());
             device.SkipBootRom();
 
             for (ushort ii = 0x0; ii < 0x2000; ii++)
@@ -51,7 +53,7 @@ namespace Gameboy.VM.Tests.Cartridge
             var cartridgeContents = new byte[0x8000];
             Array.Copy(_cartridgeBaseContents, cartridgeContents, _cartridgeBaseContents.Length);
             cartridgeContents[0x149] = (byte) CartridgeRAMSize.A2KB;
-            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.DMG, new NullRenderer());
+            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.DMG, new NullRenderer(), new NullSoundOutput());
             device.SkipBootRom();
 
             for (ushort ii = 0x0; ii < 0x2000; ii++)
@@ -77,7 +79,7 @@ namespace Gameboy.VM.Tests.Cartridge
             var cartridgeContents = new byte[0x8000];
             Array.Copy(_cartridgeBaseContents, cartridgeContents, _cartridgeBaseContents.Length);
             cartridgeContents[0x149] = (byte)CartridgeRAMSize.A32KB;
-            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.DMG, new NullRenderer());
+            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.DMG, new NullRenderer(), new NullSoundOutput());
             device.SkipBootRom();
 
             device.MMU.WriteByte(0x0, 0x0A); // Enable RAM
@@ -102,7 +104,7 @@ namespace Gameboy.VM.Tests.Cartridge
             var cartridgeContents = new byte[0x8000];
             Array.Copy(_cartridgeBaseContents, cartridgeContents, _cartridgeBaseContents.Length);
             cartridgeContents[0x7FFF] = 0x9; // Set a random value in ROM bank 1
-            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.DMG, new NullRenderer());
+            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.DMG, new NullRenderer(), new NullSoundOutput());
 
             Assert.Equal(CartridgeROMSize.A64KB,device.Cartridge.ROMSize);
             Assert.Equal(CartridgeRAMSize.None, device.Cartridge.RAMSize);

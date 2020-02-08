@@ -2,6 +2,8 @@
 using CommandLine;
 using Gameboy.VM;
 using Gameboy.VM.Cartridge;
+using Gameboy.VM.LCD;
+using Gameboy.VM.Sound;
 
 
 namespace Gameboy.Headless.Console
@@ -35,7 +37,7 @@ namespace Gameboy.Headless.Console
 
         private static int RunProgram(CommandLineOptions options)
         {
-            var device = new Device(CartridgeFactory.CreateCartridge(File.ReadAllBytes(options.RomFilePath)), options.Mode, new NullRenderer());
+            var device = new Device(CartridgeFactory.CreateCartridge(File.ReadAllBytes(options.RomFilePath)), options.Mode, new NullRenderer(), new NullSoundOutput());
 
             if (options.SkipBootRom) device.SkipBootRom();
 

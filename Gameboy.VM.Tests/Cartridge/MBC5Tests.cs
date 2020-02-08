@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Gameboy.VM.Cartridge;
+using Gameboy.VM.LCD;
+using Gameboy.VM.Sound;
 using Xunit;
 
 namespace Gameboy.VM.Tests.Cartridge
@@ -34,7 +36,7 @@ namespace Gameboy.VM.Tests.Cartridge
                 cartridgeContents[0x4000 * ii + 0x1000] = (byte) ii;
             }
 
-            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.CGB, new NullRenderer());
+            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.CGB, new NullRenderer(), new NullSoundOutput());
             device.SkipBootRom();
 
             Assert.Equal(CartridgeROMSize.A8MB, device.Cartridge.ROMSize);

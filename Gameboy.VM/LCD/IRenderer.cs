@@ -1,4 +1,4 @@
-﻿namespace Gameboy.VM
+﻿namespace Gameboy.VM.LCD
 {
     public interface IRenderer
     {

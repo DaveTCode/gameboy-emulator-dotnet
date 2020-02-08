@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using System.Text;
 using Gameboy.VM.Cartridge;
+using Gameboy.VM.LCD;
+using Gameboy.VM.Sound;
 using Xunit;
 
 namespace Gameboy.VM.Tests.Cartridge
@@ -37,7 +39,7 @@ namespace Gameboy.VM.Tests.Cartridge
         public void TestRamDoesNotExist()
         {
             var cartridge = CartridgeFactory.CreateCartridge(_cartridgeHeader);
-            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer());
+            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(), new NullSoundOutput());
             device.SkipBootRom();
 
             // Test that all writes to RAM are ignored leaving 0xFF as default value
@@ -52,7 +54,7 @@ namespace Gameboy.VM.Tests.Cartridge
         public void TestRomAddressSpace()
         {
             var cartridge = CartridgeFactory.CreateCartridge(_cartridgeHeader);
-            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer());
+            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(), new NullSoundOutput());
             device.SkipBootRom();
 
             // Test that all writes to ROM are ignored and original values retained

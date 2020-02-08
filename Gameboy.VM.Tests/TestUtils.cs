@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Gameboy.VM.Cartridge;
+using Gameboy.VM.LCD;
+using Gameboy.VM.Sound;
 
 namespace Gameboy.VM.Tests
 {
@@ -22,7 +24,7 @@ namespace Gameboy.VM.Tests
             if (additionalBytes != null) l.AddRange(additionalBytes);
             var cartridge = CartridgeFactory.CreateCartridge(l.ToArray());
 
-            var device = new Device(cartridge, mode, new NullRenderer());
+            var device = new Device(cartridge, mode, new NullRenderer(), new NullSoundOutput());
             device.SkipBootRom();
             return device;
         }

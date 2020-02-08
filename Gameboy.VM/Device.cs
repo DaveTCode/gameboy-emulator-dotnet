@@ -22,8 +22,6 @@ namespace Gameboy.VM
         public const int ScreenHeight = 144;
         public const int CyclesPerSecondHz = 4_194_304; // 4.194304 MHz
 
-        public delegate void ExternalSoundHandler(int left, int right);
-
         public long TCycles = 0;
 
         /// <summary>
@@ -52,6 +50,7 @@ namespace Gameboy.VM
         public readonly DeviceType Mode;
         public readonly DeviceType Type;
         internal readonly IRenderer Renderer;
+        internal readonly ISoundOutput SoundOutput;
         internal readonly MMU MMU;
         internal readonly CPU.CPU CPU;
         internal readonly ControlRegisters ControlRegisters;
@@ -69,8 +68,6 @@ namespace Gameboy.VM
 
         internal Logger Log;
 
-        public ExternalSoundHandler SoundHandler { get; set; }
-
         public void SetDebugMode()
         {
             Console.WriteLine("Setting debug mode");
@@ -80,7 +77,7 @@ namespace Gameboy.VM
                 .CreateLogger();
         }
 
-        public Device(Cartridge.Cartridge cartridge, DeviceType type, IRenderer renderer)
+        public Device(Cartridge.Cartridge cartridge, DeviceType type, IRenderer renderer, ISoundOutput soundOutput)
         {
             Log = new LoggerConfiguration()
                 .MinimumLevel.Error()
@@ -114,6 +111,7 @@ namespace Gameboy.VM
             DMAController = new DMAController(this);
             JoypadHandler = new JoypadHandler(this);
             Renderer = renderer;
+            SoundOutput = soundOutput;
         }
 
         /// <summary>
@@ -138,11 +136,6 @@ namespace Gameboy.VM
                 LCDRegisters.CGBSpritePalette.Palette,
                 LCDDriver.GetCurrentFrame()
             );
-        }
-
-        public string GetCartridgeTitle()
-        {
-            return Cartridge.GameTitle;
         }
 
         /// <summary>
