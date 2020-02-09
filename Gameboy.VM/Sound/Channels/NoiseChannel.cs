@@ -14,6 +14,8 @@ namespace Gameboy.VM.Sound.Channels
             Envelope = new SoundEnvelope(this);
         }
 
+        protected override int BaseSoundLength => 64;
+
         internal byte NR41
         {
             get => 0xFF;
@@ -71,13 +73,9 @@ namespace Gameboy.VM.Sound.Channels
             }
         }
 
-        internal void Trigger()
+        internal override void Trigger()
         {
-            IsEnabled = true;
-            if (SoundLength == 0)
-            {
-                SoundLength = 64;
-            }
+            base.Trigger();
 
             _currentTimerCycle = _internalTimerPeriod;
             _lfsr = 0x7FFF;
@@ -86,10 +84,8 @@ namespace Gameboy.VM.Sound.Channels
 
         internal override void Reset()
         {
+            base.Reset();
             Envelope.Reset();
-            IsEnabled = false;
-            SoundLength = 0x0;
-            UseSoundLength = false;
             _internalTimerPeriod = 0;
             _currentTimerCycle = 1;
             _lfsr = 0x7FFF;

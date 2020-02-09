@@ -34,7 +34,7 @@ namespace Gameboy.VM.Sound
             _device = device;
             _squareChannel1 = new SquareChannel1();
             _squareChannel2 = new SquareChannel2();
-            _waveChannel = new WaveChannel();
+            _waveChannel = new WaveChannel(_device.Type);
             _noiseChannel = new NoiseChannel();
             _channels = new BaseChannel[] { _squareChannel1, _squareChannel2, _waveChannel, _noiseChannel };
             _soundChannels = new Dictionary<BaseChannel, (bool, bool)>
@@ -131,7 +131,7 @@ namespace Gameboy.VM.Sound
                 }
                 else if (address >= 0xFF30 && address <= 0xFF3F) // Waveform RAM still available
                 {
-                    _waveChannel.WaveRam[address - 0xFF30] = value;
+                    _waveChannel.WriteRam(address, value);
                 }
             }
 
@@ -180,7 +180,7 @@ namespace Gameboy.VM.Sound
             else if (address == 0xFF26)
                 NR52 = value;
             else if (address >= 0xFF30 && address <= 0xFF3F) // Waveform RAM
-                _waveChannel.WaveRam[address - 0xFF30] = value;
+                _waveChannel.WriteRam(address, value);
         }
 
         internal byte Read(ushort address)
@@ -211,7 +211,7 @@ namespace Gameboy.VM.Sound
                 0xFF25 => NR51,
                 0xFF26 => NR52,
                 _ when address >= 0xFF27 && address <= 0xFF29 => 0xFF, // Unused
-                _ when address >= 0xFF30 && address <= 0xFF3F => _waveChannel.WaveRam[address - 0xFF30], // Unused
+                _ when address >= 0xFF30 && address <= 0xFF3F => _waveChannel.ReadRam(address),
                 _ => 0xFF
             };
         }

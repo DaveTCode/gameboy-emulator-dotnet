@@ -1,4 +1,6 @@
-﻿namespace Gameboy.VM.Sound.Channels
+﻿using System;
+
+namespace Gameboy.VM.Sound.Channels
 {
     /// <summary>
     /// SOUND 3
@@ -6,105 +8,159 @@
     /// </summary>
     internal class WaveChannel : BaseChannel
     {
-        private const byte NR30Mask = 0b0111_1111;
-        private const byte NR32Mask = 0b1001_1111;
-        private const byte NR34Mask = 0b1011_1111; // TODO - Doesn't match official programming manual but does match other emulators
+        // These values are not fixed and vary slightly for each DMG device,
+        // however this is a sensible default to use for the emulator
+        // TODO - Vary this slightly on startup as per real DMG
+        private static readonly byte[] DmgWave = 
+        {
+            0xAC, 0xDD, 0xDA, 0x48, 0x36, 0x02, 0xCF, 0x16,
+            0x2C, 0x04, 0xE5, 0x2C, 0xAC, 0xDD, 0xDA, 0x48
+        };
+
+        // This is actually correct, these values are fixed on startup of a CGB/SGB device
+        private static readonly byte[] CgbWave =
+        {
+            0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+            0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF
+        };
+
+        protected override int BaseSoundLength => 0xFF;
 
         private const int WaveRAMSize = 0x10;
-        internal readonly byte[] WaveRam = new byte[WaveRAMSize];
+        private const int WaveSampleSize = WaveRAMSize * 2;
+        private readonly byte[] _waveRam = new byte[WaveRAMSize];
+        private readonly int[] _waveSamples = new int[WaveSampleSize]; // Using int to represent to avoid casts but actually 4 bits
+        private int _waveSamplePositionCounter; // Which sample are we currently looking at?
 
-        internal OutputLevel Volume { get; private set; }
+        internal WaveChannelOutputLevel Volume { get; private set; }
 
         internal int FrequencyData { get; private set; }
 
-        private byte _nr30 = NR30Mask;
+        private int FrequencyPeriod => 2 * (2048 - FrequencyData);
+
+        private int _currentFrequencyPeriod;
+        private int _lastOutput;
+
+        internal WaveChannel(DeviceType deviceType)
+        {
+            Array.Copy(
+                deviceType == DeviceType.DMG 
+                    ? DmgWave 
+                    : CgbWave, _waveRam, WaveRAMSize);
+        }
+
+        internal byte ReadRam(ushort address)
+        {
+            // TODO - Documentation suggests that there are times that wave RAM can't be read and returns 0xFF
+            return _waveRam[address - 0xFF30];
+        }
+
+        internal void WriteRam(ushort address, byte value)
+        {
+            var ramAddress = address - 0xFF30;
+            _waveRam[ramAddress] = value;
+
+            _waveSamples[ramAddress * 2] = value >> 4;
+            _waveSamples[ramAddress * 2 + 1] = value & 0b1111;
+        }
+
+        /// <summary>
+        /// Only bit 7 is used and indicates whether the DAC is on for this channel
+        /// </summary>
         internal byte NR30
         {
-            get => _nr30;
-            set
-            {
-                _nr30 = (byte)(value | NR30Mask);
-                IsEnabled = (value & 0x80) == 0x80;
-            }
+            get => (byte) (0b0111_1110 | (IsEnabled ? 0b1000_0000 : 0));
+            set => IsEnabled = (value & 0x80) == 0x80;
         }
 
-        private byte _nr31;
+        /// <summary>
+        /// The wave channel has max sound length of 256, this register holds
+        /// 256 - that value.
+        /// </summary>
         internal byte NR31
         {
-            get => _nr31;
-            set
-            {
-                _nr31 = value;
-                SoundLength = 256 - value;
-            }
+            get => (byte) (256 - SoundLength);
+            set => SoundLength = 256 - value;
         }
 
-        private byte _nr32 = NR32Mask;
+        /// <summary>
+        /// Masked with 0b1001_1111, holds only the volume output shifter in
+        /// bits 5 & 6.
+        /// </summary>
         internal byte NR32
         {
-            get => _nr32;
-            set
-            {
-                _nr32 = (byte)(value | NR32Mask);
-                Volume = (OutputLevel)((value >> 5) & 0x3);
-            }
+            get => (byte) (0b1001_1111 | (int)Volume << 5);
+            set => Volume = (WaveChannelOutputLevel)((value >> 5) & 0x3);
         }
 
-        private byte _nr33;
+        /// <summary>
+        /// Holds LSB of the Frequency Data
+        /// </summary>
         internal byte NR33
         {
-            get => _nr33;
-            set
-            {
-                _nr33 = value;
-                FrequencyData = (FrequencyData & 0x700) | value;
-            }
+            get => (byte) FrequencyData;
+            set => FrequencyData = (FrequencyData & 0x700) | value;
         }
 
-        private byte _nr34 = NR34Mask;
+        /// <summary>
+        /// Holds the MSB of the frequency data in bits 1-3, bit 6 indicates
+        /// whether the sound length is used and bit 7 indicates whether the
+        /// channel should be triggered.
+        /// </summary>
         internal byte NR34
         {
-            get => _nr34;
+            get =>
+                (byte) (0b1011_1000 |
+                        (FrequencyData >> 8) |
+                        (UseSoundLength ? 0b0100_0000 : 0));
             set
             {
-                _nr34 = (byte)(value | NR34Mask);
                 FrequencyData = (FrequencyData & 0xFF) | ((value & 0x7) << 8);
                 UseSoundLength = (value & 0x40) == 0x40;
-                IsEnabled = (value & 0x80) == 0x80;
-                if (IsEnabled)
+                if ((value & 0x80) == 0x80)
                 {
                     Trigger();
                 }
             }
         }
 
-        internal void Trigger()
+        internal override void Trigger()
         {
-            // TODO - Unimplemented
+            base.Trigger();
+            _currentFrequencyPeriod = FrequencyPeriod;
+            _waveSamplePositionCounter = 0;
+            
+            Console.WriteLine($"Triggering wave channel with volume shift {Volume} and period {FrequencyPeriod}");
         }
 
         internal override void Reset()
         {
-            _nr30 = NR30Mask;
-            _nr31 = 0x00;
-            _nr32 = NR32Mask;
-            _nr33 = 0x00;
-            _nr34 = NR34Mask;
-            UseSoundLength = false;
+            base.Reset();
             FrequencyData = 0x0;
-            SoundLength = 0x0;
-            Volume = OutputLevel.Mute;
-            IsEnabled = false;
+            Volume = WaveChannelOutputLevel.Mute;
+            _waveSamplePositionCounter = 0;
+            _currentFrequencyPeriod = 0;
         }
 
         internal override void Step()
         {
-            // TODO - Handle channel 3 properly
+            _currentFrequencyPeriod--;
+            if (_currentFrequencyPeriod == 0)
+            {
+                _currentFrequencyPeriod = FrequencyPeriod;
+
+                // Move to the next sample
+                _waveSamplePositionCounter = (_waveSamplePositionCounter + 1) % WaveSampleSize;
+
+                // Set the output to the current sample shifted by the volume shift register
+                // TODO - Is this correct? Some docs suggest combining last and current in single byte?
+                _lastOutput = _waveSamples[_waveSamplePositionCounter] >> Volume.RightShiftValue();
+            }
         }
 
         internal override int GetOutputVolume()
         {
-            return 0x0; // TODO - Implement channel 3 properly
+            return _lastOutput;
         }
     }
 }

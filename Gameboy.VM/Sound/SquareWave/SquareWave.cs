@@ -11,6 +11,8 @@ namespace Gameboy.VM.Sound.SquareWave
         private const byte ControlByteMask = 0b0011_1111;
         private const byte HighByteMask = 0b1011_1111;
 
+        protected override int BaseSoundLength => 64;
+
         internal int FrequencyData { get; set; }
 
         protected int ActualFrequencyHz => 131072 / (2048 - FrequencyData);
@@ -53,20 +55,16 @@ namespace Gameboy.VM.Sound.SquareWave
             }
         }
 
-        internal virtual void Trigger()
+        internal override void Trigger()
         {
-            IsEnabled = true;
-            if (SoundLength == 0)
-            {
-                SoundLength = 0x3F;
-            }
+            base.Trigger();
 
             _dutyCycleBit = 0;
         }
 
         internal override void Reset()
         {
-            IsEnabled = false;
+            base.Reset();
             FrequencyData = 0x0;
             DutyCycle = WaveDuty.HalfQuarter;
             _dutyCycleBit = 0;
