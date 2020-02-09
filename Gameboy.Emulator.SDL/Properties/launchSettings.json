@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "Manual Sound Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/tests/Sound Test (PD).gb\" --skipBootRom -s 60 -p 2"
+    },
     "Blarg CPU Tests - All (MBC1)": {
       "commandName": "Project",
       "commandLineArgs": "../../../../Roms/tests/blargg/cpu_instrs/cpu_instrs.gb --skipBootRom -s 60 -p 2"
@@ -87,6 +91,6 @@
     "Prince of Persia (USA, Europe) (En,Fr,De,Es,It) (GB Compatible).gbc": {
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/real/Prince of Persia (USA, Europe) (En,Fr,De,Es,It) (GB Compatible).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
-    } 
+    }
   }
 }
