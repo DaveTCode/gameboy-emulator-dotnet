@@ -133,6 +133,15 @@ namespace Gameboy.VM.Sound.Channels
             Console.WriteLine($"Triggering wave channel with volume shift {Volume} and period {FrequencyPeriod}");
         }
 
+        internal override void SkipBootRom()
+        {
+            NR30 = 0x7F; // Don't enable DAC
+            NR31 = 0xFF;
+            NR32 = 0x9F;
+            NR34 = 0xBF;
+            IsEnabled = false;
+        }
+
         internal override void Reset()
         {
             base.Reset();

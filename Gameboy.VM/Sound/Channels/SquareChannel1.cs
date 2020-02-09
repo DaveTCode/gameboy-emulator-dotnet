@@ -57,6 +57,16 @@ namespace Gameboy.VM.Sound.Channels
             Console.WriteLine("Triggering sound 1 with frequency {0}Hz period {1}, envelope ({2}), sweep ({3})", ActualFrequencyHz, FrequencyPeriod, Envelope, Sweep);
         }
 
+        internal override void SkipBootRom()
+        {
+            Sweep.Register = 0x80;
+            ControlByte = 0xBF;
+            Envelope.Register = 0xF3;
+            LowByte = 0xFF;
+            HighByte = 0xBF; // Note that this triggers the channel so we disable it immediately after
+            IsEnabled = false;
+        }
+
         internal override int GetOutputVolume()
         {
             return _lastOutput * Envelope.Volume;

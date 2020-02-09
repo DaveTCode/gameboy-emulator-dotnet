@@ -82,6 +82,15 @@ namespace Gameboy.VM.Sound.Channels
             Console.WriteLine("Triggering Noise Channel with period {0}, length ({1}) enabled {2}, volume: ({3})", _internalTimerPeriod, SoundLength, UseSoundLength, Envelope);
         }
 
+        internal override void SkipBootRom()
+        {
+            NR41 = 0xFF;
+            Envelope.Register = 0x0;
+            NR43 = 0x0;
+            NR44 = 0xBF;
+            IsEnabled = false;
+        }
+
         internal override void Reset()
         {
             base.Reset();

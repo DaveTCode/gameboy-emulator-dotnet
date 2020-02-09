@@ -178,25 +178,6 @@ namespace Gameboy.VM
             MMU.WriteByte(0xFF05, 0);
             MMU.WriteByte(0xFF06, 0);
             MMU.WriteByte(0xFF07, 0);
-            MMU.WriteByte(0xFF10, 0x80);
-            MMU.WriteByte(0xFF11, 0xBF);
-            MMU.WriteByte(0xFF12, 0xF3);
-            MMU.WriteByte(0xFF14, 0xBF);
-            MMU.WriteByte(0xFF16, 0x3F);
-            MMU.WriteByte(0xFF16, 0x3F);
-            MMU.WriteByte(0xFF17, 0);
-            MMU.WriteByte(0xFF19, 0xBF);
-            MMU.WriteByte(0xFF1A, 0x7F);
-            MMU.WriteByte(0xFF1B, 0xFF);
-            MMU.WriteByte(0xFF1C, 0x9F);
-            MMU.WriteByte(0xFF1E, 0xFF);
-            MMU.WriteByte(0xFF20, 0xFF);
-            MMU.WriteByte(0xFF21, 0);
-            MMU.WriteByte(0xFF22, 0);
-            MMU.WriteByte(0xFF23, 0xBF);
-            MMU.WriteByte(0xFF24, 0x77);
-            MMU.WriteByte(0xFF25, 0xF3);
-            MMU.WriteByte(0xFF26, 0xF1);
             MMU.WriteByte(0xFF40, 0x91);
             MMU.WriteByte(0xFF42, 0);
             MMU.WriteByte(0xFF43, 0);
@@ -207,6 +188,8 @@ namespace Gameboy.VM
             MMU.WriteByte(0xFF4A, 0);
             MMU.WriteByte(0xFF4B, 0);
             MMU.WriteByte(0xFF50, 0x1); // Turn off boot ROM
+
+            APU.SkipBootRom();
 
             Timer.Reset(true); // Set up system counter (aka DIV register)
         }

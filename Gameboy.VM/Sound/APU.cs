@@ -300,5 +300,21 @@ namespace Gameboy.VM.Sound
                 }
             }
         }
+
+        /// <summary>
+        /// To avoid triggering sounds whilst skipping the boot rom we allow
+        /// the APU to handle this logic internally.
+        /// </summary>
+        public void SkipBootRom()
+        {
+            foreach (var channel in _channels)
+            {
+                channel.SkipBootRom();
+            }
+
+            NR50 = 0x77;
+            NR51 = 0xF3;
+            NR52 = 0xF1; // TODO - This would be 0xF0 on SGB/SGB2
+        }
     }
 }
