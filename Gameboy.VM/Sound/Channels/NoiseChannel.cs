@@ -65,8 +65,7 @@ namespace Gameboy.VM.Sound.Channels
             set
             {
                 UseSoundLength = (value & 0x40) == 0x40;
-                IsEnabled = (value & 0x80) == 0x80;
-                if (IsEnabled)
+                if ((value & 0x80) == 0x80)
                 {
                     Trigger();
                 }
@@ -117,7 +116,7 @@ namespace Gameboy.VM.Sound.Channels
                     _lfsr |= (xorBit << 6);
                 }
 
-                _outputVolume = ~(_lfsr & 0x1);
+                _outputVolume = (_lfsr & 0x1) == 0x1 ? 0 : 0x1;
             }
         }
 

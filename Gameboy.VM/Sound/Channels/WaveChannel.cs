@@ -37,16 +37,15 @@ namespace Gameboy.VM.Sound.Channels
         internal int FrequencyData { get; private set; }
 
         private int FrequencyPeriod => 2 * (2048 - FrequencyData);
-
         private int _currentFrequencyPeriod;
-        private int _lastOutput;
+        private byte _sampleBuffer;
 
         internal WaveChannel(DeviceType deviceType)
         {
-            Array.Copy(
-                deviceType == DeviceType.DMG 
-                    ? DmgWave 
-                    : CgbWave, _waveRam, WaveRAMSize);
+            for (var ii = 0; ii < 0x10; ii++)
+            {
+                WriteRam((ushort) (ii + 0xFF30), deviceType == DeviceType.DMG ? DmgWave[ii] : CgbWave[ii]);
+            }
         }
 
         internal byte ReadRam(ushort address)
@@ -162,14 +161,13 @@ namespace Gameboy.VM.Sound.Channels
                 _waveSamplePositionCounter = (_waveSamplePositionCounter + 1) % WaveSampleSize;
 
                 // Set the output to the current sample shifted by the volume shift register
-                // TODO - Is this correct? Some docs suggest combining last and current in single byte?
-                _lastOutput = _waveSamples[_waveSamplePositionCounter] >> Volume.RightShiftValue();
+                _sampleBuffer = (byte) _waveSamples[_waveSamplePositionCounter];
             }
         }
 
         internal override int GetOutputVolume()
         {
-            return _lastOutput;
+            return _sampleBuffer >> Volume.RightShiftValue();
         }
     }
 }

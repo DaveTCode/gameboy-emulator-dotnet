@@ -16,8 +16,8 @@ namespace Gameboy.VM.Sound
         {
             WaveChannelOutputLevel.Mute => 4,
             WaveChannelOutputLevel.Unmodified => 0,
-            WaveChannelOutputLevel.Half => 2,
-            WaveChannelOutputLevel.Quarter => 3,
+            WaveChannelOutputLevel.Half => 1,
+            WaveChannelOutputLevel.Quarter => 2,
             _ => throw new ArgumentOutOfRangeException(nameof(outputLevel), outputLevel, "Unmapped wave channel output level")
         };
     }
