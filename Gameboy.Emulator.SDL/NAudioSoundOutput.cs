@@ -23,23 +23,16 @@ namespace Gameboy.Emulator.SDL
             _wavePlayer.Play();
         }
 
-        public int AudioFrequency => 44100;
+        public int AudioFrequency => 48000;
 
         public void PlaySoundByte(int left, int right)
         {
-            // Apply gain
-            //left *= 2000;
-            //right *= 2000;
-
             _soundBuffer[_soundBufferIndex] = (byte)left;
-            //_soundBuffer[_soundBufferIndex + 1] = (byte)(left >> 8);
             _soundBuffer[_soundBufferIndex + 1] = (byte)right;
-            //_soundBuffer[_soundBufferIndex + 3] = (byte)(right >> 8);
             _soundBufferIndex += 2;
 
             if (_soundBufferIndex == _soundBuffer.Length)
             {
-                //_waveProvider.ClearBuffer();
                 _waveProvider.AddSamples(_soundBuffer, 0, _soundBufferIndex);
                 _soundBufferIndex = 0;
                 Array.Clear(_soundBuffer, 0, _soundBuffer.Length);

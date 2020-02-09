@@ -64,6 +64,14 @@
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/real/Super Mario Land (World).gb\" -s 60 -p 2 --skipBootRom"
     },
+    "Super Mario Bros. Deluxe": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/real/Super Mario Bros. Deluxe (USA, Europe) (Rev B).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+    },
+    "Aladdin": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/real/Aladdin (Europe) (En,Fr,De,Es,It,Nl).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+    },
     "Pokemon Blue": {
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/real/Pokemon - Blue Version (USA, Europe) (SGB Enhanced).gb\" -s 60 -p 2 --skipBootRom"
