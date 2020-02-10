@@ -10,6 +10,7 @@ using Serilog.Core;
 using Gameboy.VM.Joypad;
 
 [assembly: InternalsVisibleTo("Gameboy.VM.Tests")]
+[assembly: InternalsVisibleTo("Gameboy.VM.Rom.Tests")]
 namespace Gameboy.VM
 {
     /// <summary>

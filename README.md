@@ -5,12 +5,6 @@
 
 Gameboy emulator written in C# as an educational exercise (not as a production emulator). Uses SDL2 for windowing & graphics and NAudio for playing raw audio samples.
 
-## APU Known State
-
-- Sound 1 & 2 sound good (albeit with some incorrect assumptions)
-- Sound 3 unimplemented and unsure which ROMs use it to test
-- Sound 4 implemented but sounds totally wrong
-
 ## State
 
 - Passing test roms section at bottom of readme
@@ -22,7 +16,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 ### Fixes
 
 - Lots of test failures specified in the table below
-- Audio is completely broken
+- Super mario, bottom left tile in G is broken
 
 ### Specific
 
