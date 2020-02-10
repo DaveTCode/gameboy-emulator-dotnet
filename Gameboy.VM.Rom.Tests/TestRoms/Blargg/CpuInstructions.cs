@@ -22,7 +22,7 @@ namespace Gameboy.VM.Rom.Tests.TestRoms.Blargg
             var solutionDirectory = Directory.GetParent(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath).Parent?.Parent?.Parent?.Parent?.ToString();
             var imageOutputDirectory = Path.Join(solutionDirectory, "Roms", "output_images");
             Directory.CreateDirectory(imageOutputDirectory);
-            var cartridge = CartridgeFactory.CreateCartridge(await File.ReadAllBytesAsync($"{solutionDirectory}\\Roms\\tests\\blargg\\cpu_instrs\\cpu_instrs.gb"));
+            var cartridge = CartridgeFactory.CreateCartridge(await File.ReadAllBytesAsync(Path.Join(solutionDirectory, "Roms", "tests", "blargg", "cpu_instrs", "cpu_instrs.gb")));
             var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(), new NullSoundOutput());
 
             var sw = new Stopwatch();
@@ -60,7 +60,7 @@ namespace Gameboy.VM.Rom.Tests.TestRoms.Blargg
                 image.Save(Path.Join(imageOutputDirectory, "cpu_instrs.png"), new PngEncoder());
             }
 
-            var expectedFrameBuffer = await File.ReadAllLinesAsync($"{solutionDirectory}\\Roms\\tests\\blargg\\cpu_instrs\\framebuffer");
+            var expectedFrameBuffer = await File.ReadAllLinesAsync(Path.Join(solutionDirectory, "Roms", "tests", "blargg", "cpu_instrs", "framebuffer"));
             Assert.Equal(expectedFrameBuffer, frameBuffer.Select(x => x.ToString("D")));
         }
     }
