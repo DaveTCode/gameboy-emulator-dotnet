@@ -26,7 +26,7 @@ steps:
   displayName: 'Run all integration tests'
   inputs:
     command: 'test'
-    projects: 'Gameboy.VM.Tests/Gameboy.VM.Tests.csproj'
+    projects: '**Tests/*.csproj'
     arguments: /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\
 
 - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
