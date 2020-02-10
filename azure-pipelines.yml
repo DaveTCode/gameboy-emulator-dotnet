@@ -17,16 +17,16 @@ steps:
     feedsToUse: 'select'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Build test project'
+  displayName: 'Build test projects'
   inputs:
     command: 'build'
-    projects: 'Gameboy.VM.Tests/Gameboy.VM.Tests.csproj'
+    projects: '*Tests/*.csproj'
 
 - task: DotNetCoreCLI@2
   displayName: 'Run all integration tests'
   inputs:
     command: 'test'
-    projects: '**Tests/*.csproj'
+    projects: '*Tests/*.csproj'
     arguments: /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\
 
 - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
