@@ -204,7 +204,7 @@ namespace Gameboy.VM
         /// </returns>
         public int Step()
         {
-            //Log.Information("{0}",ToString());
+            //Log.Information("{0}", ToString());
 
             // Step 1: Check for interrupts
             var tCycles = CPU.CheckForInterrupts();

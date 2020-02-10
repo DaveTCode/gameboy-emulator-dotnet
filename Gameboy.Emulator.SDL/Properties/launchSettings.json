@@ -24,6 +24,10 @@
       "commandName": "Project",
       "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/timer/rapid_toggle.gb --skipBootRom -s 60 -p 2"
     },
+    "Mooneye MBC1 - bits_bank1.gb": {
+      "commandName": "Project",
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/emulator-only/mbc1/bits_bank1.gb --skipBootRom -s 60 -p 2"
+    },
     "Mooneye Bits - mem_oam.gb": {
       "commandName": "Project",
       "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/bits/unused_hwio-GS.gb --skipBootRom -s 60 -p 2"

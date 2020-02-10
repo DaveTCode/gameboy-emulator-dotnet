@@ -62,6 +62,8 @@ namespace Gameboy.VM.CPU
                     {
                         var interrupt = (Interrupt)bit;
 
+                        _device.Log.Information("Handling interrupt {0}", interrupt);
+
                         // First disable the master interrupt flag
                         _device.InterruptRegisters.AreInterruptsEnabledGlobally = false;
 

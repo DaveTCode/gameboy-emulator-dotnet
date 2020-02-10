@@ -10,9 +10,9 @@
 
         public MBC1Cartridge(byte[] contents) : base(contents)
         {
-            UpdateBankValues();
             _bankRegister1 = 0x1;  // Defaults to 1 and can't be 0
             _bankRegister2 = 0x0;
+            UpdateBankValues();
         }
 
         internal override byte ReadRom(ushort address)

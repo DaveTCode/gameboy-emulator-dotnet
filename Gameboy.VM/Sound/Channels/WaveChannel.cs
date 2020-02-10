@@ -68,7 +68,7 @@ namespace Gameboy.VM.Sound.Channels
         /// </summary>
         internal byte NR30
         {
-            get => (byte) (0b0111_1110 | (IsEnabled ? 0b1000_0000 : 0));
+            get => (byte) (0b0111_1111 | (IsEnabled ? 0b1000_0000 : 0));
             set => IsEnabled = (value & 0x80) == 0x80;
         }
 

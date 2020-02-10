@@ -234,7 +234,7 @@ namespace Gameboy.VM.LCD
                     if (sprite.SpriteToBgPriority == SpriteToBgPriority.BehindColors123 &&
                         _scanlineBgPriority[pixel] == ScanlineBgPriority.Normal) continue;
 
-                    _scanline[pixel * 4 + 3] = 0; // Alpha channel
+                    _scanline[pixel * 4 + 3] = 0xFF; // Alpha channel
                     _scanline[pixel * 4 + 2] = r;
                     _scanline[pixel * 4 + 1] = g;
                     _scanline[pixel * 4 + 0] = b;
@@ -304,7 +304,7 @@ namespace Gameboy.VM.LCD
                 (r, g, b) = _device.Renderer.ColorAdjust(r, g, b);
 
                 // Finally set the pixel to the appropriate color and flag whether this color can be overwritten by sprites
-                _scanline[pixel * 4 + 3] = 0; // Alpha channel
+                _scanline[pixel * 4 + 3] = 0xFF; // Alpha channel
                 _scanline[pixel * 4 + 2] = r;
                 _scanline[pixel * 4 + 1] = g;
                 _scanline[pixel * 4 + 0] = b;

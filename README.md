@@ -17,6 +17,8 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 - Lots of test failures specified in the table below
 - Super mario, bottom left tile in G is broken
+- HDMA overflows destination area under certain circumstances (e.g. mooneye bit test), suspect it might just be broken
+- Aladdin hangs on startup
 
 ### Specific
 

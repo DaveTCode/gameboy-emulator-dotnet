@@ -1,6 +1,5 @@
 ﻿using System;
 using Gameboy.VM.LCD;
-using Serilog;
 
 namespace Gameboy.VM
 {
@@ -126,7 +125,11 @@ namespace Gameboy.VM
             if (address == 0xFF4E) // Unused address
                 return ReadUnusedAddress(address);
             if (address == 0xFF4F)
-                return _device.LCDDriver.GetVRAMBankRegister();
+            {
+                return _device.Mode == DeviceType.DMG 
+                    ? (byte) 0xFF 
+                    : _device.LCDDriver.GetVRAMBankRegister();
+            }
             if (address == 0xFF50) // Is device ROM enabled?
                 return _device.ControlRegisters.RomDisabledRegister;
             if (address == 0xFF51) // HDMA1

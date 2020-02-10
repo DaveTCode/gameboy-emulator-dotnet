@@ -4,11 +4,11 @@ namespace Gameboy.VM.Timers
 {
     internal class Timer
     {
-        internal long TotalTCycles;
         internal ushort SystemCounter { get; private set; }
 
         private readonly Device _device;
         private int _internalCount;
+        private int _reloadingClockTCycles;
 
         internal Timer(Device device)
         {
@@ -36,7 +36,8 @@ namespace Gameboy.VM.Timers
         {
             // Handle system counter - note that it happens regardless of whether timer is turned on
             SystemCounter = (ushort)(SystemCounter + tCycles);
-            TotalTCycles += tCycles;
+
+            if (_reloadingClockTCycles > 0) _reloadingClockTCycles -= _reloadingClockTCycles;
 
             // Handle standard timer
             if (!_isTimerEnabled) return;
@@ -45,18 +46,24 @@ namespace Gameboy.VM.Timers
 
             while (_internalCount >= _timerClockSelect.Step())
             {
-                if (TimerCounter == 0xFF)
-                {
-                    TimerCounter = TimerModulo;
-                    _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.Timer);
-                }
-                else
-                {
-                    TimerCounter = (byte)(TimerCounter + 1);
-                }
-
-                _internalCount -= _timerClockSelect.Step();
+                StepTimerCounter();
             }
+        }
+
+        private void StepTimerCounter()
+        {
+            if (TimerCounter == 0xFF)
+            {
+                _reloadingClockTCycles = 4;
+                _timerCounter = TimerModulo;
+                _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.Timer);
+            }
+            else
+            {
+                _timerCounter = (byte)(_timerCounter + 1);
+            }
+
+            _internalCount -= _timerClockSelect.Step();
         }
 
         #region Timer Registers
@@ -78,13 +85,34 @@ namespace Gameboy.VM.Timers
         internal byte Divider
         { 
             get => (byte)(SystemCounter >> 8); // DIV is just 8MSB of system counter
+            // ReSharper disable once ValueParameterNotUsed
             set
             {
+                // This covers some obscure behaviour where the timer counter
+                // is really triggered by bit 9 in the internal divider going
+                // from high to low. That includes (as now) when that happens
+                // because of a register write.
+                if ((SystemCounter & 0b1_0000_0000) == 0b1_0000_0000)
+                {
+                    StepTimerCounter();
+                }
                 SystemCounter = 0;
                 _internalCount = 0x0;
             }
         }
-        internal byte TimerCounter { get; set; }
+
+        private byte _timerCounter;
+        internal byte TimerCounter 
+        { 
+            // Note obscure behavior here, during a reload of TIMA writes are
+            // "ignored" and reads return 0 for 4 t-cycles
+            get => _reloadingClockTCycles > 0 ? (byte) 0x0 : _timerCounter;
+            set
+            {
+                if (_reloadingClockTCycles > 0) return;
+                _timerCounter = value;
+            }
+        }
         internal byte TimerModulo { get; set; }
         #endregion
 

@@ -43,6 +43,7 @@ namespace Gameboy.Emulator.SDL
         {
             if (_deviceType == DeviceType.DMG)
             {
+                return (r, g, b);
                 return _grayscaleColorMap[(r, g, b)];
             }
 
