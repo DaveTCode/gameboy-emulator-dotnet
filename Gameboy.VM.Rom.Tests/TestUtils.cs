@@ -45,7 +45,7 @@ namespace Gameboy.VM.Rom.Tests
             sw.Start();
 
             // Timeout or when we hit the end of the program
-            while (device.CPU.Registers.ProgramCounter != finalOpcode)// && sw.ElapsedMilliseconds < timeoutMs)
+            while (device.CPU.Registers.ProgramCounter != finalOpcode && sw.ElapsedMilliseconds < timeoutMs)
             {
                 device.Step();
             }
@@ -53,7 +53,7 @@ namespace Gameboy.VM.Rom.Tests
             // Timing out is only an error if we passed a final opcode to check for
             if (sw.ElapsedMilliseconds > timeoutMs && finalOpcode.HasValue)
             {
-                Assert.False(true, "Test timed out");
+                Assert.False(true, $"Test timed out with device state {device}");
             }
 
             var (_, _, _, _, _, frameBuffer) = device.DumpLcdDebugInformation();
