@@ -1,5 +1,4 @@
 ﻿using Gameboy.VM.CPU;
-using Serilog;
 using Xunit;
 
 namespace Gameboy.VM.Tests.CPU
@@ -13,7 +12,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             alu.Increment(ref a);
             
             Assert.Equal(result, a);
@@ -29,7 +28,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             alu.Decrement(ref a);
             
             Assert.Equal(result, a);
@@ -46,7 +45,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             alu.Add(ref a, b, false);
             
             Assert.Equal(result, a);
@@ -65,7 +64,7 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, currentCarry);
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             alu.Add(ref a, b, true);
             Assert.Equal(result, a);
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
@@ -83,7 +82,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             alu.Sub(ref a, b, false);
             Assert.Equal(result, a);
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
@@ -101,7 +100,7 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, currentCarry);
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             alu.Sub(ref a, b, true);
             Assert.Equal(result, a);
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
@@ -118,7 +117,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             alu.And(ref a, b);
             
             Assert.Equal(result, a);
@@ -136,7 +135,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             alu.Or(ref a, b);
             
             Assert.Equal(result, a);
@@ -154,7 +153,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             alu.Xor(ref a, b);
             
             Assert.Equal(result, a);
@@ -172,7 +171,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             alu.Cp(a, b);
             
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
@@ -186,7 +185,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             cpu.Registers.A = 0x45;
             cpu.Registers.B = 0x38;
             alu.Add(ref cpu.Registers.A, cpu.Registers.B, false);
@@ -208,7 +207,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             Assert.True(cpu.Registers.GetFlag(CpuFlags.CarryFlag)); // Carry flag starts off set
             alu.CCF();
             Assert.False(cpu.Registers.GetFlag(CpuFlags.CarryFlag));
@@ -221,7 +220,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             alu.SCF();
             Assert.True(cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             alu.SCF();
@@ -234,7 +233,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(Log.Logger, cpu, device.MMU);
+            var alu = new ALU(cpu, device.MMU);
             cpu.Registers.A = a;
             alu.CPL();
             Assert.Equal(result, cpu.Registers.A);
