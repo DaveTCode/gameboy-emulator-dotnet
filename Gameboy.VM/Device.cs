@@ -209,6 +209,11 @@ namespace Gameboy.VM
             // Step 1: Check for interrupts
             var tCycles = CPU.CheckForInterrupts();
 
+            if (CPU.Registers.ProgramCounter == 0x23BB)
+            {
+                var a = 1;
+            }
+
             // Step 2: Atomically run the next operation
             tCycles += CPU.Step();
 

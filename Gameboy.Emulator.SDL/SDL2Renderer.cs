@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Gameboy.VM;
 using Gameboy.VM.LCD;
 
@@ -8,8 +7,6 @@ namespace Gameboy.Emulator.SDL
 {
     public class SDL2Renderer : IRenderer, IDisposable
     {
-        private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
-        private readonly int _msPerFrame;
         private readonly DeviceType _deviceType;
         private readonly IntPtr _renderer;
         private readonly IntPtr _texture;
@@ -22,9 +19,8 @@ namespace Gameboy.Emulator.SDL
             { GrayscaleExtensions.GrayscaleBlack, (16, 55, 0) },
         };
 
-        public SDL2Renderer(IntPtr renderer, DeviceType deviceType, int msPerFrame)
+        public SDL2Renderer(IntPtr renderer, DeviceType deviceType)
         {
-            _msPerFrame = msPerFrame;
             _renderer = renderer;
             _deviceType = deviceType;
 
@@ -54,8 +50,6 @@ namespace Gameboy.Emulator.SDL
             );
         }
 
-        private long _prevFrameTCycles;
-
         public void HandleVBlankEvent(byte[] frameBuffer, long tCycles)
         {
             unsafe
@@ -68,15 +62,6 @@ namespace Gameboy.Emulator.SDL
 
             SDL2.SDL_RenderCopy(_renderer, _texture, IntPtr.Zero, IntPtr.Zero);
             SDL2.SDL_RenderPresent(_renderer);
-
-            var msToSleep = _msPerFrame - (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000;
-            Console.WriteLine("Frame took {0:F1}ms and {1:D} t-cycles", (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000, tCycles - _prevFrameTCycles);
-            _prevFrameTCycles = tCycles;
-            if (msToSleep > 0)
-            {
-                SDL2.SDL_Delay((uint)msToSleep);
-            }
-            _stopwatch.Restart();
         }
 
         public void Dispose()

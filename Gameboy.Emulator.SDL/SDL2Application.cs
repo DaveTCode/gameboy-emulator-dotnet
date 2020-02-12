@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Gameboy.VM;
 using Gameboy.VM.Cartridge;
 using Gameboy.VM.Joypad;
@@ -12,6 +13,8 @@ namespace Gameboy.Emulator.SDL
         private readonly IntPtr _renderer;
         private readonly Device _device;
         private readonly NAudioSoundOutput _soundOutput;
+        private readonly Stopwatch _stopwatch = new Stopwatch();
+        private readonly int _msPerFrame;
 
         internal SDL2Application(Cartridge cartridge, DeviceType mode, int pixelSize, bool skipBootRom, int framesPerSecond)
         {
@@ -28,7 +31,10 @@ namespace Gameboy.Emulator.SDL
             SDL2.SDL_SetWindowTitle(_window, $"{cartridge.GameTitle} 59.7fps");
             SDL2.SDL_SetHint(SDL2.SDL_HINT_RENDER_SCALE_QUALITY, "0");
 
-            var sdl2Renderer = new SDL2Renderer(_renderer, mode, (int)((1.0 / framesPerSecond) * 1000));
+            // TODO - This being an int means our frames aren't CPU isn't quite clocked properly
+            _msPerFrame = (int)((1.0 / framesPerSecond) * 1000);
+
+            var sdl2Renderer = new SDL2Renderer(_renderer, mode);
             _soundOutput = new NAudioSoundOutput();
             _device = new Device(cartridge, mode, sdl2Renderer, _soundOutput);
 
@@ -37,10 +43,14 @@ namespace Gameboy.Emulator.SDL
 
         private bool _quit;
 
+        private const int ClocksPerFrame = 70256;
         private const int ClocksPerInputCheck = 35000;
         private int _inputCountdown = ClocksPerInputCheck;
+        private int _delayCountdown = ClocksPerFrame;
         public void ExecuteProgram()
         {
+            _stopwatch.Start();
+
             while (!_quit)
             {
                 var clocks = _device.Step();
@@ -48,8 +58,20 @@ namespace Gameboy.Emulator.SDL
                 _inputCountdown -= clocks;
                 if (_inputCountdown < 0)
                 {
-                    _inputCountdown = ClocksPerInputCheck;
+                    _inputCountdown += ClocksPerInputCheck;
                     CheckForInput();
+                }
+
+                _delayCountdown -= clocks;
+                if (_delayCountdown < 0)
+                {
+                    _delayCountdown += ClocksPerFrame;
+                    var msToSleep = _msPerFrame - (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000;
+                    if (msToSleep > 0)
+                    {
+                        SDL2.SDL_Delay((uint)msToSleep);
+                    }
+                    _stopwatch.Restart();
                 }
             }
         }
