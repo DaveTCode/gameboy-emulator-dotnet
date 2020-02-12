@@ -1,18 +1,15 @@
 ﻿using System;
 using Gameboy.VM.Interrupts;
-using Serilog;
 
 namespace Gameboy.VM.CPU
 {
     internal class ALU
     {
-        private readonly ILogger _log;
         private readonly CPU _cpu;
         private readonly MMU _mmu;
 
-        internal ALU(ILogger log, CPU cpu, MMU mmu)
+        internal ALU(CPU cpu, MMU mmu)
         {
-            _log = log;
             _cpu = cpu;
             _mmu = mmu;
         }

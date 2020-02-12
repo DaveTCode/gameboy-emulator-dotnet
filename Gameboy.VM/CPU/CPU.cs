@@ -17,7 +17,7 @@ namespace Gameboy.VM.CPU
         internal CPU(Device device)
         {
             Registers = new Registers();
-            _alu = new ALU(device.Log, this, device.MMU);
+            _alu = new ALU(this, device.MMU);
             _device = device;
             Reset();
         }
