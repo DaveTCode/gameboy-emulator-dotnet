@@ -32,22 +32,7 @@ namespace Gameboy.VM.LCD
         internal CGBPalette CGBSpritePalette { get; } = new CGBPalette();
         #endregion
 
-        // TODO - This can be set by the program during normal operation when the LCD is off
-        private byte _lcdCurrentScanline;
-        internal byte LCDCurrentScanline
-        {
-            get => _lcdCurrentScanline;
-            set
-            {
-                // Writes are ignored during LCD off
-                if (!IsLcdOn) return;
-
-                _lcdCurrentScanline = value;
-                CoincidenceFlag = value == LYCompare;
-
-                CheckLYLCInterrupt();
-            }
-        }
+        internal byte LCDCurrentScanline { get; private set; }
 
         internal byte IncrementLineBeingProcessed()
         {
@@ -68,7 +53,6 @@ namespace Gameboy.VM.LCD
             set
             {
                 _lyCompare = value;
-                CoincidenceFlag = _lyCompare == _lcdCurrentScanline;
 
                 CheckLYLCInterrupt();
             }
@@ -180,7 +164,9 @@ namespace Gameboy.VM.LCD
 
         private void CheckLYLCInterrupt()
         {
-            if (IsLcdOn && IsLYLCCheckEnabled && _lcdCurrentScanline == _lyCompare)
+            CoincidenceFlag = _lyCompare == LCDCurrentScanline;
+
+            if (IsLcdOn && IsLYLCCheckEnabled && LCDCurrentScanline == _lyCompare)
             {
                 _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.LCDSTAT);
             }

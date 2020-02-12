@@ -270,7 +270,7 @@ namespace Gameboy.VM
             else if (address == 0xFF43)
                 _device.LCDRegisters.ScrollX = value;
             else if (address == 0xFF44)
-                _device.LCDRegisters.LCDCurrentScanline = value;
+                _device.Log.Information("Ignoring write to LY");
             else if (address == 0xFF45)
                 _device.LCDRegisters.LYCompare = value;
             else if (address == 0xFF46) // DMA register
