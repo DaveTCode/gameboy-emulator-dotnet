@@ -14,7 +14,7 @@ namespace Gameboy.VM.Rom.Tests.TestRoms.Mooneye
         [InlineData("rom_16Mb.gb", 10 * 1000, 0x486E)]
         [InlineData("rom_32Mb.gb", 10 * 1000, 0x486E)]
         [InlineData("rom_64Mb.gb", 10 * 1000, 0x486E)]
-        [InlineData("rom_512Kb.gb", 10 * 1000, 0x486E)]
+        [InlineData("rom_512kb.gb", 10 * 1000, 0x486E)]
         public async Task Mbc5MooneyeTest(string romName, int timeout, ushort finalAddress)
         {
             var expectedFrameBuffer = await File.ReadAllLinesAsync(
