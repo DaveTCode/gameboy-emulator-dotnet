@@ -9,7 +9,7 @@ namespace Gameboy.VM.Sound.Channels
     /// </summary>
     internal class SquareChannel2 : SquareWave.SquareWave
     {
-        internal SquareChannel2()
+        internal SquareChannel2(Device device) : base(device)
         {
             Envelope = new SoundEnvelope(this);
         }
@@ -46,7 +46,7 @@ namespace Gameboy.VM.Sound.Channels
             _frequencyPeriod = FrequencyPeriod;
             _lastOutput = 0;
             Envelope.Trigger();
-            Console.WriteLine("Triggering sound 2 with frequency {0}Hz period {1}, envelope ({2})", ActualFrequencyHz, FrequencyPeriod, Envelope);
+            Device.Log.Information("Triggering sound 2 with frequency {0}Hz period {1}, envelope ({2})", ActualFrequencyHz, FrequencyPeriod, Envelope);
         }
 
         internal override void SkipBootRom()

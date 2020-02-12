@@ -32,10 +32,10 @@ namespace Gameboy.VM.Sound
         internal APU(Device device)
         {
             _device = device;
-            _squareChannel1 = new SquareChannel1();
-            _squareChannel2 = new SquareChannel2();
-            _waveChannel = new WaveChannel(_device.Type);
-            _noiseChannel = new NoiseChannel();
+            _squareChannel1 = new SquareChannel1(_device);
+            _squareChannel2 = new SquareChannel2(_device);
+            _waveChannel = new WaveChannel(_device);
+            _noiseChannel = new NoiseChannel(_device);
             _channels = new BaseChannel[] { _squareChannel1, _squareChannel2, _waveChannel, _noiseChannel };
             _soundChannels = new Dictionary<BaseChannel, (bool, bool)>
             {

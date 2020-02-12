@@ -2,6 +2,13 @@
 {
     internal abstract class BaseChannel
     {
+        protected BaseChannel(Device device)
+        {
+            Device = device;
+        }
+
+        protected Device Device;
+
         internal bool IsEnabled { get; set; }
 
         protected abstract int BaseSoundLength { get; }

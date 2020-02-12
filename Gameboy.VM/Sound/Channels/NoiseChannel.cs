@@ -9,7 +9,7 @@ namespace Gameboy.VM.Sound.Channels
     /// </summary>
     internal class NoiseChannel : BaseChannel
     {
-        internal NoiseChannel()
+        internal NoiseChannel(Device device) : base(device)
         {
             Envelope = new SoundEnvelope(this);
         }
@@ -78,7 +78,8 @@ namespace Gameboy.VM.Sound.Channels
 
             _currentTimerCycle = _internalTimerPeriod;
             _lfsr = 0x7FFF;
-            Console.WriteLine("Triggering Noise Channel with period {0}, length ({1}) enabled {2}, volume: ({3})", _internalTimerPeriod, SoundLength, UseSoundLength, Envelope);
+            
+            Device.Log.Information("Triggering Noise Channel with period {0}, length ({1}) enabled {2}, volume: ({3})", _internalTimerPeriod, SoundLength, UseSoundLength, Envelope);
         }
 
         internal override void SkipBootRom()

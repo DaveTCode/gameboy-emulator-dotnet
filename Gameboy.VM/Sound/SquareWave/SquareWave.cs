@@ -11,6 +11,10 @@ namespace Gameboy.VM.Sound.SquareWave
         private const byte ControlByteMask = 0b0011_1111;
         private const byte HighByteMask = 0b1011_1111;
 
+        protected SquareWave(Device device) : base(device)
+        {
+        }
+
         protected override int BaseSoundLength => 64;
 
         internal int FrequencyData { get; set; }

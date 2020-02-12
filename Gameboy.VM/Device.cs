@@ -71,11 +71,11 @@ namespace Gameboy.VM
 
         public void SetDebugMode()
         {
-            Console.WriteLine("Setting debug mode");
             Log = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.File("log-debug.txt", outputTemplate: "{Message}{NewLine}", rollOnFileSizeLimit: true, buffered: true)
                 .CreateLogger();
+            Log.Information("Debug mode ON");
         }
 
         public Device(Cartridge.Cartridge cartridge, DeviceType type, IRenderer renderer, ISoundOutput soundOutput)
@@ -226,7 +226,7 @@ namespace Gameboy.VM
 
             TCycles += tCycles;
 
-            return tCycles; // Machine cycles translation
+            return tCycles;
         }
 
         /// <summary>

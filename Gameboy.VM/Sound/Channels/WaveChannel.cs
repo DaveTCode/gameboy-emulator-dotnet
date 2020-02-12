@@ -40,11 +40,11 @@ namespace Gameboy.VM.Sound.Channels
         private int _currentFrequencyPeriod;
         private byte _sampleBuffer;
 
-        internal WaveChannel(DeviceType deviceType)
+        internal WaveChannel(Device device) : base(device)
         {
             for (var ii = 0; ii < 0x10; ii++)
             {
-                WriteRam((ushort) (ii + 0xFF30), deviceType == DeviceType.DMG ? DmgWave[ii] : CgbWave[ii]);
+                WriteRam((ushort) (ii + 0xFF30), device.Type == DeviceType.DMG ? DmgWave[ii] : CgbWave[ii]);
             }
         }
 
@@ -129,7 +129,7 @@ namespace Gameboy.VM.Sound.Channels
             _currentFrequencyPeriod = FrequencyPeriod;
             _waveSamplePositionCounter = 0;
             
-            Console.WriteLine($"Triggering wave channel with volume shift {Volume} and period {FrequencyPeriod}");
+            Device.Log.Information("Triggering wave channel with volume shift {0} and period {1}", Volume, FrequencyPeriod);
         }
 
         internal override void SkipBootRom()
