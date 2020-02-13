@@ -45,10 +45,13 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 | ------------------------------------------- |:---------------------:| -----:|
 | Blargg - cpu_instrs                         | :white_check_mark:    |       |
 | Blargg - instr_timing                       | :white_check_mark:    |       |
-| Blargg - interrupt_time                     | :x:                   | Black screen       |
+| Blargg - interrupt_time                     | :x:                   | Failed - suspect implementing double speed mode will solve this       |
 | Blargg - mem_timing                         | :x:                   | Broken because CPU is using instruction atomicity       |
 | Blargg - mem_timing2                        | :x:                   | Broken because CPU is using instruction atomicity       |
+| Blargg - cgb_sound                          | :x:                   | All bar one fail, but this would fail on a DMG so doesn't matter overly |
 | Blargg - dmg_sound                          | :x:                   | All 12 fail, but this also fails on a CGB console so doesn't matter too much |
+| Blargg - halt_bug                           | :x:                   | Fails but no attempt to implement this bug |
+| Blargg - oam_bug                            | :x:                   | Fails but no attempt to implement this bug |
 | Mooneye - MBC1 - bits_bank1                 | :white_check_mark:    |       |
 | Mooneye - MBC1 - bits_bank2                 | :white_check_mark:    |       |
 | Mooneye - MBC1 - bits_mode                  | :white_check_mark:    |       |
@@ -106,17 +109,9 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 | Mooneye - Timer - tim01_div_trigger         | :x:                   |       |
 | Mooneye - Timer - tim10_div_trigger         | :x:                   |       |
 | Mooneye - Timer - tim11_div_trigger         | :x:                   |       |
-| Mooneye - Timer - tima_reload               | :x:                   | Requries delay in setting timer after overflow, not yet implemented      |
-| Mooneye - Timer - tima_write_reloading      | :x:                   |       |
-| Mooneye - Timer - tma_write_reloading       | :x:                   |       |
-| Mooneye - Timing - ei_timing                | :white_check_mark:    |       |
-| Mooneye - Timing - ei_sequence              | :white_check_mark:    |       |
-| Mooneye - Timing - halt_ime_ei              | :white_check_mark:    |       |
-| Mooneye - Timing - halt_ime0_nointr_timing  | :x:    | Unknown      |
-| Mooneye - Timing - halt_ime1_timing         | :white_check_mark:    |       |
-| Mooneye - Timing - halt_ime1_timing2-GS     | :x:    | Unknown      |
-| Mooneye - Timing - if_ie_registers          | :white_check_mark:    |       |
-| Mooneye - Timing - intr_timing              | :white_check_mark:    |       |
+| Mooneye - Timer - tima_reload               | :white_check_mark:    |       |
+| Mooneye - Timer - tima_write_reloading      | :x:                   | Fails, requires non-atomic CPU ops      |
+| Mooneye - Timer - tma_write_reloading       | :x:                   | Fails, requires non-atomic CPU ops      |
 | Mooneye - General - add_sp_e_timing         |:x:                    |       |
 | Mooneye - General - boot_div-dmg0           |:x:                    |       |
 | Mooneye - General - boot_div-dmgABCmgb      |:x:                    |       |
@@ -134,14 +129,14 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 | Mooneye - General - call_cc_timing2         |:x:                    |       |
 | Mooneye - General - call_timing             |:x:                    |       |
 | Mooneye - General - call_timing2            |:x:                    |       |
-| Mooneye - General - div_timing              |:white_check_mark:     |       |
-| Mooneye - General - di_timing-GS            |:x:                    |       |
-| Mooneye - General - ei_sequence             |:white_check_mark:     |       |
-| Mooneye - General - ei_timing               |:white_check_mark:     |       |
-| Mooneye - General - halt_ime0_ei            |:x:                    |       |
-| Mooneye - General - halt_ime0_nointr_timing |:x:                    |       |
-| Mooneye - General - halt_ime1_timing        |:x:                    |       |
-| Mooneye - General - halt_ime1_timing2-GS    |:x:                    |       |
+| Mooneye - General - div_timing              | :white_check_mark:    |       |
+| Mooneye - General - di_timing-GS            | :x:                   |       |
+| Mooneye - General - ei_sequence             | :white_check_mark:    |       |
+| Mooneye - General - ei_timing               | :white_check_mark:    |       |
+| Mooneye - General - halt_ime0_ei            | :white_check_mark:    |       |
+| Mooneye - General - halt_ime0_nointr_timing | :white_check_mark:    |       |
+| Mooneye - General - halt_ime1_timing        | :white_check_mark:    |       |
+| Mooneye - General - halt_ime1_timing2-GS    | :x:                   | Fails on CGB device, not sure why it fails on emulator though      |
 | Mooneye - General - if_ie_registers         |:white_check_mark:     |       |
 | Mooneye - General - intr_timing             |:white_check_mark:     |       |
 | Mooneye - General - jp_cc_timing            |:x:                    |       |
