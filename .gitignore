@@ -341,3 +341,9 @@ healthchecksdb
 /Roms/real
 *.sav
 *.txt
+/VRAMBank1.csv
+/VRAMBank0.csv
+/OAMRAM.csv
+/framebuffer
+/CGB_SPRITE_PALETTE.csv
+/CGB_BG_PALETTE.csv
