@@ -186,7 +186,8 @@ namespace Gameboy.VM.LCD
             var spriteSize = _device.LCDRegisters.LargeSprites ? 16 : 8;
 
             // Loop through all sprites
-            for (var spriteIndex = 0; spriteIndex < MaxSpritesPerFrame; spriteIndex++)
+            // TODO - Need to order for DMG using the x coordinate of the sprite not the order in the sprite table
+            for (var spriteIndex = MaxSpritesPerFrame - 1; spriteIndex >= 0; spriteIndex--)
             {
                 var sprite = _sprites[spriteIndex];
 
