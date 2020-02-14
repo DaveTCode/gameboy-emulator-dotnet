@@ -103,6 +103,14 @@
     "Prince of Persia (USA, Europe) (En,Fr,De,Es,It) (GB Compatible).gbc": {
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/real/Prince of Persia (USA, Europe) (En,Fr,De,Es,It) (GB Compatible).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+    },
+    "Dragon Warrior III (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/real/Dragon Warrior III (USA).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+    },
+    "Lufia - The Legend Returns": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/real/Lufia - The Legend Returns (Europe) (En,De).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
     }
   }
 }
