@@ -33,6 +33,12 @@ namespace Gameboy.Emulator.SDL
 
             if (_soundBufferIndex == _soundBuffer.Length)
             {
+                // TODO - Why do we need to discard bits of the buffer? How does this impact performance?
+                while (_waveProvider.BufferedDuration.Milliseconds > 100)
+                {
+                    SDL2.SDL_Delay(100);
+                }
+
                 _waveProvider.AddSamples(_soundBuffer, 0, _soundBufferIndex);
                 _soundBufferIndex = 0;
                 Array.Clear(_soundBuffer, 0, _soundBuffer.Length);
