@@ -18,7 +18,7 @@ namespace Gameboy.VM.Tests.CPU
             var device = TestUtils.CreateTestDevice(new byte[]
             {
                 0x31, 0xFE, 0xFF, // Setup the SP to 0xFFFE
-                0xCD, 0x57, 0x01, // 0x153 - Call 0x155
+                0xCD, 0x57, 0x01, // 0x153 - Call 0x157
                 0x00, // 0x154 - NOP
                 0xC9, // 0x155 - RET
             });
