@@ -74,7 +74,7 @@ namespace Gameboy.VM
                 return _device.ControlRegisters.SerialTransferData;
             if (address == 0xFF02) // SC register
                 return _device.ControlRegisters.SerialTransferControl;
-            if (address == 0xFF03) // Unused address - all reads return 0
+            if (address == 0xFF03) // Unused address - all reads return FF
                 return ReadUnusedAddress(address);
             if (address == 0xFF04) // Divider
                 return _device.Timer.Divider;
@@ -84,7 +84,7 @@ namespace Gameboy.VM
                 return _device.Timer.TimerModulo;
             if (address == 0xFF07) // TAC Register
                 return _device.Timer.TimerController;
-            if (address >= 0xFF08 && address <= 0xFF0E) // Unused addresses - all reads return 0
+            if (address >= 0xFF08 && address <= 0xFF0E) // Unused addresses - all reads return FF
                 return ReadUnusedAddress(address);
             if (address == 0xFF0F) // IF Register
                 return _device.InterruptRegisters.InterruptFlags;
@@ -323,7 +323,7 @@ namespace Gameboy.VM
             else if (address == 0xFF70) // RAM Bank register - only bits 0-2 valid
             {
                 _wramBank = (byte)(value & 0x7);
-                if (_wramBank == 0) _wramBank = 1; // RAM Bank can't be 0
+                //if (_wramBank == 0) _wramBank = 1; // RAM Bank can't be 0
             }
             else if (address == 0xFF71)
                 _device.Log.Information("Write to unused address {0:X4}", address);
