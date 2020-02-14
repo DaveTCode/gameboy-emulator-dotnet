@@ -323,7 +323,7 @@ namespace Gameboy.VM
             else if (address == 0xFF70) // RAM Bank register - only bits 0-2 valid
             {
                 _wramBank = (byte)(value & 0x7);
-                //if (_wramBank == 0) _wramBank = 1; // RAM Bank can't be 0
+                if (_wramBank == 0) _wramBank = 1; // RAM Bank can't be 0
             }
             else if (address == 0xFF71)
                 _device.Log.Information("Write to unused address {0:X4}", address);
