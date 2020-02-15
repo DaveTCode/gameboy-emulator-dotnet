@@ -9,6 +9,7 @@ namespace Gameboy.VM.CPU
         private readonly Device _device;
 
         private bool _isHalted;
+        private bool _isHaltBugState;
         private bool _isStopped;
         private bool _enableInterruptsAfterNextCpuInstruction;
 
@@ -105,6 +106,12 @@ namespace Gameboy.VM.CPU
             }
 
             var opcode = FetchByte();
+
+            if (_isHaltBugState)
+            {
+                Registers.ProgramCounter--;
+                _isHaltBugState = false;
+            }
 
             return opcode switch
             {
@@ -674,6 +681,14 @@ namespace Gameboy.VM.CPU
         private int Halt()
         {
             _isHalted = true;
+            _isHaltBugState = false;
+
+            // HALT bug behaviour (don't increment PC on next read) happens
+            if (!_device.InterruptRegisters.AreInterruptsEnabledGlobally && 
+                (_device.InterruptRegisters.InterruptEnable & _device.InterruptRegisters.InterruptFlags & 0x1F) != 0)
+            {
+                _isHaltBugState = true;
+            }
             return 4;
         }
 
