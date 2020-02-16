@@ -39,7 +39,7 @@ namespace Gameboy.VM.Tests.Cartridge
         public void TestRamDoesNotExist()
         {
             var cartridge = CartridgeFactory.CreateCartridge(_cartridgeHeader);
-            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(DeviceType.DMG), new NullSoundOutput());
+            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(DeviceType.DMG), new NullSoundOutput(), null);
             device.SkipBootRom();
 
             // Test that all writes to RAM are ignored leaving 0xFF as default value
@@ -54,7 +54,7 @@ namespace Gameboy.VM.Tests.Cartridge
         public void TestRomAddressSpace()
         {
             var cartridge = CartridgeFactory.CreateCartridge(_cartridgeHeader);
-            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(DeviceType.DMG), new NullSoundOutput());
+            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(DeviceType.DMG), new NullSoundOutput(), null);
             device.SkipBootRom();
 
             // Test that all writes to ROM are ignored and original values retained

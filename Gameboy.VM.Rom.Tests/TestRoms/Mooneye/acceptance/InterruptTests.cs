@@ -77,5 +77,23 @@ namespace Gameboy.VM.Rom.Tests.TestRoms.Mooneye.acceptance
             await TestUtils.TestRomAgainstResult(
                 Path.Join("Roms", "tests", "mooneye-gb", "acceptance", "intr_timing.gb"), expectedFrameBuffer, 1000 * 10, 0x4B2D);
         }
+
+        [Fact]
+        public async Task RapidEnableDisableInterrupt()
+        {
+            var expectedFrameBuffer = await File.ReadAllLinesAsync(
+                Path.Join(TestUtils.SolutionDirectory, "Roms", "tests", "mooneye-gb", "acceptance", "rapid_di_ei.framebuffer"));
+            await TestUtils.TestRomAgainstResult(
+                Path.Join("Roms", "tests", "mooneye-gb", "acceptance", "rapid_di_ei.gb"), expectedFrameBuffer, 1000 * 10, 0x4B2E);
+        }
+
+        [Fact]
+        public async Task RetiIntrTiming()
+        {
+            var expectedFrameBuffer = await File.ReadAllLinesAsync(
+                Path.Join(TestUtils.SolutionDirectory, "Roms", "tests", "mooneye-gb", "acceptance", "reti_intr_timing.framebuffer"));
+            await TestUtils.TestRomAgainstResult(
+                Path.Join("Roms", "tests", "mooneye-gb", "acceptance", "reti_intr_timing.gb"), expectedFrameBuffer, 1000 * 10, 0x4B2D);
+        }
     }
 }

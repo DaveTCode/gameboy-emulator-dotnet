@@ -38,7 +38,7 @@ namespace Gameboy.VM.Rom.Tests
             var imageFile = Path.Join(new DirectoryInfo(romFile).Parent?.FullName, Path.GetFileNameWithoutExtension(romFile) + ".png");
             Directory.CreateDirectory(ImageDirectory);
             var cartridge = CartridgeFactory.CreateCartridge(await File.ReadAllBytesAsync(Path.Join(SolutionDirectory, relativePathToRomFromSolution)));
-            var device = new Device(cartridge, deviceType, new NullRenderer(deviceType), new NullSoundOutput());
+            var device = new Device(cartridge, deviceType, new NullRenderer(deviceType), new NullSoundOutput(), null);
             device.SkipBootRom();
 
             var sw = new Stopwatch();
