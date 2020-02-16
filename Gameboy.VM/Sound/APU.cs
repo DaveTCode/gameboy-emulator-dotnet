@@ -101,9 +101,26 @@ namespace Gameboy.VM.Sound
         #endregion
 
 
-        // TODO - Implement when sound work completed
-        internal byte PCM12 { get; set; }
-        internal byte PCM34 { get; set; }
+        internal byte PCM12
+        {
+            get
+            {
+                return (byte)(
+                    (_squareChannel2.IsEnabled ? _squareChannel2.GetOutputVolume() << 4 : 0) |
+                    (_squareChannel1.IsEnabled ? _squareChannel1.GetOutputVolume() : 0)
+                );
+            }
+        }
+        internal byte PCM34
+        {
+            get
+            {
+                return (byte)(
+                    (_noiseChannel.IsEnabled ? _noiseChannel.GetOutputVolume() << 4 : 0) |
+                    (_waveChannel.IsEnabled ? _waveChannel.GetOutputVolume() : 0)
+                );
+            }
+        }
 
         private void Reset()
         {

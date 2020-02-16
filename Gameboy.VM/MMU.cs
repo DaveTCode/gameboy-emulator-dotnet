@@ -147,33 +147,55 @@ namespace Gameboy.VM
             if (address >= 0xFF57 && address <= 0xFF67) // Unused addresses
                 return ReadUnusedAddress(address);
             if (address == 0xFF68) // BCPS register
+            {
+                if (_device.Mode == DeviceType.DMG) return 0xFF;
+
                 return _device.LCDRegisters.CGBBackgroundPalette.PaletteIndex;
+            }
             if (address == 0xFF69) // BCPD register
+            {
+                if (_device.Mode == DeviceType.DMG) return 0xFF;
+
                 return _device.LCDRegisters.CGBBackgroundPalette.ReadPaletteMemory();
+            }
             if (address == 0xFF6A) // OCPS register
+            {
+                if (_device.Mode == DeviceType.DMG) return 0xFF;
+
                 return _device.LCDRegisters.CGBSpritePalette.PaletteIndex;
+            }
             if (address == 0xFF6B) // OCPD register
+            {
+                if (_device.Mode == DeviceType.DMG) return 0xFF;
+
                 return _device.LCDRegisters.CGBSpritePalette.ReadPaletteMemory();
+            }
             if (address == 0xFF6C) // Unused control register
                 return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF6C : (byte)0xFF;
             if (address >= 0xFF6D && address <= 0xFF6F)
                 return ReadUnusedAddress(address);
             if (address == 0xFF70) // RAM Bank register
+            {
+                if (_device.Mode == DeviceType.DMG) return 0xFF;
+
                 return _wramBank;
+            }
             if (address == 0xFF71) // Unused memory address
                 return ReadUnusedAddress(address);
             if (address == 0xFF72) // Unused memory address
-                return _device.ControlRegisters.FF72;
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF72 : (byte)0xFF;
             if (address == 0xFF73) // Unused memory address
-                return _device.ControlRegisters.FF73;
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF73 : (byte)0xFF;
             if (address == 0xFF74) // Unused memory address
                 return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF74 : (byte)0xFF;
             if (address == 0xFF75) // Unused memory address
-                return _device.ControlRegisters.FF75;
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF75 : (byte)0xFF;
             if (address == 0xFF76) // PCM12 - PCM amplitudes 1 & 2
-                return _device.APU.PCM12;
+                return (_device.Mode == DeviceType.CGB) ? _device.APU.PCM12 : (byte)0xFF;
             if (address == 0xFF77) // PCM34 - PCM amplitudes 3 & 4
-                return _device.APU.PCM34;
+            {
+                return (_device.Mode == DeviceType.CGB) ? _device.APU.PCM34 : (byte)0xFF;
+            }
             if (address >= 0xFF78 && address <= 0xFF7F) // Unused IO port addresses
                 return ReadUnusedAddress(address);
             if (address >= 0xFF80 && address <= 0xFFFE) // Read from HRAM

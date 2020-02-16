@@ -212,17 +212,19 @@ namespace Gameboy.VM
             // Step 2: Atomically run the next operation
             tCycles += CPU.Step();
 
+            var nonCpuCycles = (DoubleSpeed) ? tCycles / 2 : tCycles;
+
             // Step 3: Run the DMA controller to move bytes directly into VRAM/OAM
             DMAController.Step(tCycles);
 
             // Step 4: Update the LCD subsystem to sync with the new number of cycles
-            LCDDriver.Step(tCycles);
+            LCDDriver.Step(nonCpuCycles);
 
             // Step 5: Update the timer controller with the number of cycles
             Timer.Step(tCycles);
 
             // Step 6: Step audio subsystem
-            APU.Step(tCycles);
+            APU.Step(nonCpuCycles);
 
             TCycles += tCycles;
 

@@ -32,13 +32,13 @@ namespace Gameboy.VM.Rom.Tests
         /// </param>
         /// <param name="finalOpcode"></param>
         /// <param name="timeoutMs"></param>
-        internal static async Task TestRomAgainstResult(string relativePathToRomFromSolution, string[] expectedFramebuffer, int timeoutMs, ushort? finalOpcode = null)
+        internal static async Task TestRomAgainstResult(string relativePathToRomFromSolution, string[] expectedFramebuffer, int timeoutMs, ushort? finalOpcode = null, DeviceType deviceType = DeviceType.DMG)
         {
             var romFile = Path.Join(SolutionDirectory, relativePathToRomFromSolution);
             var imageFile = Path.Join(new DirectoryInfo(romFile).Parent?.FullName, Path.GetFileNameWithoutExtension(romFile) + ".png");
             Directory.CreateDirectory(ImageDirectory);
             var cartridge = CartridgeFactory.CreateCartridge(await File.ReadAllBytesAsync(Path.Join(SolutionDirectory, relativePathToRomFromSolution)));
-            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(), new NullSoundOutput());
+            var device = new Device(cartridge, deviceType, new NullRenderer(deviceType), new NullSoundOutput());
             device.SkipBootRom();
 
             var sw = new Stopwatch();

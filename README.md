@@ -23,7 +23,6 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 ### Specific
 
-- Implement speed mode from CGB
 - Add HDMA transfer tests
 - Test timer subsystem
 - Prevent pressing multiple buttons (just direction keys?) at a time
@@ -46,7 +45,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 | ------------------------------------------- |:---------------------:| -----:|
 | Blargg - cpu_instrs                         | :white_check_mark:    |       |
 | Blargg - instr_timing                       | :white_check_mark:    |       |
-| Blargg - interrupt_time                     | :x:                   | Failed - suspect implementing double speed mode will solve this       |
+| Blargg - interrupt_time                     | :white_check_mark:    |       |
 | Blargg - mem_timing                         | :x:                   | Broken because CPU is using instruction atomicity       |
 | Blargg - mem_timing2                        | :x:                   | Broken because CPU is using instruction atomicity       |
 | Blargg - cgb_sound                          | :x:                   | All bar one fail, but this would fail on a DMG so doesn't matter overly |
