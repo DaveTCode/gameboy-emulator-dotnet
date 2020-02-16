@@ -16,7 +16,7 @@ namespace Gameboy.Emulator.SDL
         private readonly Stopwatch _stopwatch = new Stopwatch();
         private readonly int _msPerFrame;
 
-        internal SDL2Application(Cartridge cartridge, DeviceType mode, int pixelSize, bool skipBootRom, int framesPerSecond)
+        internal SDL2Application(Cartridge cartridge, DeviceType mode, int pixelSize, byte[] bootRom, int framesPerSecond)
         {
             SDL2.SDL_Init(SDL2.SDL_INIT_VIDEO | SDL2.SDL_INIT_AUDIO);
 
@@ -36,9 +36,7 @@ namespace Gameboy.Emulator.SDL
 
             var sdl2Renderer = new SDL2Renderer(_renderer, mode);
             _soundOutput = new NAudioSoundOutput();
-            _device = new Device(cartridge, mode, sdl2Renderer, _soundOutput);
-
-            if (skipBootRom) _device.SkipBootRom();
+            _device = new Device(cartridge, mode, sdl2Renderer, _soundOutput, bootRom);
         }
 
         private bool _quit;
