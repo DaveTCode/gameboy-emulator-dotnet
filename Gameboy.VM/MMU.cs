@@ -133,15 +133,15 @@ namespace Gameboy.VM
             if (address == 0xFF50) // Is device ROM enabled?
                 return _device.ControlRegisters.RomDisabledRegister;
             if (address == 0xFF51) // HDMA1
-                return _device.DMAController.HDMA1;
+                return _device.Mode == DeviceType.CGB ? _device.DMAController.HDMA1 : (byte)0xFF;
             if (address == 0xFF52) // HDMA2
-                return _device.DMAController.HDMA2;
+                return _device.Mode == DeviceType.CGB ? _device.DMAController.HDMA2 : (byte)0xFF;
             if (address == 0xFF53) // HDMA3
-                return _device.DMAController.HDMA3;
+                return _device.Mode == DeviceType.CGB ? _device.DMAController.HDMA3 : (byte)0xFF;
             if (address == 0xFF54) // HDMA4
-                return _device.DMAController.HDMA4;
+                return _device.Mode == DeviceType.CGB ? _device.DMAController.HDMA4 : (byte)0xFF;
             if (address == 0xFF55) // HDMA5
-                return _device.DMAController.HDMA5;
+                return _device.Mode == DeviceType.CGB ? _device.DMAController.HDMA5 : (byte)0xFF;
             if (address == 0xFF56) // TODO - Infra red port address
                 return 0xFF;
             if (address >= 0xFF57 && address <= 0xFF67) // Unused addresses
@@ -316,15 +316,25 @@ namespace Gameboy.VM
             else if (address == 0xFF50) // Undocumented register to unmap ROM and map cartridge
                 _device.ControlRegisters.RomDisabledRegister = value;
             else if (address == 0xFF51) // HDMA1
-                _device.DMAController.HDMA1 = value;
+            {
+                if (_device.Mode != DeviceType.DMG) _device.DMAController.HDMA1 = value;
+            }
             else if (address == 0xFF52) // HDMA2
-                _device.DMAController.HDMA2 = value;
+            {
+                if (_device.Mode != DeviceType.DMG) _device.DMAController.HDMA2 = value;
+            }
             else if (address == 0xFF53) // HDMA3
-                _device.DMAController.HDMA3 = value;
+            {
+                if (_device.Mode != DeviceType.DMG) _device.DMAController.HDMA3 = value;
+            }
             else if (address == 0xFF54) // HDMA4
-                _device.DMAController.HDMA4 = value;
+            {
+                if (_device.Mode != DeviceType.DMG) _device.DMAController.HDMA4 = value;
+            }
             else if (address == 0xFF55) // HDMA5
-                _device.DMAController.HDMA5 = value;
+            {
+                if (_device.Mode != DeviceType.DMG) _device.DMAController.HDMA5 = value;
+            }
             else if (address == 0xFF56) // RP - Infrared port address
                 _device.Log.Information("Infrared port not yet implemented");
             else if (address >= 0xFF57 && address <= 0xFF67)

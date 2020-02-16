@@ -24,7 +24,7 @@ namespace Gameboy.VM.Rom.Tests.TestRoms.Mooneye.acceptance
                 Path.Join("Roms", "tests", "mooneye-gb", "acceptance", "bits", "reg_f.gb"), expectedFrameBuffer, 1000 * 10, 0x4B2E);
         }
 
-        [Fact(Skip = "TODO - Failing because HDMA is broken")]
+        [Fact(DisplayName = "Test which bits are r/w across all DMG registers")]
         public async Task MooneyeUnusedHwioGsTests()
         {
             var expectedFrameBuffer = await File.ReadAllLinesAsync(
