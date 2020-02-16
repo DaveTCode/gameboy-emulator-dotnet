@@ -17,7 +17,7 @@ namespace Gameboy.VM.Tests.MMU
             // Set up WRAM
             for (byte ii = 0; ii < 160; ii++)
             {
-                device.MMU.WriteByte((ushort)(0xC000 + ii), (byte) (ii+2));
+                device.MMU.WriteByte((ushort)(0xC000 + ii), (byte)(ii + 2));
             }
 
             // Execute OAM DMA procedure
@@ -39,7 +39,7 @@ namespace Gameboy.VM.Tests.MMU
             // And the bytes should be copied across correctly
             for (byte ii = 0; ii < 160; ii++)
             {
-                Assert.Equal(ii + 2, device.MMU.ReadByte((ushort) (0xFE00 + ii)));
+                Assert.Equal(ii + 2, device.MMU.ReadByte((ushort)(0xFE00 + ii)));
             }
         }
 
@@ -67,7 +67,7 @@ namespace Gameboy.VM.Tests.MMU
 
             // Perform 100 steps
             for (var ii = 0; ii < 100; ii++) device.Step();
-            
+
             // 99 values should have been written so far (1 m-cycle to set up)
             for (var ii = 0; ii < 99; ii++)
             {

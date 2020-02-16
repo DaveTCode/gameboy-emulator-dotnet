@@ -26,7 +26,7 @@ namespace Gameboy.VM.Tests.Cartridge
             Assert.Equal("TEST\0\0\0\0\0\0\0", cartridge.GameTitle);
             Assert.Equal("\0\0\0\0", cartridge.ManufacturerCode);
             Assert.Equal(CGBSupportCode.CGBIncompatible, cartridge.CGBSupportCode);
-            Assert.Equal(Encoding.ASCII.GetString(new byte[]{ 0x01 }), cartridge.MakerCode);
+            Assert.Equal(Encoding.ASCII.GetString(new byte[] { 0x01 }), cartridge.MakerCode);
             Assert.Equal(SGBSupportCode.GameboyCompatible, cartridge.SGBSupportCode);
             Assert.IsType<RomOnlyCartridge>(cartridge);
             Assert.Equal(CartridgeROMSize.A32KB, cartridge.ROMSize);

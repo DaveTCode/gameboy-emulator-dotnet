@@ -14,7 +14,7 @@ namespace Gameboy.VM.Tests.LCD
         [InlineData(0xFF, 0xFC, true, true, true, true, (int)StatMode.HBlankPeriod)] // Can't set mode or LY=LYC through stat register writes
         public void TestSTATRegisterChanges(byte statRegisterSet, byte statRegisterActual, bool hblankEnabled, bool vblankEnabled, bool oamEnabled, bool lylcEnabled, int statModeValue)
         {
-            var statMode = (StatMode) statModeValue;
+            var statMode = (StatMode)statModeValue;
             var device = TestUtils.CreateTestDevice();
             device.LCDRegisters.StatRegister = statRegisterSet;
 

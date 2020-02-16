@@ -26,7 +26,7 @@ namespace Gameboy.VM
             {
                 // Note that the below code implies that starting DMA whilst one is active will cancel the previous and restart, this is correct behavior
                 _dma = value;
-                
+
                 _dmaTransferOldState = _dmaTransferState;
                 _dmaTransferState = DMATransferState.Requested;
             }
@@ -66,7 +66,7 @@ namespace Gameboy.VM
             {
                 // Copy the next byte to OAM RAM
                 _device.LCDDriver.WriteOAMByte(
-                    (ushort)(0xFE00 + _currentDmaTransferIndex), 
+                    (ushort)(0xFE00 + _currentDmaTransferIndex),
                     _device.MMU.ReadByte((ushort)(_dmaTransferAddress + _currentDmaTransferIndex)));
 
                 tCycles -= 4;
@@ -238,8 +238,8 @@ namespace Gameboy.VM
         /// </summary>
         internal byte HDMA3
         {
-            get => 0xFF; 
-            set => _hdmaDestinationAddress = (ushort)((_hdmaDestinationAddress & 0x00FF) | 
+            get => 0xFF;
+            set => _hdmaDestinationAddress = (ushort)((_hdmaDestinationAddress & 0x00FF) |
                                                       ((value & 0b0001_1111) << 8) |
                                                       0x8000);
         }

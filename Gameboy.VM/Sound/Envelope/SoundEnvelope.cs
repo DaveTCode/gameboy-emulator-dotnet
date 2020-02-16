@@ -27,7 +27,7 @@ namespace Gameboy.VM.Sound.Envelope
         internal byte Register
         {
             get =>
-                (byte) (Period |
+                (byte)(Period |
                         (EnvelopeUpDown == EnvelopeUpDown.Amplify ? 0x8 : 0x0) |
                         InitialVolume << 4);
             set

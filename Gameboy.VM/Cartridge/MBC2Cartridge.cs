@@ -31,7 +31,7 @@
             if (!IsRamEnabled) return;
 
             // Only lower 4 bits are stored and max size of RAM space is 
-            _ram[(address - RamAddressStart) % MBC2RamSize] = (byte) ((value & 0b1111) | 0b11110000);
+            _ram[(address - RamAddressStart) % MBC2RamSize] = (byte)((value & 0b1111) | 0b11110000);
         }
 
         internal override byte ReadRam(ushort address)

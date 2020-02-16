@@ -13,7 +13,7 @@ namespace Gameboy.VM.Tests.Joypad
                 0x0E, 0x00, // LD C, 00
                 0xF2, // LD A, (C) (get joypad state into A)
             });
-            
+
             for (var ii = 0; ii < 4; ii++) device.Step(); // Step 4 times to set up tests and execute
 
             Assert.Equal(0xFF, device.CPU.Registers.A);
@@ -46,7 +46,7 @@ namespace Gameboy.VM.Tests.Joypad
                 0xF2, // LD A, (C) (get joypad state into A)
                 0xF2, // LD A, (C) (get joypad state into A)
             });
-            
+
             for (var ii = 0; ii < 6; ii++) device.Step(); // Step 6 times to set up tests and execute up to first joypad query
 
             Assert.Equal(joypadMode, device.CPU.Registers.A); // Double check joypad register is correct

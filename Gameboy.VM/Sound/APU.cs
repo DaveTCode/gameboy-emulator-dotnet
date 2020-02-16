@@ -81,7 +81,7 @@ namespace Gameboy.VM.Sound
         internal byte NR52
         {
             get =>
-                (byte) (ControlMasterMask 
+                (byte)(ControlMasterMask
                         | (_isEnabled ? 0x80 : 0x0)
                         | (_noiseChannel.IsEnabled ? 0x08 : 0x0)
                         | (_waveChannel.IsEnabled ? 0x04 : 0x0)

@@ -51,7 +51,7 @@ namespace Gameboy.VM.CPU
                         _isHalted = false;
                         cycles += 4;
                     }
-                    
+
                     // TODO - Not really sure what STOP mode actually means, presumably this is correct
                     if (_isStopped)
                     {
@@ -644,7 +644,7 @@ namespace Gameboy.VM.CPU
         private int EnableInterrupts()
         {
             _enableInterruptsAfterNextCpuInstruction = true;
-            
+
             return 4;
         }
 
@@ -684,7 +684,7 @@ namespace Gameboy.VM.CPU
             _isHaltBugState = false;
 
             // HALT bug behaviour (don't increment PC on next read) happens
-            if (!_device.InterruptRegisters.AreInterruptsEnabledGlobally && 
+            if (!_device.InterruptRegisters.AreInterruptsEnabledGlobally &&
                 (_device.InterruptRegisters.InterruptEnable & _device.InterruptRegisters.InterruptFlags & 0x1F) != 0)
             {
                 _isHaltBugState = true;
@@ -711,7 +711,7 @@ namespace Gameboy.VM.CPU
             {
                 _isStopped = true;
             }
-            
+
             return 8;
         }
     }

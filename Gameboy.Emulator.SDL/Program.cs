@@ -43,8 +43,8 @@ namespace Gameboy.Emulator.SDL
         private static int RunProgram(CommandLineOptions options)
         {
             using var sdlApplication = new SDL2Application(
-                CartridgeFactory.CreateCartridge(File.ReadAllBytes(options.RomFilePath)), 
-                options.Mode, 
+                CartridgeFactory.CreateCartridge(File.ReadAllBytes(options.RomFilePath)),
+                options.Mode,
                 options.PixelSize,
                 options.SkipBootRom,
                 options.FramesPerSecond);

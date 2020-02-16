@@ -83,7 +83,7 @@ namespace Gameboy.VM.Timers
         }
 
         internal byte Divider
-        { 
+        {
             get => (byte)(SystemCounter >> 8); // DIV is just 8MSB of system counter
             // ReSharper disable once ValueParameterNotUsed
             set
@@ -102,11 +102,11 @@ namespace Gameboy.VM.Timers
         }
 
         private byte _timerCounter;
-        internal byte TimerCounter 
-        { 
+        internal byte TimerCounter
+        {
             // Note obscure behavior here, during a reload of TIMA writes are
             // "ignored" and reads return 0 for 4 t-cycles
-            get => _reloadingClockTCycles > 0 ? (byte) 0x0 : _timerCounter;
+            get => _reloadingClockTCycles > 0 ? (byte)0x0 : _timerCounter;
             set
             {
                 if (_reloadingClockTCycles > 0) return;

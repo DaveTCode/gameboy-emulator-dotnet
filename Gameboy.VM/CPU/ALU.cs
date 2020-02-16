@@ -276,7 +276,7 @@ namespace Gameboy.VM.CPU
             a = (byte)tmp;
             _cpu.Registers.SetFlag(CpuFlags.ZeroFlag, a == 0x0);
             if (tmp > 0xFF) _cpu.Registers.SetFlag(CpuFlags.CarryFlag, true); // Note that we don't unset Carry, only ever set it
-                _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, false);
+            _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, false);
 
             return 4;
         }
@@ -390,7 +390,7 @@ namespace Gameboy.VM.CPU
             _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, ((_cpu.Registers.StackPointer ^ operand ^ (result & 0xFFFF)) & 0x10) == 0x10);
             _cpu.Registers.SetFlag(CpuFlags.CarryFlag, ((_cpu.Registers.StackPointer ^ operand ^ (result & 0xFFFF)) & 0x100) == 0x100);
             _cpu.Registers.StackPointer = (ushort)result;
-            
+
             return 16;
         }
 

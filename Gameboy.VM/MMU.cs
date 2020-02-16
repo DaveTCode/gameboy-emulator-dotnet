@@ -8,7 +8,7 @@ namespace Gameboy.VM
         private const int WRAMSizeDmg = 0x2000;
         private const int WRAMSizeCgb = 0x8000;
         private const int HRAMSize = 0x7F;
-        
+
 
         private readonly Device _device;
 
@@ -55,7 +55,7 @@ namespace Gameboy.VM
             if (address <= 0xDFFF) // Read from WRAM
                 return ReadFromRam(address);
             if (address <= 0xFDFF) // Read from echo of internal RAM
-                return ReadFromRam((ushort) (address - 0x2000));
+                return ReadFromRam((ushort)(address - 0x2000));
             if (address <= 0xFE9F) // Read from sprite attribute table
             {
                 // OAM RAM is unreadable by the CPU during STAT mode 2 & 3 and during OAM DMA
@@ -119,15 +119,15 @@ namespace Gameboy.VM
             if (address == 0xFF4D) // Speed switch register
             {
                 if (_device.Mode == DeviceType.DMG) return 0xFF;
-                
+
                 return (byte)(_device.DoubleSpeed ? 0x80 : _device.ControlRegisters.SpeedSwitchRequested ? 0x1 : 0x0);
             }
             if (address == 0xFF4E) // Unused address
                 return ReadUnusedAddress(address);
             if (address == 0xFF4F)
             {
-                return _device.Mode == DeviceType.DMG 
-                    ? (byte) 0xFF 
+                return _device.Mode == DeviceType.DMG
+                    ? (byte)0xFF
                     : _device.LCDDriver.GetVRAMBankRegister();
             }
             if (address == 0xFF50) // Is device ROM enabled?
@@ -155,7 +155,7 @@ namespace Gameboy.VM
             if (address == 0xFF6B) // OCPD register
                 return _device.LCDRegisters.CGBSpritePalette.ReadPaletteMemory();
             if (address == 0xFF6C) // Unused control register
-                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF6C : (byte) 0xFF;
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF6C : (byte)0xFF;
             if (address >= 0xFF6D && address <= 0xFF6F)
                 return ReadUnusedAddress(address);
             if (address == 0xFF70) // RAM Bank register
@@ -167,7 +167,7 @@ namespace Gameboy.VM
             if (address == 0xFF73) // Unused memory address
                 return _device.ControlRegisters.FF73;
             if (address == 0xFF74) // Unused memory address
-                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF74 : (byte) 0xFF;
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF74 : (byte)0xFF;
             if (address == 0xFF75) // Unused memory address
                 return _device.ControlRegisters.FF75;
             if (address == 0xFF76) // PCM12 - PCM amplitudes 1 & 2
@@ -222,8 +222,8 @@ namespace Gameboy.VM
             else if (address >= 0xFE00 && address <= 0xFE9F) // Write to the sprite attribute table
             {
                 // TODO - Under precisely what circumstances do we not allow CPU writes to OAM RAM?
-                if ((!_device.LCDRegisters.IsLcdOn || 
-                     _device.LCDRegisters.StatMode == StatMode.HBlankPeriod || 
+                if ((!_device.LCDRegisters.IsLcdOn ||
+                     _device.LCDRegisters.StatMode == StatMode.HBlankPeriod ||
                      _device.LCDRegisters.StatMode == StatMode.VBlankPeriod) && !_device.DMAController.BlocksOAMRAM())
                 {
                     _device.LCDDriver.WriteOAMByte(address, value);

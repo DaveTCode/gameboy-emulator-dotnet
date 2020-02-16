@@ -10,7 +10,7 @@
 
         internal byte RomDisabledRegister
         {
-            get => (byte) (_isRomDisabled ? 0xFF : 0x0);
+            get => (byte)(_isRomDisabled ? 0xFF : 0x0);
             set
             {
                 if (_isRomDisabled) return;
@@ -61,7 +61,7 @@
         internal byte SerialTransferData { get; set; }
 
         private byte _serialTransferControl = 0b01111110;
-        internal byte SerialTransferControl { get => _serialTransferControl; set => _serialTransferControl = (byte) (0b01111110 | value); }
+        internal byte SerialTransferControl { get => _serialTransferControl; set => _serialTransferControl = (byte)(0b01111110 | value); }
 
         public override string ToString()
         {

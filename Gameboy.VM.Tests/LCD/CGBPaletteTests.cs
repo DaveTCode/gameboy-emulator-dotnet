@@ -12,7 +12,7 @@ namespace Gameboy.VM.Tests.LCD
         [InlineData(0x4A, 0x29, 0x0A, 0x0A, 0x0A)]
         public void TestSetRGBValues(byte low, byte high, byte r, byte g, byte b)
         {
-            var p = new CGBPalette {PaletteIndex = 0};
+            var p = new CGBPalette { PaletteIndex = 0 };
 
             p.WritePaletteMemory(low);
             p.PaletteIndex = 1;
