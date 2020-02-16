@@ -51,7 +51,7 @@
             }
 
             // Increment the index register if so configured
-            if (_autoIncrement) PaletteIndex += 1;
+            if (_autoIncrement) _paletteIndex = (byte)(( _paletteIndex + 1) & 0b0011_1111);
         }
     }
 }
