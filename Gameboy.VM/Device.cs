@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Gameboy.VM.LCD;
 using Gameboy.VM.Interrupts;
 using Gameboy.VM.Sound;
@@ -23,7 +24,7 @@ namespace Gameboy.VM
         public const int ScreenHeight = 144;
         public const int CyclesPerSecondHz = 4_194_304; // 4.194304 MHz
 
-        public long TCycles = 0;
+        public long TCycles;
 
         public readonly DeviceType Mode;
         public readonly DeviceType Type;
@@ -31,10 +32,13 @@ namespace Gameboy.VM
         internal readonly ISoundOutput SoundOutput;
         internal readonly MMU MMU;
         internal readonly CPU.CPU CPU;
+        private readonly IEnumerator<int> _cpuGenerator;
         internal readonly ControlRegisters ControlRegisters;
         internal readonly APU APU;
         internal readonly LCDRegisters LCDRegisters;
         internal readonly InterruptRegisters InterruptRegisters;
+        internal readonly InterruptHandler InterruptHandler;
+        private readonly IEnumerator<int> _interruptHandlerGenerator;
         internal readonly Cartridge.Cartridge Cartridge;
         internal readonly LCDDriver LCDDriver;
         internal readonly Timer Timer;
@@ -87,10 +91,13 @@ namespace Gameboy.VM
             Cartridge = cartridge;
             MMU = new MMU(bootRom, this);
             CPU = new CPU.CPU(this);
+            _cpuGenerator = CPU.GetEnumerator();
             LCDDriver = new LCDDriver(this);
             Timer = new Timer(this);
             DMAController = new DMAController(this);
             JoypadHandler = new JoypadHandler(this);
+            InterruptHandler = new InterruptHandler(this);
+            _interruptHandlerGenerator = InterruptHandler.GetEnumerator();
 
             // Set default values if there was no passed in boot rom
             if (bootRom == null) SkipBootRom();
@@ -186,29 +193,29 @@ namespace Gameboy.VM
         {
             //Log.Information("{0}", ToString());
 
-            // Step 1: Check for interrupts
-            var tCycles = CPU.CheckForInterrupts();
+            // Step the Interrupt Handler before the CPU to catch interrupts at the right cycle
+            _interruptHandlerGenerator.MoveNext();
 
-            // Step 2: Atomically run the next operation
-            tCycles += CPU.Step();
+            // Step the CPU by 1 m-cycle
+            _cpuGenerator.MoveNext();
 
-            var nonCpuCycles = (DoubleSpeed) ? tCycles / 2 : tCycles;
+            var nonCpuCycles = DoubleSpeed ? 2 : 4;
 
             // Step 3: Run the DMA controller to move bytes directly into VRAM/OAM
-            DMAController.Step(tCycles);
+            DMAController.Step(4);
 
             // Step 4: Update the LCD subsystem to sync with the new number of cycles
             LCDDriver.Step(nonCpuCycles);
 
             // Step 5: Update the timer controller with the number of cycles
-            Timer.Step(tCycles);
+            Timer.Step(4);
 
             // Step 6: Step audio subsystem
             APU.Step(nonCpuCycles);
 
-            TCycles += tCycles;
+            TCycles += 4;
 
-            return tCycles;
+            return 4;
         }
 
         /// <summary>

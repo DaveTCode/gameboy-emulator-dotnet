@@ -223,7 +223,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
+            var alu = new ALU(cpu);
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
             alu.RotateLeftWithCarry(ref a);
 
@@ -240,7 +240,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
+            var alu = new ALU(cpu);
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
             alu.RotateLeftNoCarry(ref a);
 
@@ -257,7 +257,7 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice();
             var cpu = device.CPU;
-            var alu = new ALU(cpu, device.MMU);
+            var alu = new ALU(cpu);
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
             alu.RotateRightWithCarry(ref a);
 
