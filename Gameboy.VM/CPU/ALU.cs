@@ -63,11 +63,10 @@ namespace Gameboy.VM.CPU
             return 4;
         }
 
-        internal int RotateLeftNoCarryA()
+        internal void RotateLeftNoCarryA()
         {
             RotateLeftNoCarry(ref _cpu.Registers.A);
             _cpu.Registers.SetFlag(CpuFlags.ZeroFlag, false);
-            return 4;
         }
 
         internal int RotateLeftNoCarry(ref byte a)
@@ -80,11 +79,10 @@ namespace Gameboy.VM.CPU
             return 4;
         }
 
-        internal int RotateRightWithCarryA()
+        internal void RotateRightWithCarryA()
         {
             RotateRightWithCarry(ref _cpu.Registers.A);
             _cpu.Registers.SetFlag(CpuFlags.ZeroFlag, false);
-            return 4;
         }
 
         internal int RotateRightWithCarry(ref byte a)
@@ -96,11 +94,10 @@ namespace Gameboy.VM.CPU
             return 4;
         }
 
-        internal int RotateRightNoCarryA()
+        internal void RotateRightNoCarryA()
         {
             RotateRightNoCarry(ref _cpu.Registers.A);
             _cpu.Registers.SetFlag(CpuFlags.ZeroFlag, false);
-            return 4;
         }
 
         internal int RotateRightNoCarry(ref byte a)
@@ -288,11 +285,10 @@ namespace Gameboy.VM.CPU
             return 4;
         }
 
-        internal int SCF()
+        internal void SCF()
         {
             _cpu.Registers.SetFlag(CpuFlags.CarryFlag, true);
             _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag | CpuFlags.SubtractFlag, false);
-            return 4;
         }
 
         internal int CPL()
@@ -424,15 +420,13 @@ namespace Gameboy.VM.CPU
             return 8;
         }
 
-        internal int LoadHLSpPlusR8(sbyte operand)
+        internal void LoadHLSpPlusR8(sbyte operand)
         {
             var result = _cpu.Registers.StackPointer + operand;
             _cpu.Registers.SetFlag(CpuFlags.SubtractFlag | CpuFlags.ZeroFlag, false);
             _cpu.Registers.SetFlag(CpuFlags.HalfCarryFlag, ((_cpu.Registers.StackPointer ^ operand ^ (result & 0xFFFF)) & 0x10) == 0x10);
             _cpu.Registers.SetFlag(CpuFlags.CarryFlag, ((_cpu.Registers.StackPointer ^ operand ^ (result & 0xFFFF)) & 0x100) == 0x100);
             _cpu.Registers.HL = (ushort)result;
-
-            return 12;
         }
 
         #endregion
@@ -480,16 +474,6 @@ namespace Gameboy.VM.CPU
             return 12;
         }
 
-        internal int JumpRightOnFlag(CpuFlags flag, sbyte distance, bool isSet)
-        {
-            return _cpu.Registers.GetFlag(flag) == isSet ? JumpRight(distance) : 8;
-        }
-
-        internal int JumpOnFlag(CpuFlags flag, ushort address, bool isSet)
-        {
-            return _cpu.Registers.GetFlag(flag) != isSet ? 12 : Jump(address);
-        }
-
         internal int ReturnAndEnableInterrupts(InterruptRegisters interruptRegisters)
         {
             Return();
@@ -522,12 +506,6 @@ namespace Gameboy.VM.CPU
             var w = _mmu.ReadWord(_cpu.Registers.StackPointer);
             _cpu.Registers.StackPointer = (ushort)(_cpu.Registers.StackPointer + 2);
             return w;
-        }
-
-        internal int PopFromStackIntoRegister(Register16Bit register)
-        {
-            Load(register, PopFromStack());
-            return 12;
         }
 
         #endregion
