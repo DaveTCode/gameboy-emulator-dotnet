@@ -11,7 +11,7 @@
         internal byte InterruptFlags
         {
             get => _interruptFlags;
-            set => _interruptFlags = (byte) (0b11100000 | value);
+            set => _interruptFlags = (byte)(0b11100000 | value);
         }
 
         internal byte InterruptEnable { get; set; }

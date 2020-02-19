@@ -20,7 +20,7 @@ namespace Gameboy.VM.Tests.MMU
                 0x3E, 0x00, // LD A, 00
                 0xE0, 0x55, // LDH FF55, A - Trigger GDMA Transfer
                 0x00, 0x00,
-                0x00, 0x00, 
+                0x00, 0x00,
                 0x00, 0x00,
                 0x00, 0x00,
                 0x00, 0x00,
@@ -59,7 +59,7 @@ namespace Gameboy.VM.Tests.MMU
 
             for (byte ii = 0; ii < 0x10; ii++)
             {
-                Assert.Equal(ii, device.MMU.ReadByte((ushort) (0x8000 + ii)));
+                Assert.Equal(ii, device.MMU.ReadByte((ushort)(0x8000 + ii)));
             }
         }
     }

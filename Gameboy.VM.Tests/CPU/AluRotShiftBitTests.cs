@@ -226,7 +226,7 @@ namespace Gameboy.VM.Tests.CPU
             var alu = new ALU(cpu, device.MMU);
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
             alu.RotateLeftWithCarry(ref a);
-            
+
             Assert.Equal(result, a);
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
@@ -243,7 +243,7 @@ namespace Gameboy.VM.Tests.CPU
             var alu = new ALU(cpu, device.MMU);
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
             alu.RotateLeftNoCarry(ref a);
-            
+
             Assert.Equal(result, a);
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
@@ -260,7 +260,7 @@ namespace Gameboy.VM.Tests.CPU
             var alu = new ALU(cpu, device.MMU);
             cpu.Registers.SetFlag(CpuFlags.CarryFlag, cBefore);
             alu.RotateRightWithCarry(ref a);
-            
+
             Assert.Equal(result, a);
             Assert.Equal(c, cpu.Registers.GetFlag(CpuFlags.CarryFlag));
             Assert.Equal(h, cpu.Registers.GetFlag(CpuFlags.HalfCarryFlag));
@@ -276,7 +276,7 @@ namespace Gameboy.VM.Tests.CPU
         [InlineData(0x81, 0x40, false, true)]
         public void TestRRA(byte a, byte result, bool cBefore, bool c)
         {
-            var device = TestUtils.CreateTestDevice(new byte[] 
+            var device = TestUtils.CreateTestDevice(new byte[]
             {
                 0x3E, a, // LD A, a
                 0x37, // SCF to set carry flag
@@ -411,7 +411,7 @@ namespace Gameboy.VM.Tests.CPU
         [InlineData(0xF0, 0x0F, 0x35, 0x2E, 0x7D, false)] // SRA L - check expected value
         [InlineData(0xF0, 0x0F, 0x36, 0x36, 0x7E, false)] // SRA (HL) - check expected value
         [InlineData(0xF0, 0x0F, 0x37, 0x3E, 0x7F, false)] // SRA A - check expected value
-        
+
         public void TestSWAP(byte initialValue, byte expectedValue, byte swapOpcode, byte loadOpcode, byte loadRegIntoA, bool z)
         {
             var device = TestUtils.CreateTestDevice(new byte[]
@@ -795,7 +795,7 @@ namespace Gameboy.VM.Tests.CPU
         [InlineData(0xFF, 0xBF, 0xB5, 0x2E, 0x7D)] // RES 6,L 
         [InlineData(0xFF, 0xBF, 0xB6, 0x36, 0x7E)] // RES 6,(HL) 
         [InlineData(0xFF, 0xBF, 0xB7, 0x3E, 0x7F)] // RES 6,A 
-    
+
         [InlineData(0xFF, 0x7F, 0xB8, 0x06, 0x78)] // RES 7,B 
         [InlineData(0xFF, 0x7F, 0xB9, 0x0E, 0x79)] // RES 7,C 
         [InlineData(0xFF, 0x7F, 0xBA, 0x16, 0x7A)] // RES 7,D 

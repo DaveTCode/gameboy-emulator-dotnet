@@ -81,7 +81,7 @@ namespace Gameboy.VM.Sound
         internal byte NR52
         {
             get =>
-                (byte) (ControlMasterMask 
+                (byte)(ControlMasterMask
                         | (_isEnabled ? 0x80 : 0x0)
                         | (_noiseChannel.IsEnabled ? 0x08 : 0x0)
                         | (_waveChannel.IsEnabled ? 0x04 : 0x0)
@@ -101,9 +101,26 @@ namespace Gameboy.VM.Sound
         #endregion
 
 
-        // TODO - Implement when sound work completed
-        internal byte PCM12 { get; set; }
-        internal byte PCM34 { get; set; }
+        internal byte PCM12
+        {
+            get
+            {
+                return (byte)(
+                    (_squareChannel2.IsEnabled ? _squareChannel2.GetOutputVolume() << 4 : 0) |
+                    (_squareChannel1.IsEnabled ? _squareChannel1.GetOutputVolume() : 0)
+                );
+            }
+        }
+        internal byte PCM34
+        {
+            get
+            {
+                return (byte)(
+                    (_noiseChannel.IsEnabled ? _noiseChannel.GetOutputVolume() << 4 : 0) |
+                    (_waveChannel.IsEnabled ? _waveChannel.GetOutputVolume() : 0)
+                );
+            }
+        }
 
         private void Reset()
         {

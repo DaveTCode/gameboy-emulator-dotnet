@@ -3,12 +3,13 @@
 
 # Gameboy Emulator in C# 8
 
-Gameboy emulator written in C# as an educational exercise (not as a production emulator). Uses SDL2 for windowing & graphics and NAudio for playing raw audio samples.
+Gameboy (DMG & CGB) emulator written in C# (dotnet core 3.1) as an educational exercise (not as a production emulator). Uses SDL2 for windowing & graphics and 
+NAudio for playing raw audio samples.
 
 ## State
 
 - Passing test roms section at bottom of readme
-- Tetris is playable, Dr Mario is playable
+- Most DMG games are playable, most CGB games have graphical glitches although DX style games are typically ok
 - MBC1,2,3,5 all implemented and tested
 
 ## TODO
@@ -16,14 +17,12 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 ### Fixes
 
 - Lots of test failures specified in the table below
-- Super mario, bottom left tile in G is broken
-- HDMA overflows destination area under certain circumstances (e.g. mooneye bit test), suspect it might just be broken
 - Aladdin screwed up video after boot
 - Lots of CGB games seem to have incorrect tiles placed (vram bank issue? tilemap issue?)
 
 ### Specific
 
-- Implement speed mode from CGB
+- Complete adding integration tests for all known test roms
 - Add HDMA transfer tests
 - Test timer subsystem
 - Prevent pressing multiple buttons (just direction keys?) at a time
@@ -32,7 +31,6 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 
 ### Ideas/Future
 
-- Integration testing using headless runner and comparing frame buffer to known good values for variety of roms? Specifically all test roms?
 - Display FPS using SDL text rendering?
 - Native debugger with winforms/wpf?
 - SGB support
@@ -46,7 +44,7 @@ Gameboy emulator written in C# as an educational exercise (not as a production e
 | ------------------------------------------- |:---------------------:| -----:|
 | Blargg - cpu_instrs                         | :white_check_mark:    |       |
 | Blargg - instr_timing                       | :white_check_mark:    |       |
-| Blargg - interrupt_time                     | :x:                   | Failed - suspect implementing double speed mode will solve this       |
+| Blargg - interrupt_time                     | :white_check_mark:    |       |
 | Blargg - mem_timing                         | :x:                   | Broken because CPU is using instruction atomicity       |
 | Blargg - mem_timing2                        | :x:                   | Broken because CPU is using instruction atomicity       |
 | Blargg - cgb_sound                          | :x:                   | All bar one fail, but this would fail on a DMG so doesn't matter overly |

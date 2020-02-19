@@ -28,7 +28,7 @@ namespace Gameboy.VM.Tests.Timer
             Assert.Equal(0, device.Timer.TimerCounter);
 
             // 1 More NOP to take total to 1024 cycles so timer should now increment
-            device.Step(); 
+            device.Step();
             Assert.Equal(1, device.Timer.TimerCounter);
         }
 

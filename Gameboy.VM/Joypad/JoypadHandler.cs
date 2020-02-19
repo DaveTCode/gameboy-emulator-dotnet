@@ -31,17 +31,17 @@ namespace Gameboy.VM.Joypad
                         break;
                     case P1RegisterMode.Directions:
                         p1 &= 0b11101111; // Unset bit 4 to reflect mode = directions
-                        p1 &= _keyStates[DeviceKey.Right] ? DeviceKey.Right.BitMask(): 0xFF; // RIGHT = unset bit 0
-                        p1 &= _keyStates[DeviceKey.Left] ? DeviceKey.Left.BitMask(): 0xFF; // LEFT = unset bit 1
-                        p1 &= _keyStates[DeviceKey.Up] ? DeviceKey.Up.BitMask(): 0xFF; // UP = unset bit 2
-                        p1 &= _keyStates[DeviceKey.Down] ? DeviceKey.Down.BitMask(): 0xFF; // DOWN = unset bit 3
+                        p1 &= _keyStates[DeviceKey.Right] ? DeviceKey.Right.BitMask() : 0xFF; // RIGHT = unset bit 0
+                        p1 &= _keyStates[DeviceKey.Left] ? DeviceKey.Left.BitMask() : 0xFF; // LEFT = unset bit 1
+                        p1 &= _keyStates[DeviceKey.Up] ? DeviceKey.Up.BitMask() : 0xFF; // UP = unset bit 2
+                        p1 &= _keyStates[DeviceKey.Down] ? DeviceKey.Down.BitMask() : 0xFF; // DOWN = unset bit 3
                         break;
                     case P1RegisterMode.ABSelectStart:
                         p1 &= 0b11011111; // Unset bit 5 to reflect mode = buttons
-                        p1 &= _keyStates[DeviceKey.A] ? DeviceKey.A.BitMask(): 0xFF; // A = unset bit 0
-                        p1 &= _keyStates[DeviceKey.B] ? DeviceKey.B.BitMask(): 0xFF; // B = unset bit 1
-                        p1 &= _keyStates[DeviceKey.Select] ? DeviceKey.Select.BitMask(): 0xFF; // Select = unset bit 2
-                        p1 &= _keyStates[DeviceKey.Start] ? DeviceKey.Start.BitMask(): 0xFF; // Start = unset bit 3
+                        p1 &= _keyStates[DeviceKey.A] ? DeviceKey.A.BitMask() : 0xFF; // A = unset bit 0
+                        p1 &= _keyStates[DeviceKey.B] ? DeviceKey.B.BitMask() : 0xFF; // B = unset bit 1
+                        p1 &= _keyStates[DeviceKey.Select] ? DeviceKey.Select.BitMask() : 0xFF; // Select = unset bit 2
+                        p1 &= _keyStates[DeviceKey.Start] ? DeviceKey.Start.BitMask() : 0xFF; // Start = unset bit 3
                         break;
                     case P1RegisterMode.Both:
                         p1 &= 0b11001111; // Unset bit 4 & 5 to reflect mode = both - TODO - not really sure about this behaviour but it seems correct based on wiring
@@ -57,7 +57,7 @@ namespace Gameboy.VM.Joypad
             }
             set
             {
-                _p1RegisterMode = (P1RegisterMode) (((value & 0x20) | (value & 0x10)) >> 4);
+                _p1RegisterMode = (P1RegisterMode)(((value & 0x20) | (value & 0x10)) >> 4);
 
                 // TODO - Do we really ignore setting the key values here? Doing so means we never catch key interrupts so presumably...
 

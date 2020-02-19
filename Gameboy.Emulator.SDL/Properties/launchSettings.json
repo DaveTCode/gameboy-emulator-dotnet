@@ -2,115 +2,115 @@
   "profiles": {
     "Manual Sound Tests": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/tests/Sound Test (PD).gb\" --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "\"../../../../Roms/tests/Sound Test (PD).gb\""
     },
     "Blarg CPU Tests - All (MBC1)": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/blargg/cpu_instrs/cpu_instrs.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/blargg/cpu_instrs/cpu_instrs.gb"
     },
     "Blarg Instruction Timing": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/blargg/instr_timing/instr_timing.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/blargg/instr_timing/instr_timing.gb"
     },
     "Blarg Interrupt Timing": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/blargg/interrupt_time/interrupt_time.gb --skipBootRom -s 60 -p 2 --mode CGB"
+      "commandLineArgs": "../../../../Roms/tests/blargg/interrupt_time/interrupt_time.gb --mode CGB"
     },
     "Mooneye IE Push": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/interrupts/ie_push.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/interrupts/ie_push.gb"
     },
     "Mooneye Timer - Rapid Toggle": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/timer/rapid_toggle.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/timer/rapid_toggle.gb"
     },
     "Mooneye MBC1 - bits_bank1.gb": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/emulator-only/mbc1/bits_bank1.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/emulator-only/mbc1/bits_bank1.gb"
     },
     "Mooneye Bits - mem_oam.gb": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/bits/unused_hwio-GS.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/bits/unused_hwio-GS.gb"
     },
     "Mooneye OAM - basic.gb": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/oam_dma/basic.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/oam_dma/basic.gb"
     },
     "Mooneye OAM - reg_read.gb": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/oam_dma/reg_read.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/oam_dma/reg_read.gb"
     },
     "Mooneye OAM - sources-GS.gb": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/oam_dma/sources-GS.gb --skipBootRom -s 60 -p 2"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/oam_dma/sources-GS.gb"
     },
     "Tetris w/ boot rom": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Tetris (World) (Rev A).gb\" -s 60 -p 2"
+      "commandLineArgs": "\"../../../../Roms/real/Tetris (World) (Rev A).gb\""
     },
     "Tetris": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Tetris (World) (Rev A).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Tetris (World) (Rev A).gb\""
     },
     "Asteroids": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Asteroids (USA, Europe).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Asteroids (USA, Europe).gb\""
     },
     "Dr Mario - no boot rom": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Dr. Mario (World).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Dr. Mario (World).gb\""
     },
     "Zelda - Link's Awakening (bootrom)": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev B).gb\" -s 60 -p 2"
+      "commandLineArgs": "\"../../../../Roms/real/Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev B).gb\""
     },
     "Super Mario Land": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Super Mario Land (World).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Super Mario Land (World).gb\""
     },
     "Super Mario Bros. Deluxe": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Super Mario Bros. Deluxe (USA, Europe) (Rev B).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+      "commandLineArgs": "\"../../../../Roms/real/Super Mario Bros. Deluxe (USA, Europe) (Rev B).gbc\" --mode CGB"
     },
     "Aladdin": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Aladdin (Europe) (En,Fr,De,Es,It,Nl).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+      "commandLineArgs": "\"../../../../Roms/real/Aladdin (Europe) (En,Fr,De,Es,It,Nl).gbc\" --mode CGB"
     },
     "Pokemon Blue": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Pokemon - Blue Version (USA, Europe) (SGB Enhanced).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Pokemon - Blue Version (USA, Europe) (SGB Enhanced).gb\""
     },
     "Kirby's Pinball Land (MBC2)": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Kirby's Pinball Land (USA, Europe).gb\" -s 60 -p 2 --skipBootRom"
+      "commandLineArgs": "\"../../../../Roms/real/Kirby's Pinball Land (USA, Europe).gb\""
     },
     "Game Boy Color Promotional Demo (DMG device)": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Game Boy Color Promotional Demo.gbc\" -s 60 -p 2 --skipBootRom --mode DMG"
+      "commandLineArgs": "\"../../../../Roms/real/Game Boy Color Promotional Demo.gbc\" --mode DMG"
     },
     "Game Boy Color Promotional Demo (CGB device)": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Game Boy Color Promotional Demo.gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+      "commandLineArgs": "\"../../../../Roms/real/Game Boy Color Promotional Demo.gbc\" --mode CGB"
     },
     "Pokemon Crystal (MBC3, GBC)": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Pokemon - Crystal Version (USA, Europe) (Rev A).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+      "commandLineArgs": "\"../../../../Roms/real/Pokemon - Crystal Version (USA, Europe) (Rev A).gbc\" --mode CGB"
     },
     "Drymouth (GBC)": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/DRYMOUTH.gb\" -s 60 -p 2 --skipBootRom --mode CGB"
+      "commandLineArgs": "\"../../../../Roms/real/DRYMOUTH.gb\" --mode CGB"
     },
     "Prince of Persia (USA, Europe) (En,Fr,De,Es,It) (GB Compatible).gbc": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Prince of Persia (USA, Europe) (En,Fr,De,Es,It) (GB Compatible).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+      "commandLineArgs": "\"../../../../Roms/real/Prince of Persia (USA, Europe) (En,Fr,De,Es,It) (GB Compatible).gbc\" --mode CGB"
     },
     "Dragon Warrior III (USA)": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Dragon Warrior III (USA).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+      "commandLineArgs": "\"../../../../Roms/real/Dragon Warrior III (USA).gbc\" --mode CGB"
     },
     "Lufia - The Legend Returns": {
       "commandName": "Project",
-      "commandLineArgs": "\"../../../../Roms/real/Lufia - The Legend Returns (Europe) (En,De).gbc\" -s 60 -p 2 --skipBootRom --mode CGB"
+      "commandLineArgs": "\"../../../../Roms/real/Lufia - The Legend Returns (Europe) (En,De).gbc\" --mode CGB"
     }
   }
 }

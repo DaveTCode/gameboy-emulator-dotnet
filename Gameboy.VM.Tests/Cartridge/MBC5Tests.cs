@@ -33,10 +33,10 @@ namespace Gameboy.VM.Tests.Cartridge
             // Set a value in each of the 512 rom banks
             for (var ii = 0; ii < 512; ii++)
             {
-                cartridgeContents[0x4000 * ii + 0x1000] = (byte) ii;
+                cartridgeContents[0x4000 * ii + 0x1000] = (byte)ii;
             }
 
-            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.CGB, new NullRenderer(), new NullSoundOutput());
+            var device = new Device(CartridgeFactory.CreateCartridge(cartridgeContents), DeviceType.CGB, new NullRenderer(DeviceType.DMG), new NullSoundOutput(), null);
             device.SkipBootRom();
 
             Assert.Equal(CartridgeROMSize.A8MB, device.Cartridge.ROMSize);
@@ -47,7 +47,7 @@ namespace Gameboy.VM.Tests.Cartridge
             {
                 // Set the ROM bank by setting both upper and lower parts of rom bank
                 device.MMU.WriteByte(0x2000, (byte)ii);
-                device.MMU.WriteByte(0x3000, (byte) (ii >> 8));
+                device.MMU.WriteByte(0x3000, (byte)(ii >> 8));
 
                 // Check that the byte in 0x1000 in the ROM bank is what we set earlier
                 Assert.Equal((byte)ii, device.MMU.ReadByte(0x5000));

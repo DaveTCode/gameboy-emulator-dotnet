@@ -26,7 +26,7 @@ namespace Gameboy.VM.Tests.Cartridge
             Assert.Equal("TEST\0\0\0\0\0\0\0", cartridge.GameTitle);
             Assert.Equal("\0\0\0\0", cartridge.ManufacturerCode);
             Assert.Equal(CGBSupportCode.CGBIncompatible, cartridge.CGBSupportCode);
-            Assert.Equal(Encoding.ASCII.GetString(new byte[]{ 0x01 }), cartridge.MakerCode);
+            Assert.Equal(Encoding.ASCII.GetString(new byte[] { 0x01 }), cartridge.MakerCode);
             Assert.Equal(SGBSupportCode.GameboyCompatible, cartridge.SGBSupportCode);
             Assert.IsType<RomOnlyCartridge>(cartridge);
             Assert.Equal(CartridgeROMSize.A32KB, cartridge.ROMSize);
@@ -39,7 +39,7 @@ namespace Gameboy.VM.Tests.Cartridge
         public void TestRamDoesNotExist()
         {
             var cartridge = CartridgeFactory.CreateCartridge(_cartridgeHeader);
-            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(), new NullSoundOutput());
+            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(DeviceType.DMG), new NullSoundOutput(), null);
             device.SkipBootRom();
 
             // Test that all writes to RAM are ignored leaving 0xFF as default value
@@ -54,7 +54,7 @@ namespace Gameboy.VM.Tests.Cartridge
         public void TestRomAddressSpace()
         {
             var cartridge = CartridgeFactory.CreateCartridge(_cartridgeHeader);
-            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(), new NullSoundOutput());
+            var device = new Device(cartridge, DeviceType.DMG, new NullRenderer(DeviceType.DMG), new NullSoundOutput(), null);
             device.SkipBootRom();
 
             // Test that all writes to ROM are ignored and original values retained

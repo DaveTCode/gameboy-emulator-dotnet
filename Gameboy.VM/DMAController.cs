@@ -26,7 +26,7 @@ namespace Gameboy.VM
             {
                 // Note that the below code implies that starting DMA whilst one is active will cancel the previous and restart, this is correct behavior
                 _dma = value;
-                
+
                 _dmaTransferOldState = _dmaTransferState;
                 _dmaTransferState = DMATransferState.Requested;
             }
@@ -66,7 +66,7 @@ namespace Gameboy.VM
             {
                 // Copy the next byte to OAM RAM
                 _device.LCDDriver.WriteOAMByte(
-                    (ushort)(0xFE00 + _currentDmaTransferIndex), 
+                    (ushort)(0xFE00 + _currentDmaTransferIndex),
                     _device.MMU.ReadByte((ushort)(_dmaTransferAddress + _currentDmaTransferIndex)));
 
                 tCycles -= 4;
@@ -167,7 +167,7 @@ namespace Gameboy.VM
                             for (var ii = 0; ii < 2; ii++)
                             {
                                 // Copy the next byte directly to VRAM without going through MMU
-                                _device.LCDDriver.WriteVRAMByte(_hdmaDestinationAddress, _device.MMU.ReadByte(_hdmaSourceAddress));
+                                _device.LCDDriver.WriteVRAMByte((ushort)(0x8000 | (_hdmaDestinationAddress & 0x1FFF)), _device.MMU.ReadByte(_hdmaSourceAddress));
 
                                 // Note that we deliberately use the source/destination addresses to track the pointer to where DMA is accessing
                                 // to emulate that a DMA followed by another without changing source/destination continues on from where it left
@@ -221,7 +221,7 @@ namespace Gameboy.VM
         internal byte HDMA1
         {
             get => 0xFF;
-            set => _hdmaSourceAddress = (ushort)((_hdmaSourceAddress & 0x00FF) | (value << 8));
+            set => _hdmaSourceAddress = (ushort)((_hdmaSourceAddress & 0xF0) | (value << 8));
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace Gameboy.VM
         internal byte HDMA2
         {
             get => 0xFF;
-            set => _hdmaSourceAddress = (ushort)((_hdmaSourceAddress & 0xFF00) | (value & 0b1111_0000));
+            set => _hdmaSourceAddress = (ushort)((_hdmaSourceAddress & 0xFF00) | (value & 0xF0));
         }
 
         /// <summary>
@@ -238,10 +238,8 @@ namespace Gameboy.VM
         /// </summary>
         internal byte HDMA3
         {
-            get => 0xFF; 
-            set => _hdmaDestinationAddress = (ushort)((_hdmaDestinationAddress & 0x00FF) | 
-                                                      ((value & 0b0001_1111) << 8) |
-                                                      0x8000);
+            get => 0xFF;
+            set => _hdmaDestinationAddress = (ushort)((_hdmaDestinationAddress & 0xF0) | (value << 8) | 0x8000);
         }
 
         /// <summary>
@@ -250,7 +248,7 @@ namespace Gameboy.VM
         internal byte HDMA4
         {
             get => 0xFF;
-            set => _hdmaDestinationAddress = (ushort)((_hdmaDestinationAddress & 0xFF00) | (value & 0b1111_0000));
+            set => _hdmaDestinationAddress = (ushort)((_hdmaDestinationAddress & 0x1F00) | (value & 0xF0));
         }
 
         internal byte HDMA5

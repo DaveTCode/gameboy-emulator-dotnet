@@ -8,7 +8,7 @@ namespace Gameboy.VM
         private const int WRAMSizeDmg = 0x2000;
         private const int WRAMSizeCgb = 0x8000;
         private const int HRAMSize = 0x7F;
-        
+
 
         private readonly Device _device;
 
@@ -55,7 +55,7 @@ namespace Gameboy.VM
             if (address <= 0xDFFF) // Read from WRAM
                 return ReadFromRam(address);
             if (address <= 0xFDFF) // Read from echo of internal RAM
-                return ReadFromRam((ushort) (address - 0x2000));
+                return ReadFromRam((ushort)(address - 0x2000));
             if (address <= 0xFE9F) // Read from sprite attribute table
             {
                 // OAM RAM is unreadable by the CPU during STAT mode 2 & 3 and during OAM DMA
@@ -119,61 +119,83 @@ namespace Gameboy.VM
             if (address == 0xFF4D) // Speed switch register
             {
                 if (_device.Mode == DeviceType.DMG) return 0xFF;
-                
+
                 return (byte)(_device.DoubleSpeed ? 0x80 : _device.ControlRegisters.SpeedSwitchRequested ? 0x1 : 0x0);
             }
             if (address == 0xFF4E) // Unused address
                 return ReadUnusedAddress(address);
             if (address == 0xFF4F)
             {
-                return _device.Mode == DeviceType.DMG 
-                    ? (byte) 0xFF 
+                return _device.Mode == DeviceType.DMG
+                    ? (byte)0xFF
                     : _device.LCDDriver.GetVRAMBankRegister();
             }
             if (address == 0xFF50) // Is device ROM enabled?
                 return _device.ControlRegisters.RomDisabledRegister;
             if (address == 0xFF51) // HDMA1
-                return _device.DMAController.HDMA1;
+                return _device.Mode == DeviceType.CGB ? _device.DMAController.HDMA1 : (byte)0xFF;
             if (address == 0xFF52) // HDMA2
-                return _device.DMAController.HDMA2;
+                return _device.Mode == DeviceType.CGB ? _device.DMAController.HDMA2 : (byte)0xFF;
             if (address == 0xFF53) // HDMA3
-                return _device.DMAController.HDMA3;
+                return _device.Mode == DeviceType.CGB ? _device.DMAController.HDMA3 : (byte)0xFF;
             if (address == 0xFF54) // HDMA4
-                return _device.DMAController.HDMA4;
+                return _device.Mode == DeviceType.CGB ? _device.DMAController.HDMA4 : (byte)0xFF;
             if (address == 0xFF55) // HDMA5
-                return _device.DMAController.HDMA5;
+                return _device.Mode == DeviceType.CGB ? _device.DMAController.HDMA5 : (byte)0xFF;
             if (address == 0xFF56) // TODO - Infra red port address
                 return 0xFF;
             if (address >= 0xFF57 && address <= 0xFF67) // Unused addresses
                 return ReadUnusedAddress(address);
             if (address == 0xFF68) // BCPS register
+            {
+                if (_device.Mode == DeviceType.DMG) return 0xFF;
+
                 return _device.LCDRegisters.CGBBackgroundPalette.PaletteIndex;
+            }
             if (address == 0xFF69) // BCPD register
+            {
+                if (_device.Mode == DeviceType.DMG) return 0xFF;
+
                 return _device.LCDRegisters.CGBBackgroundPalette.ReadPaletteMemory();
+            }
             if (address == 0xFF6A) // OCPS register
+            {
+                if (_device.Mode == DeviceType.DMG) return 0xFF;
+
                 return _device.LCDRegisters.CGBSpritePalette.PaletteIndex;
+            }
             if (address == 0xFF6B) // OCPD register
+            {
+                if (_device.Mode == DeviceType.DMG) return 0xFF;
+
                 return _device.LCDRegisters.CGBSpritePalette.ReadPaletteMemory();
+            }
             if (address == 0xFF6C) // Unused control register
-                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF6C : (byte) 0xFF;
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF6C : (byte)0xFF;
             if (address >= 0xFF6D && address <= 0xFF6F)
                 return ReadUnusedAddress(address);
             if (address == 0xFF70) // RAM Bank register
+            {
+                if (_device.Mode == DeviceType.DMG) return 0xFF;
+
                 return _wramBank;
+            }
             if (address == 0xFF71) // Unused memory address
                 return ReadUnusedAddress(address);
             if (address == 0xFF72) // Unused memory address
-                return _device.ControlRegisters.FF72;
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF72 : (byte)0xFF;
             if (address == 0xFF73) // Unused memory address
-                return _device.ControlRegisters.FF73;
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF73 : (byte)0xFF;
             if (address == 0xFF74) // Unused memory address
-                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF74 : (byte) 0xFF;
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF74 : (byte)0xFF;
             if (address == 0xFF75) // Unused memory address
-                return _device.ControlRegisters.FF75;
+                return _device.Mode == DeviceType.CGB ? _device.ControlRegisters.FF75 : (byte)0xFF;
             if (address == 0xFF76) // PCM12 - PCM amplitudes 1 & 2
-                return _device.APU.PCM12;
+                return (_device.Mode == DeviceType.CGB) ? _device.APU.PCM12 : (byte)0xFF;
             if (address == 0xFF77) // PCM34 - PCM amplitudes 3 & 4
-                return _device.APU.PCM34;
+            {
+                return (_device.Mode == DeviceType.CGB) ? _device.APU.PCM34 : (byte)0xFF;
+            }
             if (address >= 0xFF78 && address <= 0xFF7F) // Unused IO port addresses
                 return ReadUnusedAddress(address);
             if (address >= 0xFF80 && address <= 0xFFFE) // Read from HRAM
@@ -222,8 +244,8 @@ namespace Gameboy.VM
             else if (address >= 0xFE00 && address <= 0xFE9F) // Write to the sprite attribute table
             {
                 // TODO - Under precisely what circumstances do we not allow CPU writes to OAM RAM?
-                if ((!_device.LCDRegisters.IsLcdOn || 
-                     _device.LCDRegisters.StatMode == StatMode.HBlankPeriod || 
+                if ((!_device.LCDRegisters.IsLcdOn ||
+                     _device.LCDRegisters.StatMode == StatMode.HBlankPeriod ||
                      _device.LCDRegisters.StatMode == StatMode.VBlankPeriod) && !_device.DMAController.BlocksOAMRAM())
                 {
                     _device.LCDDriver.WriteOAMByte(address, value);
@@ -294,15 +316,25 @@ namespace Gameboy.VM
             else if (address == 0xFF50) // Undocumented register to unmap ROM and map cartridge
                 _device.ControlRegisters.RomDisabledRegister = value;
             else if (address == 0xFF51) // HDMA1
-                _device.DMAController.HDMA1 = value;
+            {
+                if (_device.Mode != DeviceType.DMG) _device.DMAController.HDMA1 = value;
+            }
             else if (address == 0xFF52) // HDMA2
-                _device.DMAController.HDMA2 = value;
+            {
+                if (_device.Mode != DeviceType.DMG) _device.DMAController.HDMA2 = value;
+            }
             else if (address == 0xFF53) // HDMA3
-                _device.DMAController.HDMA3 = value;
+            {
+                if (_device.Mode != DeviceType.DMG) _device.DMAController.HDMA3 = value;
+            }
             else if (address == 0xFF54) // HDMA4
-                _device.DMAController.HDMA4 = value;
+            {
+                if (_device.Mode != DeviceType.DMG) _device.DMAController.HDMA4 = value;
+            }
             else if (address == 0xFF55) // HDMA5
-                _device.DMAController.HDMA5 = value;
+            {
+                if (_device.Mode != DeviceType.DMG) _device.DMAController.HDMA5 = value;
+            }
             else if (address == 0xFF56) // RP - Infrared port address
                 _device.Log.Information("Infrared port not yet implemented");
             else if (address >= 0xFF57 && address <= 0xFF67)

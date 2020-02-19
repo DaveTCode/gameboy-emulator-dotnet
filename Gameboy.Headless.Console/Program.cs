@@ -37,7 +37,7 @@ namespace Gameboy.Headless.Console
 
         private static int RunProgram(CommandLineOptions options)
         {
-            var device = new Device(CartridgeFactory.CreateCartridge(File.ReadAllBytes(options.RomFilePath)), options.Mode, new NullRenderer(), new NullSoundOutput());
+            var device = new Device(CartridgeFactory.CreateCartridge(File.ReadAllBytes(options.RomFilePath)), options.Mode, new NullRenderer(options.Mode), new NullSoundOutput(), null);
 
             if (options.SkipBootRom) device.SkipBootRom();
 

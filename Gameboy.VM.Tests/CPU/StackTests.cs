@@ -14,8 +14,8 @@ namespace Gameboy.VM.Tests.CPU
         [InlineData(0x26, 0x2E, 0xE5, 0xE1)] // HL
         public void TestStackPushPop(byte loadReg1Opcode, byte loadReg2Opcode, byte pushOpcode, byte popOpcode)
         {
-            var device = TestUtils.CreateTestDevice(new byte[] 
-            { 
+            var device = TestUtils.CreateTestDevice(new byte[]
+            {
                 loadReg1Opcode, 0x05, // LD reg1, 0x05
                 loadReg2Opcode, 0x11, // LD reg2, 0x11
                 pushOpcode, // PUSH

@@ -25,7 +25,7 @@ namespace Gameboy.VM.Sound.Sweep
         internal byte Register
         {
             get =>
-                (byte) (RegisterMask |
+                (byte)(RegisterMask |
                         (_isSweepDecrease ? 0x8 : 0x0) |
                         (_sweepPeriod << 4) |
                         _sweepShiftNumber);

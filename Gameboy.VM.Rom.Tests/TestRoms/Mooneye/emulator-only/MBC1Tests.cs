@@ -23,7 +23,7 @@ namespace Gameboy.VM.Rom.Tests.TestRoms.Mooneye
         public async Task Mbc1MooneyeTest(string romName, int timeout, ushort finalAddress)
         {
             var expectedFrameBuffer = await File.ReadAllLinesAsync(
-                Path.Join(TestUtils.SolutionDirectory, "Roms", "tests", "mooneye-gb", "emulator-only", "mbc1", "framebuffer"));
+                Path.Join(TestUtils.SolutionDirectory, "Roms", "tests", "mooneye-gb", "acceptance", "general.framebuffer"));
             await TestUtils.TestRomAgainstResult(
                 Path.Join("Roms", "tests", "mooneye-gb", "emulator-only", "mbc1", romName), expectedFrameBuffer, timeout, finalAddress);
         }

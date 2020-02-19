@@ -39,7 +39,7 @@ namespace Gameboy.VM.Tests.CPU
             {
                 Assert.Equal(outHighByte, device.CPU.Registers.A);
                 device.Step();
-                Assert.Equal(outLowByte, device.CPU.Registers.A);   
+                Assert.Equal(outLowByte, device.CPU.Registers.A);
             }
         }
 
@@ -77,7 +77,7 @@ namespace Gameboy.VM.Tests.CPU
             {
                 Assert.Equal(outHighByte, device.CPU.Registers.A);
                 device.Step();
-                Assert.Equal(outLowByte, device.CPU.Registers.A);   
+                Assert.Equal(outLowByte, device.CPU.Registers.A);
             }
         }
 

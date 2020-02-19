@@ -11,7 +11,7 @@ namespace Gameboy.VM.Sound.Channels
         // These values are not fixed and vary slightly for each DMG device,
         // however this is a sensible default to use for the emulator
         // TODO - Vary this slightly on startup as per real DMG
-        private static readonly byte[] DmgWave = 
+        private static readonly byte[] DmgWave =
         {
             0xAC, 0xDD, 0xDA, 0x48, 0x36, 0x02, 0xCF, 0x16,
             0x2C, 0x04, 0xE5, 0x2C, 0xAC, 0xDD, 0xDA, 0x48
@@ -44,7 +44,7 @@ namespace Gameboy.VM.Sound.Channels
         {
             for (var ii = 0; ii < 0x10; ii++)
             {
-                WriteRam((ushort) (ii + 0xFF30), device.Type == DeviceType.DMG ? DmgWave[ii] : CgbWave[ii]);
+                WriteRam((ushort)(ii + 0xFF30), device.Type == DeviceType.DMG ? DmgWave[ii] : CgbWave[ii]);
             }
         }
 
@@ -68,7 +68,7 @@ namespace Gameboy.VM.Sound.Channels
         /// </summary>
         internal byte NR30
         {
-            get => (byte) (0b0111_1111 | (IsEnabled ? 0b1000_0000 : 0));
+            get => (byte)(0b0111_1111 | (IsEnabled ? 0b1000_0000 : 0));
             set => IsEnabled = (value & 0x80) == 0x80;
         }
 
@@ -78,7 +78,7 @@ namespace Gameboy.VM.Sound.Channels
         /// </summary>
         internal byte NR31
         {
-            get => (byte) (256 - SoundLength);
+            get => (byte)(256 - SoundLength);
             set => SoundLength = 256 - value;
         }
 
@@ -88,7 +88,7 @@ namespace Gameboy.VM.Sound.Channels
         /// </summary>
         internal byte NR32
         {
-            get => (byte) (0b1001_1111 | (int)Volume << 5);
+            get => (byte)(0b1001_1111 | (int)Volume << 5);
             set => Volume = (WaveChannelOutputLevel)((value >> 5) & 0x3);
         }
 
@@ -97,7 +97,7 @@ namespace Gameboy.VM.Sound.Channels
         /// </summary>
         internal byte NR33
         {
-            get => (byte) FrequencyData;
+            get => (byte)FrequencyData;
             set => FrequencyData = (FrequencyData & 0x700) | value;
         }
 
@@ -109,7 +109,7 @@ namespace Gameboy.VM.Sound.Channels
         internal byte NR34
         {
             get =>
-                (byte) (0b1011_1000 |
+                (byte)(0b1011_1000 |
                         (FrequencyData >> 8) |
                         (UseSoundLength ? 0b0100_0000 : 0));
             set
@@ -128,7 +128,7 @@ namespace Gameboy.VM.Sound.Channels
             base.Trigger();
             _currentFrequencyPeriod = FrequencyPeriod;
             _waveSamplePositionCounter = 0;
-            
+
             Device.Log.Information("Triggering wave channel with volume shift {0} and period {1}", Volume, FrequencyPeriod);
         }
 
@@ -161,7 +161,7 @@ namespace Gameboy.VM.Sound.Channels
                 _waveSamplePositionCounter = (_waveSamplePositionCounter + 1) % WaveSampleSize;
 
                 // Set the output to the current sample shifted by the volume shift register
-                _sampleBuffer = (byte) _waveSamples[_waveSamplePositionCounter];
+                _sampleBuffer = (byte)_waveSamples[_waveSamplePositionCounter];
             }
         }
 

@@ -51,14 +51,14 @@ namespace Gameboy.VM.LCD
 
         internal byte GetVRAMBankRegister()
         {
-            return _vRamBank == 1 ? (byte) 0xFF : (byte) 0xFE;
+            return _vRamBank == 1 ? (byte)0xFF : (byte)0xFE;
         }
 
         internal void SetVRAMBankRegister(byte value)
         {
             if (_device.Mode == DeviceType.DMG) return;
 
-            _vRamBank = (byte) (value & 0x1); // Only bottom bit is important
+            _vRamBank = (byte)(value & 0x1); // Only bottom bit is important
         }
 
         internal byte GetVRAMByte(ushort address)
@@ -169,7 +169,7 @@ namespace Gameboy.VM.LCD
                 }
 
                 // Copy the scanline into the framebuffer
-                Array.Copy(_scanline, 0, 
+                Array.Copy(_scanline, 0,
                     _frameBuffer, _device.LCDRegisters.LCDCurrentScanline * Device.ScreenWidth * 4,
                     _scanline.Length);
             }
@@ -199,7 +199,7 @@ namespace Gameboy.VM.LCD
                     ? _device.LCDRegisters.ObjectPaletteData1
                     : _device.LCDRegisters.ObjectPaletteData0;
 
-                var tileAddress = sprite.YFlip ? 
+                var tileAddress = sprite.YFlip ?
                     tileNumber * 16 + (spriteSize - 1 - (line - sprite.Y)) * 2 :
                     tileNumber * 16 + (line - sprite.Y) * 2;
                 var b1 = sprite.VRAMBankNumber == 0
@@ -226,7 +226,7 @@ namespace Gameboy.VM.LCD
                     if (colorNumber == 0) continue; // Don't draw pixels if they're color 0 (transparent)
 
                     // Retrieve the actual color to be used from the palette
-                    var (r, g, b)= _device.Mode == DeviceType.CGB
+                    var (r, g, b) = _device.Mode == DeviceType.CGB
                         ? _device.LCDRegisters.CGBSpritePalette.Palette[sprite.CGBPaletteNumber * 4 + colorNumber]
                         : _device.LCDRegisters.GetColorFromNumberPalette(colorNumber, palette).BaseRgb();
                     (r, g, b) = _device.Renderer.ColorAdjust(r, g, b);
