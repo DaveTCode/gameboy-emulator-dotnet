@@ -411,7 +411,7 @@ namespace Gameboy.VM.CPU
                         }
                     case 0x3B:
                         yield return 1;
-                        Registers.StackPointer--;
+                        --Registers.StackPointer;
                         break;
                     case 0x3C:
                         _alu.Increment(ref Registers.A);
@@ -950,9 +950,9 @@ namespace Gameboy.VM.CPU
                                 break;
                             }
 
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -961,10 +961,10 @@ namespace Gameboy.VM.CPU
                         }
                     case 0xC5: // PUSH BC
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, Registers.C);
+                            _device.MMU.WriteByte(--Registers.StackPointer, Registers.B);
                             yield return 1;
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, Registers.B);
+                            _device.MMU.WriteByte(--Registers.StackPointer, Registers.C);
                             yield return 1;
                             break;
                         }
@@ -977,9 +977,9 @@ namespace Gameboy.VM.CPU
                         }
                     case 0xC7:
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -1999,9 +1999,9 @@ namespace Gameboy.VM.CPU
                                 break;
                             }
 
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -2015,9 +2015,9 @@ namespace Gameboy.VM.CPU
                             var b2 = FetchByte();
                             yield return 1;
 
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -2033,9 +2033,9 @@ namespace Gameboy.VM.CPU
                         }
                     case 0xCF:
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -2103,9 +2103,9 @@ namespace Gameboy.VM.CPU
                                 break;
                             }
 
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -2114,10 +2114,10 @@ namespace Gameboy.VM.CPU
                         }
                     case 0xD5: // PUSH DE
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, Registers.E);
+                            _device.MMU.WriteByte(--Registers.StackPointer, Registers.D);
                             yield return 1;
+                            _device.MMU.WriteByte(--Registers.StackPointer, Registers.E);
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, Registers.D);
                             yield return 1;
                             break;
                         }
@@ -2130,9 +2130,9 @@ namespace Gameboy.VM.CPU
                         }
                     case 0xD7:
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -2177,7 +2177,7 @@ namespace Gameboy.VM.CPU
                             var b2 = FetchByte();
                             yield return 1;
 
-                            if (!Registers.GetFlag(CpuFlags.ZeroFlag))
+                            if (!Registers.GetFlag(CpuFlags.CarryFlag))
                             {
                                 break;
                             }
@@ -2201,9 +2201,9 @@ namespace Gameboy.VM.CPU
                                 break;
                             }
 
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -2222,9 +2222,9 @@ namespace Gameboy.VM.CPU
                         }
                     case 0xDF:
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -2259,12 +2259,12 @@ namespace Gameboy.VM.CPU
                     case 0xE4:
                         _device.Log.Error("Invalid instruction {0} executed", opcode);
                         break;
-                    case 0xE5: // PUSH BC
+                    case 0xE5: // PUSH HL
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, Registers.L);
+                            _device.MMU.WriteByte(--Registers.StackPointer, Registers.H);
                             yield return 1;
+                            _device.MMU.WriteByte(--Registers.StackPointer, Registers.L);
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, Registers.H);
                             yield return 1;
                             break;
                         }
@@ -2277,9 +2277,9 @@ namespace Gameboy.VM.CPU
                         }
                     case 0xE7:
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -2324,9 +2324,9 @@ namespace Gameboy.VM.CPU
                         }
                     case 0xEF:
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -2342,7 +2342,7 @@ namespace Gameboy.VM.CPU
                             Registers.A = b;
                             break;
                         }
-                    case 0xF1:
+                    case 0xF1: // POP AF
                         {
                             // Get word from stack in 2 cycles
                             var b1 = _device.MMU.ReadByte(Registers.StackPointer++);
@@ -2369,10 +2369,10 @@ namespace Gameboy.VM.CPU
                         break;
                     case 0xF5: // PUSH AF
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, Registers.A);
+                            _device.MMU.WriteByte(--Registers.StackPointer, Registers.A);
                             yield return 1;
+                            _device.MMU.WriteByte(--Registers.StackPointer, Registers.F);
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, Registers.F);
                             yield return 1;
                             break;
                         }
@@ -2385,9 +2385,9 @@ namespace Gameboy.VM.CPU
                         }
                     case 0xF7:
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;
@@ -2417,7 +2417,7 @@ namespace Gameboy.VM.CPU
                             Registers.A = b;
                             break;
                         }
-                    case 0xFB:
+                    case 0xFB: // EI
                         _enableInterruptsAfterNextCpuInstruction = true;
                         break;
                     case 0xFC:
@@ -2433,9 +2433,9 @@ namespace Gameboy.VM.CPU
                         }
                     case 0xFF:
                         {
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter & 0xFF));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter >> 8));
                             yield return 1;
-                            _device.MMU.WriteByte(Registers.StackPointer--, (byte)(Registers.ProgramCounter >> 8));
+                            _device.MMU.WriteByte(--Registers.StackPointer, (byte)(Registers.ProgramCounter & 0xFF));
                             yield return 1;
 
                             yield return 1;

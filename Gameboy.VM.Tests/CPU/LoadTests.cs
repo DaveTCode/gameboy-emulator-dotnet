@@ -112,7 +112,7 @@ namespace Gameboy.VM.Tests.CPU
                 opcode, // LD reg1, reg2
             });
 
-            for (var ii = 0; ii < 4; ii++) // 2 to move to 0x150 + 2 to set up
+            for (var ii = 0; ii < 9; ii++) // 5 to move to 0x150 + 4 to set up
             {
                 device.Step();
             }
@@ -133,12 +133,12 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice(new byte[]
             {
-                regLoadOpcode, 0x05, // LD B 0x05
-                0x21, 0x00, 0xC0, // LD HL, 0xC000
-                memLoadOpcode // LD (HL), B
+                regLoadOpcode, 0x05, // LD B 0x05 - 2 m-cycles
+                0x21, 0x00, 0xC0, // LD HL, 0xC000 - 3 m-cycles
+                memLoadOpcode // LD (HL), B - 2 m-cycles
             });
 
-            for (var ii = 0; ii < 5; ii++) // 2 to move to 0x150 + 3 to act
+            for (var ii = 0; ii < 12; ii++) // 5 to move to 0x150 + 7 to act
             {
                 device.Step();
             }
@@ -151,13 +151,13 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice(new byte[]
             {
-                0x21, 0x04, 0xC0, // LD HL, 0xC004
-                0x74, // LD (HL), H
-                0x21, 0x05, 0xC0, // LD HL, 0xC005
-                0x75 // LD (HL), L
+                0x21, 0x04, 0xC0, // LD HL, 0xC004 - 3 m-cycles
+                0x74, // LD (HL), H - 2 m-cycles
+                0x21, 0x05, 0xC0, // LD HL, 0xC005 - 3 m-cycles
+                0x75 // LD (HL), L - 2 m-cycles
             });
 
-            for (var ii = 0; ii < 6; ii++) // 2 to move to 0x150 + 4 to act
+            for (var ii = 0; ii < 15; ii++) // 5 to move to 0x150 + 10 to act
             {
                 device.Step();
             }
@@ -178,12 +178,12 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice(new byte[]
             {
-                0x21, 0x00, 0xC0, // LD HL, 0xC000
-                0x36, 0x08, // LD (HL), 8
-                memLoadOpcode // LD reg, (HL)
+                0x21, 0x00, 0xC0, // LD HL, 0xC000 - 3 m-cycles
+                0x36, 0x08, // LD (HL), 8 - 3 m-cycles
+                memLoadOpcode // LD reg, (HL) - 2 m-cycles
             });
 
-            for (var ii = 0; ii < 5; ii++) // 2 to move to 0x150 + 3 to act
+            for (var ii = 0; ii < 13; ii++) // 5 to move to 0x150 + 8 to act
             {
                 device.Step();
             }
@@ -207,14 +207,14 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice(new byte[]
             {
-                0x21, 0x05, 0xC0, // LD HL, 0xC005
-                0x3E, 0x08, // LD A, 8
-                0x32, // LD (HL-), A
-                0x3E, 0x07, // LD A, 7
-                0x22, // LD (HL+), A
+                0x21, 0x05, 0xC0, // LD HL, 0xC005 - 3 m-cycles
+                0x3E, 0x08, // LD A, 8 - 2 m-cycles
+                0x32, // LD (HL-), A - 2 m-cycles
+                0x3E, 0x07, // LD A, 7 - 2 m-cycles
+                0x22, // LD (HL+), A - 2 m-cycles
             });
 
-            for (var ii = 0; ii < 5; ii++) // 2 to move to 0x150 + 3 to act
+            for (var ii = 0; ii < 12; ii++) // 5 to move to 0x150 + 7 to act
             {
                 device.Step();
             }
@@ -222,7 +222,7 @@ namespace Gameboy.VM.Tests.CPU
             Assert.Equal(0x08, device.MMU.ReadByte(0xC005)); // Check byte written to memory
             Assert.Equal(0xC004, device.CPU.Registers.HL);
 
-            device.Step(); device.Step();
+            device.Step(); device.Step(); device.Step(); device.Step();
 
             Assert.Equal(0x07, device.MMU.ReadByte(0xC004)); // Check byte written to memory
             Assert.Equal(0xC005, device.CPU.Registers.HL);
@@ -233,14 +233,14 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice(new byte[]
             {
-                0x21, 0x05, 0xC0, // LD HL, 0xC005
-                0x36, 0x08, // LD (HL), d8
-                0x3A, // LD A, (HL-)
-                0x36, 0x07, // LD (HL), d8
-                0x2A, // LD A, (HL+)
+                0x21, 0x05, 0xC0, // LD HL, 0xC005 - 3 m-cycles
+                0x36, 0x08, // LD (HL), d8 - 3 m-cycles
+                0x3A, // LD A, (HL-) - 2 m-cycles
+                0x36, 0x07, // LD (HL), d8 - 3 m-cycles
+                0x2A, // LD A, (HL+) - 2 m-cycles
             });
 
-            for (var ii = 0; ii < 5; ii++) // 2 to move to 0x150 + 3 to act
+            for (var ii = 0; ii < 13; ii++) // 5 to move to 0x150 + 8 to act
             {
                 device.Step();
             }
@@ -248,7 +248,7 @@ namespace Gameboy.VM.Tests.CPU
             Assert.Equal(0xC004, device.CPU.Registers.HL);
             Assert.Equal(0x08, device.CPU.Registers.A);
 
-            device.Step(); device.Step();
+            device.Step(); device.Step(); device.Step(); device.Step(); device.Step(); 
 
             Assert.Equal(0xC005, device.CPU.Registers.HL);
             Assert.Equal(0x07, device.CPU.Registers.A);
@@ -261,12 +261,12 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice(new byte[]
             {
-                0x31, (byte)(stackPointer & 0xFF), (byte)(stackPointer >> 8), // Set SP
-                0x21, 0x05, 0xC0, // LD HL, 0xC005
-                0xF8, (byte)r8, // LD HL, SP+r8
+                0x31, (byte)(stackPointer & 0xFF), (byte)(stackPointer >> 8), // Set SP - 3 m-cycles
+                0x21, 0x05, 0xC0, // LD HL, 0xC005 - 3 m-cycles
+                0xF8, (byte)r8, // LD HL, SP+r8 - 3 m-cycles
             });
 
-            for (var ii = 0; ii < 4; ii++) // 2 to move to 0x150 and 2 to set up
+            for (var ii = 0; ii < 11; ii++) // 5 to move to 0x150 and 6 to set up
             {
                 device.Step();
             }
@@ -274,7 +274,7 @@ namespace Gameboy.VM.Tests.CPU
             Assert.Equal(stackPointer, device.CPU.Registers.StackPointer);
             Assert.Equal(0xC005, device.CPU.Registers.HL);
 
-            device.Step();
+            device.Step(); device.Step(); device.Step();
 
             Assert.Equal(stackPointer, device.CPU.Registers.StackPointer); // Doesn't modify SP
             Assert.Equal(result, device.CPU.Registers.HL);
