@@ -14,7 +14,7 @@ namespace Gameboy.VM.Tests.Joypad
                 0xF2, // LD A, (C) (get joypad state into A)
             });
 
-            for (var ii = 0; ii < 4; ii++) device.Step(); // Step 4 times to set up tests and execute
+            for (var ii = 0; ii < 9; ii++) device.Step(); // Step 5 + 4 times to set up tests and execute
 
             Assert.Equal(0xFF, device.CPU.Registers.A);
         }
@@ -40,20 +40,20 @@ namespace Gameboy.VM.Tests.Joypad
         {
             var device = TestUtils.CreateTestDevice(new byte[]
             {
-                0x0E, 0x00, // LD C, 00
-                0x3E, joypadMode, // LD A, 0xDF
-                0xE2, // LD (C), A (set joypad to look at normal keys)
-                0xF2, // LD A, (C) (get joypad state into A)
-                0xF2, // LD A, (C) (get joypad state into A)
+                0x0E, 0x00, // LD C, 00 - 2 m-cycles
+                0x3E, joypadMode, // LD A, 0xDF - 2 m-cycles
+                0xE2, // LD (C), A (set joypad to look at normal keys) - 2 m-cycles
+                0xF2, // LD A, (C) (get joypad state into A) - 2 m-cycles
+                0xF2, // LD A, (C) (get joypad state into A) - 2 m-cycles
             });
 
-            for (var ii = 0; ii < 6; ii++) device.Step(); // Step 6 times to set up tests and execute up to first joypad query
+            for (var ii = 0; ii < 13; ii++) device.Step(); // Step 5 + 8 times to set up tests and execute up to first joypad query
 
             Assert.Equal(joypadMode, device.CPU.Registers.A); // Double check joypad register is correct
 
             // Check key press is registered
             device.HandleKeyDown(key);
-            device.Step();
+            device.Step(); device.Step();
             Assert.Equal(expectedValue, device.CPU.Registers.A);
             device.HandleKeyUp(key);
         }

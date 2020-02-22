@@ -4,45 +4,17 @@
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/tests/Sound Test (PD).gb\""
     },
-    "Blarg CPU Tests - All (MBC1)": {
+    "Mooneye EI Sequence": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/blargg/cpu_instrs/cpu_instrs.gb"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/ei_sequence.gb"
     },
-    "Blarg Instruction Timing": {
+    "Mooneye HALT IME0 EI": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/blargg/instr_timing/instr_timing.gb"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/halt_ime0_ei.gb"
     },
-    "Blarg Interrupt Timing": {
+    "Mooneye TIM00 DIV TRIGGER": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/blargg/interrupt_time/interrupt_time.gb --mode CGB"
-    },
-    "Mooneye IE Push": {
-      "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/interrupts/ie_push.gb"
-    },
-    "Mooneye Timer - Rapid Toggle": {
-      "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/timer/rapid_toggle.gb"
-    },
-    "Mooneye MBC1 - bits_bank1.gb": {
-      "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/emulator-only/mbc1/bits_bank1.gb"
-    },
-    "Mooneye Bits - mem_oam.gb": {
-      "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/bits/unused_hwio-GS.gb"
-    },
-    "Mooneye OAM - basic.gb": {
-      "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/oam_dma/basic.gb"
-    },
-    "Mooneye OAM - reg_read.gb": {
-      "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/oam_dma/reg_read.gb"
-    },
-    "Mooneye OAM - sources-GS.gb": {
-      "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/oam_dma/sources-GS.gb"
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/timer/tim00_div_trigger.gb"
     },
     "Tetris w/ boot rom": {
       "commandName": "Project",

@@ -32,17 +32,17 @@ namespace Gameboy.VM.Timers
             };
         }
 
-        internal void Step(int tCycles)
+        internal void Step()
         {
             // Handle system counter - note that it happens regardless of whether timer is turned on
-            SystemCounter = (ushort)(SystemCounter + tCycles);
+            SystemCounter = (ushort)(SystemCounter + 4);
 
             if (_reloadingClockTCycles > 0) _reloadingClockTCycles -= _reloadingClockTCycles;
 
             // Handle standard timer
             if (!_isTimerEnabled) return;
 
-            _internalCount += tCycles;
+            _internalCount += 4;
 
             while (_internalCount >= _timerClockSelect.Step())
             {

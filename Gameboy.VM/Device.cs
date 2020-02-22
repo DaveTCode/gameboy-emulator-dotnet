@@ -37,8 +37,6 @@ namespace Gameboy.VM
         internal readonly APU APU;
         internal readonly LCDRegisters LCDRegisters;
         internal readonly InterruptRegisters InterruptRegisters;
-        internal readonly InterruptHandler InterruptHandler;
-        private readonly IEnumerator<int> _interruptHandlerGenerator;
         internal readonly Cartridge.Cartridge Cartridge;
         internal readonly LCDDriver LCDDriver;
         internal readonly Timer Timer;
@@ -96,8 +94,6 @@ namespace Gameboy.VM
             Timer = new Timer(this);
             DMAController = new DMAController(this);
             JoypadHandler = new JoypadHandler(this);
-            InterruptHandler = new InterruptHandler(this);
-            _interruptHandlerGenerator = InterruptHandler.GetEnumerator();
 
             // Set default values if there was no passed in boot rom
             if (bootRom == null) SkipBootRom();
@@ -191,10 +187,7 @@ namespace Gameboy.VM
         /// </returns>
         public int Step()
         {
-            //Log.Information("{0}", ToString());
-
-            // Step the Interrupt Handler before the CPU to catch interrupts at the right cycle
-            _interruptHandlerGenerator.MoveNext();
+            //Log.Information("{0}", CPU.Registers);
 
             // Step the CPU by 1 m-cycle
             _cpuGenerator.MoveNext();
@@ -207,8 +200,8 @@ namespace Gameboy.VM
             // Step 4: Update the LCD subsystem to sync with the new number of cycles
             LCDDriver.Step(nonCpuCycles);
 
-            // Step 5: Update the timer controller with the number of cycles
-            Timer.Step(4);
+            // Step 5: Update the timer controller by a single m-cycle
+            Timer.Step();
 
             // Step 6: Step audio subsystem
             APU.Step(nonCpuCycles);

@@ -58,6 +58,7 @@ namespace Gameboy.VM
 
                 _dmaTransferAddress = (ushort)(_dma << 8);
                 _dmaTransferState = _dmaTransferState == DMATransferState.Requested ? DMATransferState.SettingUp : DMATransferState.Running;
+                _dmaTransferOldState = _dmaTransferState == DMATransferState.Running ? DMATransferState.Stopped : _dmaTransferOldState;
                 _currentDmaTransferIndex = 0;
             }
 
@@ -124,9 +125,15 @@ namespace Gameboy.VM
             return _hdmaTransferState == DMATransferState.Running && _hdmaMode == HDMAMode.GDMA;
         }
 
+        /// <summary>
+        /// OAM RAM is unavailable to other sources whilst any transfer is
+        /// running including if a restarted OAM DMA is setting up and the old
+        /// one was cancelled.
+        /// </summary>
         internal bool BlocksOAMRAM()
         {
-            return _dmaTransferState == DMATransferState.Running;
+            return _dmaTransferState == DMATransferState.Running || 
+                   _dmaTransferOldState == DMATransferState.Running;
         }
 
         private void StepHDMATransfer(int tCycles)

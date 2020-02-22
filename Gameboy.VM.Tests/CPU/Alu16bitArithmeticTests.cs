@@ -23,13 +23,13 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice(new[]
             {
-                regPairLoadOpcode, inLowByte, inHighByte, // LD reg pair from d16
-                incOpcode, // INC regpair
-                loadHighByteIntoA, // LD high byte of pair into A for checking
-                loadLowByteIntoA, // LD low byte of pair into A for checking
+                regPairLoadOpcode, inLowByte, inHighByte, // LD reg pair from d16 - 3 m-cycles
+                incOpcode, // INC regpair - 2 m-cycles
+                loadHighByteIntoA, // LD high byte of pair into A for checking - 1 m-cycles
+                loadLowByteIntoA, // LD low byte of pair into A for checking - 1 m-cycles
             });
 
-            for (var ii = 0; ii < 5; ii++) device.Step();
+            for (var ii = 0; ii < 11; ii++) device.Step();
 
             if (regPairLoadOpcode == 0x31) // Can't move SP to A so checking a different way
             {
@@ -67,7 +67,7 @@ namespace Gameboy.VM.Tests.CPU
                 loadLowByteIntoA, // LD low byte of pair into A for checking
             });
 
-            for (var ii = 0; ii < 5; ii++) device.Step();
+            for (var ii = 0; ii < 11; ii++) device.Step();
 
             if (regPairLoadOpcode == 0x31) // Can't move SP to A so checking a different way
             {
@@ -96,14 +96,14 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice(new byte[]
             {
-                0x21, hlLowByte, hlHighByte, // Set up HL as accumulator
-                regPairLoadOpcode, inLowByte, inHighByte, // LD reg pair from d16
-                addOpcode, // ADD HL,regpair
-                0x7C, // LD A,H check high byte
-                0x7D, // LD A,L check low byte
+                0x21, hlLowByte, hlHighByte, // Set up HL as accumulator - 3 m-cycles
+                regPairLoadOpcode, inLowByte, inHighByte, // LD reg pair from d16 - 3 m-cycles
+                addOpcode, // ADD HL,regpair - 2 m-cycles
+                0x7C, // LD A,H check high byte - 1 m-cycles
+                0x7D, // LD A,L check low byte - 1 m-cycles
             });
 
-            for (var ii = 0; ii < 6; ii++) device.Step();
+            for (var ii = 0; ii < 14; ii++) device.Step();
 
             Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
             Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));
@@ -120,11 +120,11 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice(new byte[]
             {
-                0x21, hlLowByte, hlHighByte, // Set up HL
-                0x29, // ADD HL,HL
+                0x21, hlLowByte, hlHighByte, // Set up HL - 3 m-cycles
+                0x29, // ADD HL,HL - 2 m-cycles
             });
 
-            for (var ii = 0; ii < 4; ii++) device.Step();
+            for (var ii = 0; ii < 10; ii++) device.Step();
 
             Assert.False(device.CPU.Registers.GetFlag(CpuFlags.SubtractFlag));
             Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));
@@ -140,11 +140,11 @@ namespace Gameboy.VM.Tests.CPU
         {
             var device = TestUtils.CreateTestDevice(new byte[]
             {
-                0x31, spLowByte, spHighByte, // Set up SP
-                0xF8, relative, // LD HL, SP + r8
+                0x31, spLowByte, spHighByte, // Set up SP - 3 m-cycles
+                0xF8, relative, // LD HL, SP + r8 - 3 m-cycles
             });
 
-            for (var ii = 0; ii < 4; ii++) device.Step(); // 4 steps to set up and run test
+            for (var ii = 0; ii < 11; ii++) device.Step(); // 5 steps to set up and then 6 to run test
 
             Assert.Equal(expected, device.CPU.Registers.HL);
             Assert.Equal(c, device.CPU.Registers.GetFlag(CpuFlags.CarryFlag));

@@ -45,8 +45,8 @@ NAudio for playing raw audio samples.
 | Blargg - cpu_instrs                         | :white_check_mark:    |       |
 | Blargg - instr_timing                       | :white_check_mark:    |       |
 | Blargg - interrupt_time                     | :white_check_mark:    |       |
-| Blargg - mem_timing                         | :x:                   | Broken because CPU is using instruction atomicity       |
-| Blargg - mem_timing2                        | :x:                   | Broken because CPU is using instruction atomicity       |
+| Blargg - mem_timing                         | :white_check_mark:    |       |
+| Blargg - mem_timing2                        | :white_check_mark:    |       |
 | Blargg - cgb_sound                          | :x:                   | All bar one fail, but this would fail on a DMG so doesn't matter overly |
 | Blargg - dmg_sound                          | :x:                   | All 12 fail, but this also fails on a CGB console so doesn't matter too much |
 | Blargg - halt_bug                           | :x:                   | Fails but no attempt to implement this bug |
@@ -111,7 +111,7 @@ NAudio for playing raw audio samples.
 | Mooneye - Timer - tima_reload               | :white_check_mark:    |       |
 | Mooneye - Timer - tima_write_reloading      | :x:                   | Fails, requires non-atomic CPU ops      |
 | Mooneye - Timer - tma_write_reloading       | :x:                   | Fails, requires non-atomic CPU ops      |
-| Mooneye - General - add_sp_e_timing         |:x:                    |       |
+| Mooneye - General - add_sp_e_timing         | :white_check_mark:    |       |
 | Mooneye - General - boot_div-dmg0           |:x:                    |       |
 | Mooneye - General - boot_div-dmgABCmgb      |:x:                    |       |
 | Mooneye - General - boot_div-S              |:x:                    |       |
@@ -123,11 +123,11 @@ NAudio for playing raw audio samples.
 | Mooneye - General - boot_regs-dmgABC        |:x:                    |       |
 | Mooneye - General - boot_regs-mgb           |:x:                    |       |
 | Mooneye - General - boot_regs-sgb           |:x:                    |       |
-| Mooneye - General - boot_regs-sgb2          |:x:                    |       |
-| Mooneye - General - call_cc_timing          |:x:                    |       |
-| Mooneye - General - call_cc_timing2         |:x:                    |       |
-| Mooneye - General - call_timing             |:x:                    |       |
-| Mooneye - General - call_timing2            |:x:                    |       |
+| Mooneye - General - boot_regs-sgb2          | :x:                   |       |
+| Mooneye - General - call_cc_timing          | :white_check_mark:    |       |
+| Mooneye - General - call_cc_timing2         | :white_check_mark:    |       |
+| Mooneye - General - call_timing             | :white_check_mark:    |       |
+| Mooneye - General - call_timing2            | :white_check_mark:    |       |
 | Mooneye - General - div_timing              | :white_check_mark:    |       |
 | Mooneye - General - di_timing-GS            | :x:                   |       |
 | Mooneye - General - ei_sequence             | :white_check_mark:    |       |
@@ -136,19 +136,19 @@ NAudio for playing raw audio samples.
 | Mooneye - General - halt_ime0_nointr_timing | :white_check_mark:    |       |
 | Mooneye - General - halt_ime1_timing        | :white_check_mark:    |       |
 | Mooneye - General - halt_ime1_timing2-GS    | :x:                   | Fails on CGB device, not sure why it fails on emulator though      |
-| Mooneye - General - if_ie_registers         |:white_check_mark:     |       |
-| Mooneye - General - intr_timing             |:white_check_mark:     |       |
-| Mooneye - General - jp_cc_timing            |:x:                    |       |
-| Mooneye - General - jp_timing               |:x:                    |       |
-| Mooneye - General - ld_hl_sp_e_timing       |:x:                    |       |
-| Mooneye - General - oam_dma_restart         |:x:                    |       |
-| Mooneye - General - oam_dma_start           |:x:                    |       |
-| Mooneye - General - oam_dma_timing          |:x:                    |       |
-| Mooneye - General - pop_timing              |:x:                    |       |
-| Mooneye - General - push_timing             |:x:                    |       |
-| Mooneye - General - rapid_di_ei             |:white_check_mark:     |       |
-| Mooneye - General - reti_intr_timing        |:x:                    |       |
-| Mooneye - General - reti_timing             |:x:                    |       |
-| Mooneye - General - ret_cc_timing           |:x:                    |       |
-| Mooneye - General - ret_timing              |:x:                    |       |
-| Mooneye - General - rst_timing              |:x:                    |       |
+| Mooneye - General - if_ie_registers         | :white_check_mark:    |       |
+| Mooneye - General - intr_timing             | :white_check_mark:    |       |
+| Mooneye - General - jp_cc_timing            | :white_check_mark:    |       |
+| Mooneye - General - jp_timing               | :white_check_mark:    |       |
+| Mooneye - General - ld_hl_sp_e_timing       | :white_check_mark:    |       |
+| Mooneye - General - oam_dma_restart         | :white_check_mark:    |       |
+| Mooneye - General - oam_dma_start           | :x:                   | Somethinng isn't quite right with restarting DMA, maybe something related to the interrupt bugs?      |
+| Mooneye - General - oam_dma_timing          | :white_check_mark:    |       |
+| Mooneye - General - pop_timing              | :white_check_mark:    |       |
+| Mooneye - General - push_timing             | :white_check_mark:    |       |
+| Mooneye - General - rapid_di_ei             | :white_check_mark:    |       |
+| Mooneye - General - reti_intr_timing        | :white_check_mark:    |       |
+| Mooneye - General - reti_timing             | :white_check_mark:    |       |
+| Mooneye - General - ret_cc_timing           | :white_check_mark:    |       |
+| Mooneye - General - ret_timing              | :white_check_mark:    |       |
+| Mooneye - General - rst_timing              | :white_check_mark:    |       |

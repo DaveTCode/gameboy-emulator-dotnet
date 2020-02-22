@@ -55,7 +55,7 @@ namespace Gameboy.VM.Tests.CPU
                 device.Step();
             }
 
-            Assert.Equal(0x0610, device.CPU.Registers.AF);
+            Assert.Equal(0x0590, device.CPU.Registers.AF);
         }
     }
 }
