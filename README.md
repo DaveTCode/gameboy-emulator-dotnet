@@ -88,11 +88,11 @@ NAudio for playing raw audio samples.
 | Mooneye - OAM_DMA - sources-GS              | :x:                   | Not supposed to pass on CGB, not really clear what this actually _does_      |
 | Mooneye - PPU - hblank_ly_scx_timing-GS     | :x:                   | Likely all specific timings relating to the PPU are broken, we're emulating at single instruction atomicity instead of clock cycles      |
 | Mooneye - PPU - intr_1_2_timing-GS          | :x:                   | Hangs |
-| Mooneye - PPU - intr_2_0_timing             | :x:                   | Fails |
-| Mooneye - PPU - intr_2_mode0_timing         | :white_check_mark:    |       |
+| Mooneye - PPU - intr_2_0_timing             | :white_check_mark:    |       |
+| Mooneye - PPU - intr_2_mode0_timing         | :x:                   | Used to pass before cycle accurate CPU, likely interrupt timing related      |
 | Mooneye - PPU - intr_2_mode0_timing_sprites | :x:                   | TEST #00 FAILS      |
-| Mooneye - PPU - intr_2_mode3_timing         | :white_check_mark:    |       |
-| Mooneye - PPU - intr_2_oam_ok_timing        | :white_check_mark:    |       |
+| Mooneye - PPU - intr_2_mode3_timing         | :x:                   | Used to pass before cycle accurate CPU, likely interrupt timing related      |
+| Mooneye - PPU - intr_2_oam_ok_timing        | :x:                   | Used to pass before cycle accurate CPU, likely interrupt timing related      |
 | Mooneye - PPU - lcd_on_timing               | :x:                   | LY=1 when it should be 0 - maybe a more serious bug than the timing issues we know about      |
 | Mooneye - PPU - lcdon_write_timing          | :x:                   | Loads of bad assumptions cause this failure      |
 | Mooneye - PPU - stat_irq_blocking           | :x:                   | Unknown reason      |
@@ -112,24 +112,24 @@ NAudio for playing raw audio samples.
 | Mooneye - Timer - tima_write_reloading      | :x:                   | Fails, requires non-atomic CPU ops      |
 | Mooneye - Timer - tma_write_reloading       | :x:                   | Fails, requires non-atomic CPU ops      |
 | Mooneye - General - add_sp_e_timing         | :white_check_mark:    |       |
-| Mooneye - General - boot_div-dmg0           |:x:                    |       |
-| Mooneye - General - boot_div-dmgABCmgb      |:x:                    |       |
-| Mooneye - General - boot_div-S              |:x:                    |       |
-| Mooneye - General - boot_div2-S             |:x:                    |       |
-| Mooneye - General - boot_hwio-dmg0          |:x:                    |       |
-| Mooneye - General - boot_hwio-dmgABCmgb     |:x:                    |       |
-| Mooneye - General - boot_hwio-S             |:x:                    |       |
-| Mooneye - General - boot_regs-dmg0          |:x:                    |       |
-| Mooneye - General - boot_regs-dmgABC        |:x:                    |       |
-| Mooneye - General - boot_regs-mgb           |:x:                    |       |
-| Mooneye - General - boot_regs-sgb           |:x:                    |       |
-| Mooneye - General - boot_regs-sgb2          | :x:                   |       |
+| Mooneye - General - boot_div-dmg0           | :x:                   | Only passes on specific model of device      |
+| Mooneye - General - boot_div-dmgABCmgb      | :x:                   | Only passes on specific model of device      |
+| Mooneye - General - boot_div-S              | :x:                   | Only passes on specific model of device      |
+| Mooneye - General - boot_div2-S             | :x:                   | Only passes on specific model of device      |
+| Mooneye - General - boot_hwio-dmg0          | :x:                   | Only passes on specific model of device      |
+| Mooneye - General - boot_hwio-dmgABCmgb     | :x:                   | Only passes on specific model of device      |
+| Mooneye - General - boot_hwio-S             | :x:                   | Only passes on specific model of device      |
+| Mooneye - General - boot_regs-dmg0          | :x:                   | Only passes on specific model of device      |
+| Mooneye - General - boot_regs-dmgABC        | :x:                   | Only passes on specific model of device      |
+| Mooneye - General - boot_regs-mgb           | :x:                   | Only passes on specific model of device      |
+| Mooneye - General - boot_regs-sgb           | :x:                   | Only passes on specific model of device      |
+| Mooneye - General - boot_regs-sgb2          | :x:                   | Only passes on specific model of device      |
 | Mooneye - General - call_cc_timing          | :white_check_mark:    |       |
 | Mooneye - General - call_cc_timing2         | :white_check_mark:    |       |
 | Mooneye - General - call_timing             | :white_check_mark:    |       |
 | Mooneye - General - call_timing2            | :white_check_mark:    |       |
 | Mooneye - General - div_timing              | :white_check_mark:    |       |
-| Mooneye - General - di_timing-GS            | :x:                   |       |
+| Mooneye - General - di_timing-GS            | :white_check_mark:    | Passes in both DMG/CGB mode when it should only pass in DMG     |
 | Mooneye - General - ei_sequence             | :white_check_mark:    |       |
 | Mooneye - General - ei_timing               | :white_check_mark:    |       |
 | Mooneye - General - halt_ime0_ei            | :white_check_mark:    |       |
@@ -142,7 +142,7 @@ NAudio for playing raw audio samples.
 | Mooneye - General - jp_timing               | :white_check_mark:    |       |
 | Mooneye - General - ld_hl_sp_e_timing       | :white_check_mark:    |       |
 | Mooneye - General - oam_dma_restart         | :white_check_mark:    |       |
-| Mooneye - General - oam_dma_start           | :x:                   | Somethinng isn't quite right with restarting DMA, maybe something related to the interrupt bugs?      |
+| Mooneye - General - oam_dma_start           | :x:                   | Something isn't quite right with restarting DMA?      |
 | Mooneye - General - oam_dma_timing          | :white_check_mark:    |       |
 | Mooneye - General - pop_timing              | :white_check_mark:    |       |
 | Mooneye - General - push_timing             | :white_check_mark:    |       |
