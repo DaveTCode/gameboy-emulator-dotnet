@@ -9,7 +9,7 @@ namespace Gameboy.VM.LCD
         private const int OAMRAMSize = 0xA0;
 
         public const int ClockCyclesForScanline = 456;
-        public const int MaxSpritesPerScanline = 10; // TODO - Not actually using this
+        public const int MaxSpritesPerScanline = 10;
         public const int MaxSpritesPerFrame = 40;
 
         private readonly Device _device;
@@ -167,15 +167,21 @@ namespace Gameboy.VM.LCD
         {
             var line = _device.LCDRegisters.LYRegister;
             var spriteSize = _device.LCDRegisters.LargeSprites ? 16 : 8;
+            var spritesFoundOnLine = 0;
 
             // Loop through all sprites
             // TODO - Need to order for DMG using the x coordinate of the sprite not the order in the sprite table
             for (var spriteIndex = MaxSpritesPerFrame - 1; spriteIndex >= 0; spriteIndex--)
             {
+                if (spritesFoundOnLine == MaxSpritesPerScanline - 1) break;
+
                 var sprite = _sprites[spriteIndex];
 
                 // Ensure that a portion of the sprite lies on the line
                 if (line < sprite.Y || line >= sprite.Y + spriteSize) continue;
+
+                // A sprite is declared on the line even if it turns out later to be transparent
+                spritesFoundOnLine++;
 
                 var tileNumber = spriteSize == 8 ? sprite.TileNumber : sprite.TileNumber & 0xFE;
                 var palette = sprite.UsePalette1
@@ -304,6 +310,23 @@ namespace Gameboy.VM.LCD
             _currentTCyclesInScanline = 0x0;
         }
 
+        private int Mode3CyclesOnCurrentLine()
+        {
+            var cycles = 172 + (_device.LCDRegisters.ScrollX & 0x7);
+            var spriteSize = _device.LCDRegisters.LargeSprites ? 16 : 8;
+            var spritesFoundOnLine = 0;
+            foreach (var sprite in _sprites)
+            {
+                if (spritesFoundOnLine == MaxSpritesPerScanline - 1) break;
+                if (_currentScanline < sprite.Y || _currentScanline >= sprite.Y + spriteSize) continue;
+
+                cycles += 6 + Math.Min(0, 5 - (sprite.X % 8));
+                spritesFoundOnLine++;
+            }
+
+            return cycles;
+        }
+
         private bool SetLCDStatus(int currentScanLine, int currentTCyclesInScanline)
         {
             // Set the STAT mode correctly
@@ -318,7 +341,7 @@ namespace Gameboy.VM.LCD
                 _device.LCDRegisters.StatMode = _currentTCyclesInScanline switch
                 {
                     _ when _currentTCyclesInScanline < 76 => StatMode.OAMRAMPeriod,
-                    _ when _currentTCyclesInScanline < 248 => StatMode.TransferringDataToDriver, // TODO - Not strictly true, depends on #sprites
+                    _ when _currentTCyclesInScanline < 76 + Mode3CyclesOnCurrentLine() => StatMode.TransferringDataToDriver,
                     _ => StatMode.HBlankPeriod
                 };
             }

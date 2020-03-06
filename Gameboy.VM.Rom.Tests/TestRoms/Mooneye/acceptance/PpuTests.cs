@@ -19,7 +19,7 @@ namespace Gameboy.VM.Rom.Tests.TestRoms.Mooneye.acceptance
         //[InlineData("lcdon_write_timing-GS.gb", 10 * 1000, 0x496B, "framebuffer")]
         //[InlineData("stat_irq_blocking.gb", 10 * 1000, 0x48F3, "framebuffer")]
         //[InlineData("stat_lyc_onoff.gb", 10 * 1000, 0x486E, "framebuffer")]
-        //[InlineData("vblank_stat_intr-GS.gb", 10 * 1000, 0x4B2E, "framebuffer")]
+        [InlineData("vblank_stat_intr-GS.gb", 10 * 1000, 0x4B2E, "vblank_stat_intr-GS.framebuffer")]
         public async Task MooneyePpuTests(string romName, int timeout, ushort finalAddress, string framebufferFile)
         {
             var expectedFrameBuffer = await File.ReadAllLinesAsync(

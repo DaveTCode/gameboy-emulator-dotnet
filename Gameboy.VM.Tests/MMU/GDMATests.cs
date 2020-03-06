@@ -49,7 +49,7 @@ namespace Gameboy.VM.Tests.MMU
             for (var ii = 0; ii < 9; ii++) device.Step();
 
             // Check that the CPU is halted during GDMA but that there was one cycle after request before it executed
-            Assert.Equal(0x169, device.CPU.Registers.ProgramCounter);
+            Assert.Equal(0x165, device.CPU.Registers.ProgramCounter);
 
             // GDMA should be complete now (one block done)
             Assert.Equal(0xFF, device.MMU.ReadByte(0xFF55));

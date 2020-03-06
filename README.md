@@ -86,18 +86,18 @@ NAudio for playing raw audio samples.
 | Mooneye - OAM_DMA - basic                   | :white_check_mark:    |       |
 | Mooneye - OAM_DMA - reg_read                | :white_check_mark:    |       |
 | Mooneye - OAM_DMA - sources-GS              | :x:                   | Not supposed to pass on CGB, not really clear what this actually _does_      |
-| Mooneye - PPU - hblank_ly_scx_timing-GS     | :x:                   | Likely all specific timings relating to the PPU are broken, we're emulating at single instruction atomicity instead of clock cycles      |
-| Mooneye - PPU - intr_1_2_timing-GS          | :x:                   | Hangs |
+| Mooneye - PPU - hblank_ly_scx_timing-GS     | :x:                   | Just says that the test fails without details, we do take SCX into account so this is a bit surprising      |
+| Mooneye - PPU - intr_1_2_timing-GS          | :x:                   | Register values way off what they should be |
 | Mooneye - PPU - intr_2_0_timing             | :white_check_mark:    |       |
-| Mooneye - PPU - intr_2_mode0_timing         | :x:                   | Used to pass before cycle accurate CPU, likely interrupt timing related      |
+| Mooneye - PPU - intr_2_mode0_timing         | :white_check_mark:    |       |
 | Mooneye - PPU - intr_2_mode0_timing_sprites | :x:                   | TEST #00 FAILS      |
-| Mooneye - PPU - intr_2_mode3_timing         | :x:                   | Used to pass before cycle accurate CPU, likely interrupt timing related      |
-| Mooneye - PPU - intr_2_oam_ok_timing        | :x:                   | Used to pass before cycle accurate CPU, likely interrupt timing related      |
+| Mooneye - PPU - intr_2_mode3_timing         | :white_check_mark:    |       |
+| Mooneye - PPU - intr_2_oam_ok_timing        | :white_check_mark:    |       |
 | Mooneye - PPU - lcd_on_timing               | :x:                   | LY=1 when it should be 0 - maybe a more serious bug than the timing issues we know about      |
 | Mooneye - PPU - lcdon_write_timing          | :x:                   | Loads of bad assumptions cause this failure      |
 | Mooneye - PPU - stat_irq_blocking           | :x:                   | Unknown reason      |
 | Mooneye - PPU - stat_lyc_onoff              | :x:                   | Fail r1 step 1 reason unknown      |
-| Mooneye - PPU - vblank_stat_intr-GS         | :x:                   | Fails |
+| Mooneye - PPU - vblank_stat_intr-GS         | :white_check_mark:    |       |
 | Mooneye - Timer - div_write                 | :white_check_mark:    |       |
 | Mooneye - Timer - rapid_toggle              | :x:                   | "the timer circuit design causes some unexpected timer increases" - unsure what this means in the test source so likely the cause of failure      |
 | Mooneye - Timer - tim00                     | :white_check_mark:    |       |
