@@ -99,7 +99,7 @@ namespace Gameboy.VM
             if (address == 0xFF43) // SCX Register
                 return _device.LCDRegisters.ScrollX;
             if (address == 0xFF44) // LY Register
-                return _device.LCDRegisters.LCDCurrentScanline;
+                return _device.LCDRegisters.LYRegister;
             if (address == 0xFF45) // LYC Register
                 return _device.LCDRegisters.LYCompare;
             if (address == 0xFF46) // DMA Register
@@ -156,6 +156,12 @@ namespace Gameboy.VM
             {
                 if (_device.Mode == DeviceType.DMG) return 0xFF;
 
+                // CGB Palette RAM is unreadable by the CPU during STAT mode 3
+                if (_device.LCDRegisters.StatMode == StatMode.OAMRAMPeriod)
+                {
+                    return 0xFF;
+                }
+
                 return _device.LCDRegisters.CGBBackgroundPalette.ReadPaletteMemory();
             }
             if (address == 0xFF6A) // OCPS register
@@ -167,6 +173,12 @@ namespace Gameboy.VM
             if (address == 0xFF6B) // OCPD register
             {
                 if (_device.Mode == DeviceType.DMG) return 0xFF;
+
+                // CGB Palette RAM is unreadable by the CPU during STAT mode 3
+                if (_device.LCDRegisters.StatMode == StatMode.OAMRAMPeriod)
+                {
+                    return 0xFF;
+                }
 
                 return _device.LCDRegisters.CGBSpritePalette.ReadPaletteMemory();
             }
@@ -342,11 +354,23 @@ namespace Gameboy.VM
             else if (address == 0xFF68)
                 _device.LCDRegisters.CGBBackgroundPalette.PaletteIndex = value;
             else if (address == 0xFF69)
-                _device.LCDRegisters.CGBBackgroundPalette.WritePaletteMemory(value);
+            {
+                // CGB Palette RAM is unreadable by the CPU during STAT mode 3
+                if (_device.LCDRegisters.StatMode != StatMode.OAMRAMPeriod)
+                {
+                    _device.LCDRegisters.CGBBackgroundPalette.WritePaletteMemory(value);
+                }
+            }
             else if (address == 0xFF6A)
                 _device.LCDRegisters.CGBSpritePalette.PaletteIndex = value;
             else if (address == 0xFF6B)
-                _device.LCDRegisters.CGBSpritePalette.WritePaletteMemory(value);
+            {
+                // CGB Palette RAM is unreadable by the CPU during STAT mode 3
+                if (_device.LCDRegisters.StatMode != StatMode.OAMRAMPeriod)
+                {
+                    _device.LCDRegisters.CGBSpritePalette.WritePaletteMemory(value);
+                }
+            }
             else if (address == 0xFF6C)
                 if (_device.Mode == DeviceType.CGB) _device.ControlRegisters.FF6C = value;
                 else _device.Log.Information("Write to unused address {0:X4}", address);
