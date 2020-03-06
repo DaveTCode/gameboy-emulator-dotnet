@@ -43,8 +43,8 @@ namespace Gameboy.VM
         internal readonly DMAController DMAController;
         internal readonly JoypadHandler JoypadHandler;
 
-        // TODO - This isn't actually used to imply double speed anywhere yet
         internal bool DoubleSpeed = false;
+        private bool _stepPPUOnNextDoubleSpeedCycle = true;
 
         internal Logger Log;
 
@@ -197,8 +197,16 @@ namespace Gameboy.VM
             // Step 3: Run the DMA controller to move bytes directly into VRAM/OAM
             DMAController.Step(4);
 
-            // Step 4: Update the LCD subsystem to sync with the new number of cycles
-            LCDDriver.Step(nonCpuCycles);
+            // Step 4: Step the LCD subsystem, only once per CPU cycle pair in double speed mode
+            if (!DoubleSpeed || _stepPPUOnNextDoubleSpeedCycle)
+            {
+                LCDDriver.Step();
+                _stepPPUOnNextDoubleSpeedCycle = false;
+            }
+            else
+            {
+                _stepPPUOnNextDoubleSpeedCycle = true;
+            }
 
             // Step 5: Update the timer controller by a single m-cycle
             Timer.Step();

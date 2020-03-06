@@ -32,18 +32,12 @@ namespace Gameboy.VM.LCD
         internal CGBPalette CGBSpritePalette { get; } = new CGBPalette();
         #endregion
 
-        internal byte LCDCurrentScanline { get; private set; }
-
-        internal byte IncrementLineBeingProcessed()
-        {
-            LCDCurrentScanline = (byte)((LCDCurrentScanline + 1) % 154);
-            return LCDCurrentScanline;
-        }
+        internal byte LYRegister { get; set; }
 
         internal byte ResetCurrentScanline()
         {
-            LCDCurrentScanline = 0x0;
-            return LCDCurrentScanline;
+            LYRegister = 0x0;
+            return LYRegister;
         }
 
         private byte _lyCompare;
@@ -164,9 +158,9 @@ namespace Gameboy.VM.LCD
 
         private void CheckLYLCInterrupt()
         {
-            CoincidenceFlag = _lyCompare == LCDCurrentScanline;
+            CoincidenceFlag = _lyCompare == LYRegister;
 
-            if (IsLcdOn && IsLYLCCheckEnabled && LCDCurrentScanline == _lyCompare)
+            if (IsLcdOn && IsLYLCCheckEnabled && LYRegister == _lyCompare)
             {
                 _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.LCDSTAT);
             }
@@ -174,7 +168,7 @@ namespace Gameboy.VM.LCD
 
         public override string ToString()
         {
-            return $"LCDC:{LCDControlRegister:X1}, STAT:{StatRegister:X1}, SCX:{ScrollX:X1}, SCY:{ScrollY:X1}, LY:{LCDCurrentScanline:X1}, LYC:{LYCompare:X1}, BGP:{BackgroundPaletteData:X1}, OBP0:{ObjectPaletteData0:X1}, OBP1:{ObjectPaletteData1:X1}, WY:{WindowY:X1}, WX:{WindowX:X1}";
+            return $"LCDC:{LCDControlRegister:X1}, STAT:{StatRegister:X1}, SCX:{ScrollX:X1}, SCY:{ScrollY:X1}, LY:{LYRegister:X1}, LYC:{LYCompare:X1}, BGP:{BackgroundPaletteData:X1}, OBP0:{ObjectPaletteData0:X1}, OBP1:{ObjectPaletteData1:X1}, WY:{WindowY:X1}, WX:{WindowX:X1}";
         }
     }
 }

@@ -42,7 +42,8 @@ namespace Gameboy.VM.LCD
         private readonly byte[] _frameBuffer = new byte[Device.ScreenHeight * Device.ScreenWidth * 4];
 
         // Current state of LCD driver
-        private int _currentCycle;
+        private int _currentTCyclesInScanline;
+        private int _currentScanline;
 
         internal LCDDriver(Device device)
         {
@@ -117,17 +118,7 @@ namespace Gameboy.VM.LCD
         private readonly byte[] _scanline = new byte[Device.ScreenWidth * 4];
         private readonly ScanlineBgPriority[] _scanlineBgPriority = new ScanlineBgPriority[Device.ScreenWidth];
 
-        /// <summary>
-        /// Proceed by <see cref="tCycles"/> number of cycles.
-        ///
-        /// Note that this is all a bit sketchy IMO. It's only drawing whole
-        /// scanlines at a time instead of doing pixel based timings. But I
-        /// don't know enough to achieve that yet
-        /// </summary>
-        /// <param name="tCycles">
-        /// The number of cycles since the last step was called.
-        /// </param>
-        internal void Step(int tCycles)
+        internal void Step()
         {
             if (!_device.LCDRegisters.IsLcdOn)
             {
@@ -135,22 +126,18 @@ namespace Gameboy.VM.LCD
                 return;
             }
 
-            _currentCycle += tCycles;
+            _currentTCyclesInScanline = (_currentTCyclesInScanline + 4) % ClockCyclesForScanline;
 
-            var currentScanLine = _device.LCDRegisters.LCDCurrentScanline;
-
-            if (_currentCycle >= ClockCyclesForScanline)
+            // Possibly increment the current scanline of the LCD driver
+            if (_currentTCyclesInScanline == 0)
             {
-                _currentCycle -= ClockCyclesForScanline;
-
-                // Update the LY register
-                currentScanLine = _device.LCDRegisters.IncrementLineBeingProcessed();
+                _currentScanline = (_currentScanline + 1) % 154;
             }
 
-            var redrawScanline = SetLCDStatus(currentScanLine);
+            var redrawScanline = SetLCDStatus(_currentScanline, _currentTCyclesInScanline);
 
             // Don't render on invisible scanlines
-            if (currentScanLine < Device.ScreenHeight && redrawScanline)
+            if (_currentScanline < Device.ScreenHeight && redrawScanline)
             {
                 // Clear scanline
                 for (var ii = 0; ii < Device.ScreenWidth * 4; ii += 4)
@@ -170,7 +157,7 @@ namespace Gameboy.VM.LCD
 
                 // Copy the scanline into the framebuffer
                 Array.Copy(_scanline, 0,
-                    _frameBuffer, _device.LCDRegisters.LCDCurrentScanline * Device.ScreenWidth * 4,
+                    _frameBuffer, _device.LCDRegisters.LYRegister * Device.ScreenWidth * 4,
                     _scanline.Length);
             }
         }
@@ -182,7 +169,7 @@ namespace Gameboy.VM.LCD
 
         private void DrawSprites()
         {
-            var line = _device.LCDRegisters.LCDCurrentScanline;
+            var line = _device.LCDRegisters.LYRegister;
             var spriteSize = _device.LCDRegisters.LargeSprites ? 16 : 8;
 
             // Loop through all sprites
@@ -252,8 +239,8 @@ namespace Gameboy.VM.LCD
                 ? _device.LCDRegisters.WindowTileMapOffset
                 : _device.LCDRegisters.BackgroundTileMapOffset;
             var yPosition = UsingWindowForScanline
-                ? (_device.LCDRegisters.LCDCurrentScanline - _device.LCDRegisters.WindowY) & 0xFF
-                : (_device.LCDRegisters.LCDCurrentScanline + _device.LCDRegisters.ScrollY) & 0xFF;
+                ? (_device.LCDRegisters.LYRegister - _device.LCDRegisters.WindowY) & 0xFF
+                : (_device.LCDRegisters.LYRegister + _device.LCDRegisters.ScrollY) & 0xFF;
             var tileRow = yPosition / 8 * 32;
             var tileLine = yPosition % 8 * 2;
 
@@ -318,13 +305,29 @@ namespace Gameboy.VM.LCD
 
         private void SetLCDOffValues()
         {
-            _currentCycle = 0x0;
+            _currentTCyclesInScanline = 0x0;
             _device.LCDRegisters.ResetCurrentScanline();
             _device.LCDRegisters.StatMode = StatMode.HBlankPeriod;
         }
 
-        private bool SetLCDStatus(byte currentScanLine)
+        private bool SetLCDStatus(int currentScanLine, int currentTCyclesInScanline)
         {
+            // Set the LY register to the correct value
+            // TODO - Are these quite right in double speed mode?
+            if (_device.Type == DeviceType.DMG)
+            {
+                _device.LCDRegisters.LYRegister = PPUTimingDetails.LYByLineAndClockDMG[currentScanLine][currentTCyclesInScanline / 4];
+            }
+            else if (_device.Type == DeviceType.CGB && _device.Mode == DeviceType.DMG)
+            {
+                _device.LCDRegisters.LYRegister = PPUTimingDetails.LYByLineAndClockCGBDMGMode[currentScanLine][currentTCyclesInScanline / 4];
+            }
+            else if (_device.Type == DeviceType.CGB && _device.Mode == DeviceType.CGB)
+            {
+                _device.LCDRegisters.LYRegister = PPUTimingDetails.LYByLineAndClockCGBMode[currentScanLine][currentTCyclesInScanline / 4];
+            }
+
+            // Set the STAT mode correctly
             var oldMode = _device.LCDRegisters.StatMode;
 
             if (currentScanLine >= Device.ScreenHeight)
@@ -333,10 +336,10 @@ namespace Gameboy.VM.LCD
             }
             else
             {
-                _device.LCDRegisters.StatMode = _currentCycle switch
+                _device.LCDRegisters.StatMode = _currentTCyclesInScanline switch
                 {
-                    _ when _currentCycle < 80 => StatMode.OAMRAMPeriod,
-                    _ when _currentCycle < 252 => StatMode.TransferringDataToDriver, // TODO - Not strictly true, depends on #sprites
+                    _ when _currentTCyclesInScanline < 80 => StatMode.OAMRAMPeriod,
+                    _ when _currentTCyclesInScanline < 252 => StatMode.TransferringDataToDriver, // TODO - Not strictly true, depends on #sprites
                     _ => StatMode.HBlankPeriod
                 };
             }
@@ -373,7 +376,7 @@ namespace Gameboy.VM.LCD
 
         #region Utility functions on registers
 
-        private bool UsingWindowForScanline => _device.LCDRegisters.IsWindowEnabled && _device.LCDRegisters.LCDCurrentScanline >= _device.LCDRegisters.WindowY;
+        private bool UsingWindowForScanline => _device.LCDRegisters.IsWindowEnabled && _device.LCDRegisters.LYRegister >= _device.LCDRegisters.WindowY;
 
         private ushort GetTileDataAddress(byte tileNumber)
         {
