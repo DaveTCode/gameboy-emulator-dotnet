@@ -16,6 +16,14 @@
       "commandName": "Project",
       "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/timer/tim00_div_trigger.gb"
     },
+    "Mooneye PPU STAT IRQ Blocking": {
+      "commandName": "Project",
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/ppu/stat_irq_blocking.gb"
+    },
+    "Mooneye PPU STAT LYC ON OFF": {
+      "commandName": "Project",
+      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/ppu/stat_lyc_onoff.gb"
+    },
     "Tetris w/ boot rom": {
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/real/Tetris (World) (Rev A).gb\""

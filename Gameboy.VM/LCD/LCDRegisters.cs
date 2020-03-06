@@ -34,12 +34,6 @@ namespace Gameboy.VM.LCD
 
         internal byte LYRegister { get; set; }
 
-        internal byte ResetCurrentScanline()
-        {
-            LYRegister = 0x0;
-            return LYRegister;
-        }
-
         private byte _lyCompare;
         internal byte LYCompare
         {
@@ -48,7 +42,6 @@ namespace Gameboy.VM.LCD
             {
                 _lyCompare = value;
 
-                CoincidenceFlag = _lyCompare == LYRegister;
                 UpdateStatIRQSignal();
             }
         }
@@ -95,6 +88,19 @@ namespace Gameboy.VM.LCD
                 LargeSprites = (value & 0x4) == 0x4; // Bit 2 on LCDC register controls how large sprites are
                 AreSpritesEnabled = (value & 0x2) == 0x2; // Bit 1 on LCDC register controls whether to display sprites
                 IsBackgroundEnabled = (value & 0x1) == 0x1; // Bit 0 on LCDC register controls whether to display the background
+
+                if (!IsLcdOn)
+                {
+                    _device.LCDDriver.TurnLCDOff();
+
+                    LYRegister = 0x0;
+                    StatMode = StatMode.HBlankPeriod;
+                    _statIRQSignal = false;
+                }
+                else
+                {
+                    UpdateStatIRQSignal();
+                }
             }
         }
         #endregion
@@ -116,7 +122,6 @@ namespace Gameboy.VM.LCD
                 Mode1VBlankCheckEnabled = (value & 0x10) == 0x10; // Is bit 4 of STAT register on?
                 Mode0HBlankCheckEnabled = (value & 0x8) == 0x8; // Is bit 3 of STAT register on?
 
-                CoincidenceFlag = _lyCompare == LYRegister;
                 UpdateStatIRQSignal();
             }
         }
@@ -126,10 +131,12 @@ namespace Gameboy.VM.LCD
             if (!IsLcdOn) return;
             var _oldStatIRQSignal = _statIRQSignal;
 
-            _statIRQSignal = ((IsLYLCCheckEnabled && LYRegister == _lyCompare) ||
-                              (StatMode == StatMode.HBlankPeriod && Mode0HBlankCheckEnabled) ||
-                              (StatMode == StatMode.OAMRAMPeriod && Mode2OAMCheckEnabled) ||
-                              (StatMode == StatMode.VBlankPeriod && (Mode1VBlankCheckEnabled || Mode2OAMCheckEnabled)));
+            CoincidenceFlag = _lyCompare == LYRegister;
+
+            _statIRQSignal = (IsLYLCCheckEnabled && LYRegister == _lyCompare) ||
+                             (StatMode == StatMode.HBlankPeriod && Mode0HBlankCheckEnabled) ||
+                             (StatMode == StatMode.OAMRAMPeriod && Mode2OAMCheckEnabled) ||
+                             (StatMode == StatMode.VBlankPeriod && (Mode1VBlankCheckEnabled || Mode2OAMCheckEnabled));
 
             if (!_oldStatIRQSignal && _statIRQSignal)
             {

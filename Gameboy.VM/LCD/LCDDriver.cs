@@ -120,11 +120,7 @@ namespace Gameboy.VM.LCD
 
         internal void Step()
         {
-            if (!_device.LCDRegisters.IsLcdOn)
-            {
-                SetLCDOffValues();
-                return;
-            }
+            if (!_device.LCDRegisters.IsLcdOn) return;
 
             _currentTCyclesInScanline = (_currentTCyclesInScanline + 4) % ClockCyclesForScanline;
 
@@ -303,30 +299,13 @@ namespace Gameboy.VM.LCD
             }
         }
 
-        private void SetLCDOffValues()
+        internal void TurnLCDOff()
         {
             _currentTCyclesInScanline = 0x0;
-            _device.LCDRegisters.ResetCurrentScanline();
-            _device.LCDRegisters.StatMode = StatMode.HBlankPeriod;
         }
 
         private bool SetLCDStatus(int currentScanLine, int currentTCyclesInScanline)
         {
-            // Set the LY register to the correct value
-            // TODO - Are these quite right in double speed mode?
-            if (_device.Type == DeviceType.DMG)
-            {
-                _device.LCDRegisters.LYRegister = PPUTimingDetails.LYByLineAndClockDMG[currentScanLine][currentTCyclesInScanline / 4];
-            }
-            else if (_device.Type == DeviceType.CGB && _device.Mode == DeviceType.DMG)
-            {
-                _device.LCDRegisters.LYRegister = PPUTimingDetails.LYByLineAndClockCGBDMGMode[currentScanLine][currentTCyclesInScanline / 4];
-            }
-            else if (_device.Type == DeviceType.CGB && _device.Mode == DeviceType.CGB)
-            {
-                _device.LCDRegisters.LYRegister = PPUTimingDetails.LYByLineAndClockCGBMode[currentScanLine][currentTCyclesInScanline / 4];
-            }
-
             // Set the STAT mode correctly
             var oldMode = _device.LCDRegisters.StatMode;
 
@@ -338,8 +317,8 @@ namespace Gameboy.VM.LCD
             {
                 _device.LCDRegisters.StatMode = _currentTCyclesInScanline switch
                 {
-                    _ when _currentTCyclesInScanline < 80 => StatMode.OAMRAMPeriod,
-                    _ when _currentTCyclesInScanline < 252 => StatMode.TransferringDataToDriver, // TODO - Not strictly true, depends on #sprites
+                    _ when _currentTCyclesInScanline < 76 => StatMode.OAMRAMPeriod,
+                    _ when _currentTCyclesInScanline < 248 => StatMode.TransferringDataToDriver, // TODO - Not strictly true, depends on #sprites
                     _ => StatMode.HBlankPeriod
                 };
             }
@@ -363,7 +342,20 @@ namespace Gameboy.VM.LCD
                 }
             }
 
-            // Update the internal STAT IRQ signal
+            // Set the LY register to the correct value
+            // TODO - Are these quite right in double speed mode?
+            if (_device.Type == DeviceType.DMG)
+            {
+                _device.LCDRegisters.LYRegister = PPUTimingDetails.LYByLineAndClockDMG[currentScanLine][currentTCyclesInScanline / 4];
+            }
+            else if (_device.Type == DeviceType.CGB && _device.Mode == DeviceType.DMG)
+            {
+                _device.LCDRegisters.LYRegister = PPUTimingDetails.LYByLineAndClockCGBDMGMode[currentScanLine][currentTCyclesInScanline / 4];
+            }
+            else if (_device.Type == DeviceType.CGB && _device.Mode == DeviceType.CGB)
+            {
+                _device.LCDRegisters.LYRegister = PPUTimingDetails.LYByLineAndClockCGBMode[currentScanLine][currentTCyclesInScanline / 4];
+            }
 
             return false;
         }
