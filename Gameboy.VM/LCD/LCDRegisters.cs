@@ -48,7 +48,8 @@ namespace Gameboy.VM.LCD
             {
                 _lyCompare = value;
 
-                CheckLYLCInterrupt();
+                CoincidenceFlag = _lyCompare == LYRegister;
+                UpdateStatIRQSignal();
             }
         }
 
@@ -100,6 +101,7 @@ namespace Gameboy.VM.LCD
 
         #region STAT Register
         private byte _statRegister = 0x80; // Default top bit to set
+        private bool _statIRQSignal;
 
         internal byte StatRegister
         {
@@ -114,7 +116,24 @@ namespace Gameboy.VM.LCD
                 Mode1VBlankCheckEnabled = (value & 0x10) == 0x10; // Is bit 4 of STAT register on?
                 Mode0HBlankCheckEnabled = (value & 0x8) == 0x8; // Is bit 3 of STAT register on?
 
-                CheckLYLCInterrupt();
+                CoincidenceFlag = _lyCompare == LYRegister;
+                UpdateStatIRQSignal();
+            }
+        }
+
+        private void UpdateStatIRQSignal()
+        {
+            if (!IsLcdOn) return;
+            var _oldStatIRQSignal = _statIRQSignal;
+
+            _statIRQSignal = ((IsLYLCCheckEnabled && LYRegister == _lyCompare) ||
+                              (StatMode == StatMode.HBlankPeriod && Mode0HBlankCheckEnabled) ||
+                              (StatMode == StatMode.OAMRAMPeriod && Mode2OAMCheckEnabled) ||
+                              (StatMode == StatMode.VBlankPeriod && (Mode1VBlankCheckEnabled || Mode2OAMCheckEnabled)));
+
+            if (!_oldStatIRQSignal && _statIRQSignal)
+            {
+                _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.LCDSTAT);
             }
         }
 
@@ -127,7 +146,7 @@ namespace Gameboy.VM.LCD
         internal bool Mode0HBlankCheckEnabled { get; private set; }
 
         private bool _coincidenceFlag;
-        internal bool CoincidenceFlag  // Bit 2 of the STAT register refers to the Coincidence flag which is readonly and reflect LY = LYC
+        internal bool CoincidenceFlag  // Bit 2 of the STAT register refers to the Coincidence flag which is readonly and reflects LY = LYC
         {
             get => _coincidenceFlag;
             private set
@@ -152,19 +171,11 @@ namespace Gameboy.VM.LCD
             {
                 _statMode = value;
                 _statRegister = (byte)((_statRegister & 0xFC) | (int)value);
+
+                UpdateStatIRQSignal();
             }
         }
         #endregion
-
-        private void CheckLYLCInterrupt()
-        {
-            CoincidenceFlag = _lyCompare == LYRegister;
-
-            if (IsLcdOn && IsLYLCCheckEnabled && LYRegister == _lyCompare)
-            {
-                _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.LCDSTAT);
-            }
-        }
 
         public override string ToString()
         {

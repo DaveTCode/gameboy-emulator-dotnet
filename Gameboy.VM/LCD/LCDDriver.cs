@@ -349,20 +349,12 @@ namespace Gameboy.VM.LCD
                 switch (_device.LCDRegisters.StatMode)
                 {
                     case StatMode.HBlankPeriod:
-                        if (_device.LCDRegisters.Mode0HBlankCheckEnabled)
-                        {
-                            _device.InterruptRegisters.RequestInterrupt(Interrupt.LCDSTAT);
-                        }
                         return true; // Entering HBlank so redraw scanline
                     case StatMode.VBlankPeriod: // Entering VBlank so draw whole screen
                         _device.Renderer.HandleVBlankEvent(_frameBuffer, _device.TCycles);
-                        _device.InterruptRegisters.RequestInterrupt(Interrupt.VerticalBlank); // TODO - VBlank interrupt but do we need an LCDSTAT interrupt as well?
+                        _device.InterruptRegisters.RequestInterrupt(Interrupt.VerticalBlank);
                         return false;
                     case StatMode.OAMRAMPeriod:
-                        if (_device.LCDRegisters.Mode2OAMCheckEnabled)
-                        {
-                            _device.InterruptRegisters.RequestInterrupt(Interrupt.LCDSTAT);
-                        }
                         return false;
                     case StatMode.TransferringDataToDriver:
                         return false;
@@ -370,6 +362,8 @@ namespace Gameboy.VM.LCD
                         throw new ArgumentException($"StatMode {_device.LCDRegisters.StatMode} out of range");
                 }
             }
+
+            // Update the internal STAT IRQ signal
 
             return false;
         }
