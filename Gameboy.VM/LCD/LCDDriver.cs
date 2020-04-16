@@ -199,7 +199,6 @@ namespace Gameboy.VM.LCD
             }
 
             // Loop through all sprites
-            // TODO - Need to order for DMG using the x coordinate of the sprite not the order in the sprite table
             for (var spriteIndex = _spritesOnLine.Length - 1; spriteIndex >= 0; spriteIndex--)
             {
                 var sprite = _spritesOnLine[spriteIndex];
@@ -271,7 +270,6 @@ namespace Gameboy.VM.LCD
                     yPos = (_currentScanline - _device.LCDRegisters.WindowY) & 0xFF;
                     xPos = (pixel - _device.LCDRegisters.WindowX + 6) & 0xFF;
                     tileMapAddress = _device.LCDRegisters.WindowTileMapOffset;
-                    //Console.WriteLine($"{_device.LCDRegisters.LYRegister}, {pixel}, {yPos}, {xPos}, {tileMapAddress:X4}");
                 }
                 else
                 {
@@ -329,8 +327,8 @@ namespace Gameboy.VM.LCD
                 _scanline[pixel * 4 + 1] = g;
                 _scanline[pixel * 4 + 0] = b;
 
-                if (bgToOamPriority == 1) _scanlineBgPriority[pixel] = ScanlineBgPriority.Priority;
-                else if (colorNumber == 0) _scanlineBgPriority[pixel] = ScanlineBgPriority.Color0;
+                if (colorNumber == 0) _scanlineBgPriority[pixel] = ScanlineBgPriority.Color0;
+                else if (bgToOamPriority == 1) _scanlineBgPriority[pixel] = ScanlineBgPriority.Priority;
                 else _scanlineBgPriority[pixel] = ScanlineBgPriority.Normal;
             }
         }
