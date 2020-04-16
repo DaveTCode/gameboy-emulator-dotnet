@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Gameboy.VM;
 using Gameboy.VM.Cartridge;
 using Gameboy.VM.Joypad;
@@ -99,16 +101,25 @@ namespace Gameboy.Emulator.SDL
                     case SDL2.SDL_EventType.SDL_KEYUP:
                         if (e.key.keysym.sym == SDL2.SDL_Keycode.SDLK_F2)
                         {
-                            var (vramBank0, vramBank1, oamRam, cgbBgPalette, cgbSpritePalette, frameBuffer) = _device.DumpLcdDebugInformation();
-                            using var fbFile = System.IO.File.OpenWrite("framebuffer");
-                            using var vramBank0File = System.IO.File.OpenWrite("VRAMBank0.csv");
-                            using var vramBank1File = System.IO.File.OpenWrite("VRAMBank1.csv");
-                            using var oamFile = System.IO.File.OpenWrite("OAMRAM.csv");
-                            using var cgbBgPaletteFile = System.IO.File.OpenWrite("CGB_BG_PALETTE.csv");
-                            using var cgbSpritePaletteFile = System.IO.File.OpenWrite("CGB_SPRITE_PALETTE.csv");
+                            var (vramBank0, vramBank1, oamRam, tileBuffer, cgbBgPalette, cgbSpritePalette, frameBuffer) = _device.DumpLcdDebugInformation();
+                            using var fbFile = File.OpenWrite("framebuffer");
+                            using var vramBank0File = File.OpenWrite("VRAMBank0.csv");
+                            using var vramBank1File = File.OpenWrite("VRAMBank1.csv");
+                            using var oamFile = File.OpenWrite("OAMRAM.csv");
+                            using var tileBufferFile = File.OpenWrite("TileBuffer.csv");
+                            using var cgbBgPaletteFile = File.OpenWrite("CGB_BG_PALETTE.csv");
+                            using var cgbSpritePaletteFile = File.OpenWrite("CGB_SPRITE_PALETTE.csv");
                             vramBank0File.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", vramBank0)));
                             vramBank1File.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", vramBank1)));
                             oamFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", oamRam)));
+                            for (var row = 0; row < Device.ScreenHeight; row++)
+                            {
+                                for (var col = 0; col < Device.ScreenWidth; col++)
+                                {
+                                    tileBufferFile.Write(System.Text.Encoding.ASCII.GetBytes(tileBuffer[row * Device.ScreenWidth + col] + ","));
+                                }
+                                tileBufferFile.Write(System.Text.Encoding.ASCII.GetBytes("\r\n"));
+                            }
                             cgbBgPaletteFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", cgbBgPalette)));
                             cgbSpritePaletteFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", cgbSpritePalette)));
                             fbFile.Write(System.Text.Encoding.ASCII.GetBytes(string.Join("\r\n", frameBuffer)));

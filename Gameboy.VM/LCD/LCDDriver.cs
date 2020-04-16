@@ -41,6 +41,11 @@ namespace Gameboy.VM.LCD
         /// </summary>
         private readonly byte[] _frameBuffer = new byte[Device.ScreenHeight * Device.ScreenWidth * 4];
 
+        /// <summary>
+        /// Used for debugging, stores off which tile each pixel corresponds to
+        /// </summary>
+        private readonly byte[] _tileBuffer = new byte[Device.ScreenHeight * Device.ScreenWidth];
+
         // Current state of LCD driver
         private int _currentTCyclesInScanline;
         private int _currentScanline;
@@ -153,35 +158,52 @@ namespace Gameboy.VM.LCD
 
                 // Copy the scanline into the framebuffer
                 Array.Copy(_scanline, 0,
-                    _frameBuffer, _device.LCDRegisters.LYRegister * Device.ScreenWidth * 4,
+                    _frameBuffer, _currentScanline * Device.ScreenWidth * 4,
                     _scanline.Length);
             }
         }
 
-        internal (byte[], byte[], byte[]) DumpVRAM()
+        internal (byte[], byte[], byte[], byte[]) DumpVRAM()
         {
-            return (_vRamBank0, _vRamBank1, _oamRam);
+            return (_vRamBank0, _vRamBank1, _oamRam, _tileBuffer);
         }
 
+        private readonly Sprite[] _spritesOnLine = new Sprite[10];
+        private readonly DMGSpriteComparer _dmgSpriteComparer = new DMGSpriteComparer();
         private void DrawSprites()
         {
-            var line = _device.LCDRegisters.LYRegister;
             var spriteSize = _device.LCDRegisters.LargeSprites ? 16 : 8;
             var spritesFoundOnLine = 0;
 
-            // Loop through all sprites
-            // TODO - Need to order for DMG using the x coordinate of the sprite not the order in the sprite table
-            for (var spriteIndex = MaxSpritesPerFrame - 1; spriteIndex >= 0; spriteIndex--)
+            // First find the first (up to) 10 sprites (counting forwards in memory)
+            Array.Clear(_spritesOnLine, 0, _spritesOnLine.Length);
+            for (var spriteIndex = 0; spriteIndex < MaxSpritesPerFrame; spriteIndex++)
             {
                 if (spritesFoundOnLine == MaxSpritesPerScanline - 1) break;
 
                 var sprite = _sprites[spriteIndex];
 
                 // Ensure that a portion of the sprite lies on the line
-                if (line < sprite.Y || line >= sprite.Y + spriteSize) continue;
+                if (_currentScanline < sprite.Y || _currentScanline >= sprite.Y + spriteSize) continue;
+
+                _spritesOnLine[spritesFoundOnLine] = sprite;
 
                 // A sprite is declared on the line even if it turns out later to be transparent
                 spritesFoundOnLine++;
+            }
+
+            // In DMG mode the priority of sprites is that the least X goes on top of the > X so resort if DMG mode
+            if (_device.Mode == DeviceType.DMG)
+            {
+                Array.Sort(_spritesOnLine, _dmgSpriteComparer);
+            }
+
+            // Loop through all sprites
+            // TODO - Need to order for DMG using the x coordinate of the sprite not the order in the sprite table
+            for (var spriteIndex = _spritesOnLine.Length - 1; spriteIndex >= 0; spriteIndex--)
+            {
+                var sprite = _spritesOnLine[spriteIndex];
+                if (sprite == null) continue;
 
                 var tileNumber = spriteSize == 8 ? sprite.TileNumber : sprite.TileNumber & 0xFE;
                 var palette = sprite.UsePalette1
@@ -189,8 +211,8 @@ namespace Gameboy.VM.LCD
                     : _device.LCDRegisters.ObjectPaletteData0;
 
                 var tileAddress = sprite.YFlip ?
-                    tileNumber * 16 + (spriteSize - 1 - (line - sprite.Y)) * 2 :
-                    tileNumber * 16 + (line - sprite.Y) * 2;
+                    tileNumber * 16 + (spriteSize - 1 - (_currentScanline - sprite.Y)) * 2 :
+                    tileNumber * 16 + (_currentScanline - sprite.Y) * 2;
                 var b1 = sprite.VRAMBankNumber == 0
                     ? _vRamBank0[tileAddress]
                     : _vRamBank1[tileAddress];
@@ -220,8 +242,9 @@ namespace Gameboy.VM.LCD
                         : _device.LCDRegisters.GetColorFromNumberPalette(colorNumber, palette).BaseRgb();
                     (r, g, b) = _device.Renderer.ColorAdjust(r, g, b);
 
-                    // Don't draw low priority sprites over background unless background is transparent
-                    if (sprite.SpriteToBgPriority == SpriteToBgPriority.BehindColors123 &&
+                    // Don't draw low priority sprites over background unless background is transparent or CGB master override is on
+                    if (!_device.LCDRegisters.IsCgbSpriteMasterPriorityOn &&
+                        sprite.SpriteToBgPriority == SpriteToBgPriority.BehindColors123 &&
                         _scanlineBgPriority[pixel] == ScanlineBgPriority.Normal) continue;
 
                     _scanline[pixel * 4 + 3] = 0xFF; // Alpha channel
@@ -234,31 +257,38 @@ namespace Gameboy.VM.LCD
 
         private void DrawBackground()
         {
-            // First figure out which bit of memory we need for the tilemap (pixel X -> tile Y),
-            // which bit of memory for the tileset itself (tile Y -> data Z),
-            // and which y coordinate (both in tiles and raw pixels) we're talking about
-            var tileMapAddress = UsingWindowForScanline
-                ? _device.LCDRegisters.WindowTileMapOffset
-                : _device.LCDRegisters.BackgroundTileMapOffset;
-            var yPosition = UsingWindowForScanline
-                ? (_device.LCDRegisters.LYRegister - _device.LCDRegisters.WindowY) & 0xFF
-                : (_device.LCDRegisters.LYRegister + _device.LCDRegisters.ScrollY) & 0xFF;
-            var tileRow = yPosition / 8 * 32;
-            var tileLine = yPosition % 8 * 2;
-
             for (var pixel = 0; pixel < Device.ScreenWidth; pixel++)
             {
-                // Determine the x position relative to whether we're in the window or the background
+                // First figure out which bit of memory we need for the tilemap (pixel X -> tile Y),
+                // which bit of memory for the tileset itself (tile Y -> data Z),
+                // and which y coordinate (both in tiles and raw pixels) we're talking about.
+                //
+                // Then determine the x position relative to whether we're in the window or the background
                 // taking into account scrolling.
-                var xPos = UsingWindowForScanline && pixel >= _device.LCDRegisters.WindowX ?
-                    (pixel - _device.LCDRegisters.WindowX + 6) & 0xFF :
-                    (pixel + _device.LCDRegisters.ScrollX) & 0xFF;
+                int xPos, yPos, tileMapAddress;
+                if (UsingWindowForScanline && pixel >= _device.LCDRegisters.WindowX)
+                {
+                    yPos = (_currentScanline - _device.LCDRegisters.WindowY) & 0xFF;
+                    xPos = (pixel - _device.LCDRegisters.WindowX + 6) & 0xFF;
+                    tileMapAddress = _device.LCDRegisters.WindowTileMapOffset;
+                    //Console.WriteLine($"{_device.LCDRegisters.LYRegister}, {pixel}, {yPos}, {xPos}, {tileMapAddress:X4}");
+                }
+                else
+                {
+                    yPos = (_currentScanline + _device.LCDRegisters.ScrollY) & 0xFF;
+                    xPos = (pixel + _device.LCDRegisters.ScrollX) & 0xFF;
+                    tileMapAddress = _device.LCDRegisters.BackgroundTileMapOffset;
+                }
 
+                var tileRow = yPos / 8 * 32;
+                var tileLine = yPos % 8 * 2;
                 var tileCol = xPos / 8;
-
                 var tileNumberAddress = (ushort)((tileMapAddress + tileRow + tileCol) & 0xFFFF);
 
                 var tileNumber = _vRamBank0[tileNumberAddress - 0x8000];
+
+                _tileBuffer[_currentScanline * Device.ScreenWidth + pixel] = tileNumber;
+
                 var flagsByte = _device.Mode == DeviceType.CGB
                     ? _vRamBank1[tileNumberAddress - 0x8000]
                     : 0x0;
@@ -385,7 +415,7 @@ namespace Gameboy.VM.LCD
 
         #region Utility functions on registers
 
-        private bool UsingWindowForScanline => _device.LCDRegisters.IsWindowEnabled && _device.LCDRegisters.LYRegister >= _device.LCDRegisters.WindowY;
+        private bool UsingWindowForScanline => _device.LCDRegisters.IsWindowEnabled && _currentScanline >= _device.LCDRegisters.WindowY;
 
         private ushort GetTileDataAddress(byte tileNumber)
         {
@@ -393,11 +423,11 @@ namespace Gameboy.VM.LCD
             ushort tileDataAddress;
             if (_device.LCDRegisters.UsingSignedByteForTileData)
             {
-                tileDataAddress = (ushort)((tilesetAddress + ((sbyte)tileNumber + 128) * 16) & 0xFFFF);
+                tileDataAddress = (ushort)(tilesetAddress + ((sbyte)tileNumber + 128) * 16);
             }
             else
             {
-                tileDataAddress = (ushort)((tilesetAddress + tileNumber * 16) & 0xFFFF);
+                tileDataAddress = (ushort)(tilesetAddress + tileNumber * 16);
             }
             return tileDataAddress;
         }

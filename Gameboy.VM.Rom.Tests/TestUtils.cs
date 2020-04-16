@@ -56,7 +56,7 @@ namespace Gameboy.VM.Rom.Tests
                 Assert.False(true, $"Test timed out with device state {device}");
             }
 
-            var (_, _, _, _, _, frameBuffer) = device.DumpLcdDebugInformation();
+            var (_, _, _, _, _, _, frameBuffer) = device.DumpLcdDebugInformation();
 
             Image.LoadPixelData<Bgra32>(frameBuffer, Device.ScreenWidth, Device.ScreenHeight).Save(imageFile, new PngEncoder());
 

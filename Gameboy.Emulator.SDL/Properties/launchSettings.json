@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "CGB Acid Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/tests/cgb-acid2.gbc\" --mode CGB"
+    },
     "Manual Sound Tests": {
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/tests/Sound Test (PD).gb\""

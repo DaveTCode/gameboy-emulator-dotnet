@@ -9,6 +9,12 @@ namespace Gameboy.VM.LCD
         internal LCDRegisters(Device device)
         {
             _device = device;
+
+            // Because it isn't possible to turn the background off entirely on a CGB we enable it at startup
+            if (_device.Type == DeviceType.CGB)
+            {
+                IsBackgroundEnabled = true;
+            }
         }
 
         internal byte ScrollX { get; set; }
@@ -71,6 +77,7 @@ namespace Gameboy.VM.LCD
         internal bool LargeSprites { get; private set; }
         internal bool AreSpritesEnabled { get; private set; }
         internal bool IsBackgroundEnabled { get; private set; }
+        internal bool IsCgbSpriteMasterPriorityOn { get; private set; }
 
         private byte _lcdControlRegister;
         internal byte LCDControlRegister
@@ -87,7 +94,23 @@ namespace Gameboy.VM.LCD
                 BackgroundTileMapOffset = (value & 0x8) == 0x8 ? 0x9C00 : 0x9800; // Bit 3 on LCDC register controls which memory location contains the background tilemap
                 LargeSprites = (value & 0x4) == 0x4; // Bit 2 on LCDC register controls how large sprites are
                 AreSpritesEnabled = (value & 0x2) == 0x2; // Bit 1 on LCDC register controls whether to display sprites
-                IsBackgroundEnabled = (value & 0x1) == 0x1; // Bit 0 on LCDC register controls whether to display the background
+
+                switch (_device.Type)
+                {
+                    // Bit 0 acts differently on DMG/CGB
+                    case DeviceType.DMG:
+                        // Bit 0 on LCDC register controls whether to display the background in DMG devices
+                        IsBackgroundEnabled = (value & 0x1) == 0x1;
+                        break;
+                    case DeviceType.CGB when _device.Mode == DeviceType.CGB:
+                        IsCgbSpriteMasterPriorityOn = (value & 0x1) == 0x0;
+                        break;
+                    case DeviceType.CGB when _device.Mode == DeviceType.DMG:
+                        // Bit 0 on LCDC register controls whether to display the background and window on CGB devices in DMG mode
+                        IsBackgroundEnabled = (value & 0x1) == 0x1;
+                        IsWindowEnabled = IsBackgroundEnabled;
+                        break;
+                }
 
                 if (!IsLcdOn)
                 {
@@ -129,7 +152,7 @@ namespace Gameboy.VM.LCD
         private void UpdateStatIRQSignal()
         {
             if (!IsLcdOn) return;
-            var _oldStatIRQSignal = _statIRQSignal;
+            var oldStatIRQSignal = _statIRQSignal;
 
             CoincidenceFlag = _lyCompare == LYRegister;
 
@@ -138,7 +161,7 @@ namespace Gameboy.VM.LCD
                              (StatMode == StatMode.OAMRAMPeriod && Mode2OAMCheckEnabled) ||
                              (StatMode == StatMode.VBlankPeriod && (Mode1VBlankCheckEnabled || Mode2OAMCheckEnabled));
 
-            if (!_oldStatIRQSignal && _statIRQSignal)
+            if (!oldStatIRQSignal && _statIRQSignal)
             {
                 _device.InterruptRegisters.RequestInterrupt(Interrupts.Interrupt.LCDSTAT);
             }

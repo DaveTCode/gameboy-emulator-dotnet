@@ -102,21 +102,24 @@ namespace Gameboy.VM
         /// <summary>
         /// Debug information about the LCD driver & registers
         /// </summary>
+        /// 
         /// <returns>
         /// 1. The contents of VRAM bank 0
         /// 2. The contents of VRAM bank 1
         /// 3. The contents of OAM RAM
-        /// 3. The contents of the CGB BG Palette
-        /// 4. The contents of the CGB Sprite Palette
-        /// 5. The contents of the framebuffer
+        /// 4. The tile buffer (i.e. which tile each pixel comes from)
+        /// 5. The contents of the CGB BG Palette
+        /// 6. The contents of the CGB Sprite Palette
+        /// 7. The contents of the framebuffer
         /// </returns>
-        public (byte[], byte[], byte[], (byte, byte, byte)[], (byte, byte, byte)[], byte[]) DumpLcdDebugInformation()
+        public (byte[], byte[], byte[], byte[], (byte, byte, byte)[], (byte, byte, byte)[], byte[]) DumpLcdDebugInformation()
         {
-            var (bank0, bank1, oam) = LCDDriver.DumpVRAM();
+            var (bank0, bank1, oam, tileBuffer) = LCDDriver.DumpVRAM();
             return (
                 bank0,
                 bank1,
                 oam,
+                tileBuffer,
                 LCDRegisters.CGBBackgroundPalette.Palette,
                 LCDRegisters.CGBSpritePalette.Palette,
                 LCDDriver.GetCurrentFrame()
