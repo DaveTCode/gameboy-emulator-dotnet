@@ -179,7 +179,7 @@ namespace Gameboy.VM.LCD
             Array.Clear(_spritesOnLine, 0, _spritesOnLine.Length);
             for (var spriteIndex = 0; spriteIndex < MaxSpritesPerFrame; spriteIndex++)
             {
-                if (spritesFoundOnLine == MaxSpritesPerScanline - 1) break;
+                if (spritesFoundOnLine == MaxSpritesPerScanline) break;
 
                 var sprite = _sprites[spriteIndex];
 
