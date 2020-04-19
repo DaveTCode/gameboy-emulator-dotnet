@@ -49,6 +49,9 @@ namespace Gameboy.VM.LCD
         // Current state of LCD driver
         private int _currentTCyclesInScanline;
         private int _currentScanline;
+        private int _windowLinesSkipped;
+        private bool _frameUsesWindow;
+        private bool _scanlineUsedWindow;
 
         internal LCDDriver(Device device)
         {
@@ -265,11 +268,13 @@ namespace Gameboy.VM.LCD
                 // Then determine the x position relative to whether we're in the window or the background
                 // taking into account scrolling.
                 int xPos, yPos, tileMapAddress;
-                if (UsingWindowForScanline && pixel >= _device.LCDRegisters.WindowX)
+                if (UsingWindowForScanline && pixel >= _device.LCDRegisters.WindowX - 7)
                 {
-                    yPos = (_currentScanline - _device.LCDRegisters.WindowY) & 0xFF;
-                    xPos = (pixel - _device.LCDRegisters.WindowX + 6) & 0xFF;
+                    yPos = (_currentScanline - _device.LCDRegisters.WindowY - _windowLinesSkipped) & 0xFF;
+                    xPos = (pixel - _device.LCDRegisters.WindowX + 7) & 0xFF;
                     tileMapAddress = _device.LCDRegisters.WindowTileMapOffset;
+                    _scanlineUsedWindow = true;
+                    _frameUsesWindow = true;
                 }
                 else
                 {
@@ -331,6 +336,12 @@ namespace Gameboy.VM.LCD
                 else if (bgToOamPriority == 1) _scanlineBgPriority[pixel] = ScanlineBgPriority.Priority;
                 else _scanlineBgPriority[pixel] = ScanlineBgPriority.Normal;
             }
+
+            // Pause the window renderer to cope with skipping window lines
+            if (_frameUsesWindow && !_scanlineUsedWindow)
+            {
+                _windowLinesSkipped++;
+            }
         }
 
         internal void TurnLCDOff()
@@ -383,8 +394,13 @@ namespace Gameboy.VM.LCD
                     case StatMode.VBlankPeriod: // Entering VBlank so draw whole screen
                         _device.Renderer.HandleVBlankEvent(_frameBuffer, _device.TCycles);
                         _device.InterruptRegisters.RequestInterrupt(Interrupt.VerticalBlank);
+
+                        // Reset the window to tell it to draw from the top of the screen again
+                        _windowLinesSkipped = 0;
+                        _frameUsesWindow = false;
                         return false;
                     case StatMode.OAMRAMPeriod:
+                        _scanlineUsedWindow = false; // Reset window status as we're moving to a new scanline
                         return false;
                     case StatMode.TransferringDataToDriver:
                         return false;
