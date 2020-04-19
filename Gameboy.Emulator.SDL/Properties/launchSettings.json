@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "DMG Acid Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "\"../../../../Roms/tests/dmg-acid2.gb\""
+    },
     "CGB Acid Tests": {
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/tests/cgb-acid2.gbc\" --mode CGB"
