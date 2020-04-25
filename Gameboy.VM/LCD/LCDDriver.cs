@@ -226,7 +226,7 @@ namespace Gameboy.VM.LCD
                 {
                     var pixel = sprite.X + x;
                     if (pixel < 0 || pixel >= Device.ScreenWidth) continue;
-                    if (_scanlineBgPriority[pixel] == ScanlineBgPriority.Priority) continue; // Don't overwrite high priority background tiles
+                    if (_scanlineBgPriority[pixel] == ScanlineBgPriority.Priority && !_device.LCDRegisters.IsCgbSpriteMasterPriorityOn) continue; // Don't overwrite high priority background tiles
 
                     // Convert the tile data spread over two bytes into the
                     // specific color value for this pixel.
