@@ -16,7 +16,7 @@ namespace Gameboy.VM.Rom.Tests
 {
     internal static class TestUtils
     {
-        internal static string SolutionDirectory = Directory.GetParent(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath).Parent?.Parent?.Parent?.Parent?.ToString();
+        internal static string SolutionDirectory = Directory.GetParent(new Uri(Assembly.GetExecutingAssembly().CodeBase!).LocalPath).Parent?.Parent?.Parent?.Parent?.ToString();
         internal static string ImageDirectory = Path.Join(SolutionDirectory, "Roms", "output_images");
 
         /// <summary>
@@ -32,6 +32,7 @@ namespace Gameboy.VM.Rom.Tests
         /// </param>
         /// <param name="finalOpcode"></param>
         /// <param name="timeoutMs"></param>
+        /// <param name="deviceType"></param>
         internal static async Task TestRomAgainstResult(string relativePathToRomFromSolution, string[] expectedFramebuffer, int timeoutMs, ushort? finalOpcode = null, DeviceType deviceType = DeviceType.DMG)
         {
             var romFile = Path.Join(SolutionDirectory, relativePathToRomFromSolution);
