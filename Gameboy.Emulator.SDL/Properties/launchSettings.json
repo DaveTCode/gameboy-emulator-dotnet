@@ -12,21 +12,9 @@
       "commandName": "Project",
       "commandLineArgs": "\"../../../../Roms/tests/Sound Test (PD).gb\""
     },
-    "Mooneye EI Sequence": {
-      "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/ei_sequence.gb"
-    },
-    "Mooneye HALT IME0 EI": {
-      "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/halt_ime0_ei.gb"
-    },
     "Mooneye TIM00 DIV TRIGGER": {
       "commandName": "Project",
       "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/timer/tim00_div_trigger.gb"
-    },
-    "Mooneye PPU STAT IRQ Blocking": {
-      "commandName": "Project",
-      "commandLineArgs": "../../../../Roms/tests/mooneye-gb/acceptance/ppu/stat_irq_blocking.gb"
     },
     "Mooneye PPU STAT LYC ON OFF": {
       "commandName": "Project",

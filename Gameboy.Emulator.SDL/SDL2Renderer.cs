@@ -39,14 +39,13 @@ namespace Gameboy.Emulator.SDL
         {
             if (_deviceType == DeviceType.DMG)
             {
-                return (r, g, b);
                 return _grayscaleColorMap[(r, g, b)];
             }
 
             return ((byte, byte, byte))(
-                (r * 13 + g * 2 + b) >> 1,
-                (g * 3 + b) << 1,
-                (r * 3 + g * 2 + b * 11) >> 1
+                ((r << 3) | (r >> 2)),
+                ((g << 3) | (g >> 2)),
+                ((b << 3) | (b >> 2))
             );
         }
 

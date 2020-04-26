@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using Gameboy.VM;
 using Gameboy.VM.Cartridge;
 using Gameboy.VM.Joypad;

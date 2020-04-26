@@ -1,4 +1,6 @@
-﻿namespace Gameboy.VM.LCD
+﻿using System;
+
+namespace Gameboy.VM.LCD
 {
     internal class CGBPalette
     {
@@ -21,7 +23,7 @@
             set
             {
                 _autoIncrement = (value & 0x80) == 0x80;
-                _paletteIndex = (byte)(value & 0b111111); // Only bottom 6 bits reflect the actual palette index
+                _paletteIndex = (byte)(value & 0b0011_1111); // Only bottom 6 bits reflect the actual palette index
             }
         }
 
@@ -42,7 +44,7 @@
             if (_paletteIndex % 2 == 0) // Low byte in pair
             {
                 Palette[colorIndex].Item1 = (byte)(value & 0b11111); // Red is the bottom 5 bits
-                Palette[colorIndex].Item2 = (byte)(((Palette[colorIndex].Item2 & 0b00011) << 3) | ((value & 0b11100000) >> 5)); // Green has some bits in this byte
+                Palette[colorIndex].Item2 = (byte)(((Palette[colorIndex].Item2 & 0b11) << 3) | ((value & 0b11100000) >> 5)); // Green has some bits in this byte
             }
             else
             {
