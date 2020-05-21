@@ -3,7 +3,7 @@
 
 # Gameboy Emulator in C# 8
 
-Gameboy (DMG & CGB) emulator written in C# (dotnet core 3.1) as an educational exercise (not as a production emulator). Uses SDL2 for windowing & graphics and 
+Gameboy (DMG & CGB) emulator written in C#8 (dotnet core 3.1) as an educational exercise (not as a production emulator). Uses SDL2 for windowing & graphics and 
 NAudio for playing raw audio samples.
 
 ## State
@@ -18,7 +18,9 @@ NAudio for playing raw audio samples.
 
 - Lots of test failures specified in the table below
 - Aladdin screwed up video after boot
-- Lots of CGB games seem to have incorrect tiles placed (vram bank issue? tilemap issue?)
+- Sound channel 4 is screwed up (1 & 2 seem ok if badly aliased)
+- Sounds start during copyright screen of tetris, so I've misunderstood something regarding how sounds are turned on/off. 
+Think I need to rewrite the sound channels to call out the DAC as a separate unit
 
 ### Specific
 
@@ -34,7 +36,7 @@ NAudio for playing raw audio samples.
 - Display FPS using SDL text rendering?
 - Native debugger with winforms/wpf?
 - SGB support
-- Cycle accuracy rather than opcode atomicity assumption
+- Dot renderer rather than full line renderer
 - Proper configurable serial port support
 - IR port configuration
 

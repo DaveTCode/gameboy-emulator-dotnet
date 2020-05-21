@@ -78,7 +78,7 @@ namespace Gameboy.VM.Sound.Channels
 
             _currentTimerCycle = _internalTimerPeriod;
             _lfsr = 0x7FFF;
-
+            Envelope.Trigger();
             Device.Log.Information("Triggering Noise Channel with period {0}, length ({1}) enabled {2}, volume: ({3})", _internalTimerPeriod, SoundLength, UseSoundLength, Envelope);
         }
 

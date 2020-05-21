@@ -60,7 +60,7 @@ namespace Gameboy.VM
         public Device(Cartridge.Cartridge cartridge, DeviceType type, IRenderer renderer, ISoundOutput soundOutput, byte[] bootRom)
         {
             Log = new LoggerConfiguration()
-                .MinimumLevel.Error()
+                .MinimumLevel.Information()
                 .CreateLogger();
 
             // A bit of double checking that we're loading a valid cartridge for the device type

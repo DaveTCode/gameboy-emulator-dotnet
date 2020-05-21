@@ -46,6 +46,7 @@ namespace Gameboy.VM.Sound.Channels
             _frequencyPeriod = FrequencyPeriod;
             _lastOutput = 0;
             Envelope.Trigger();
+
             Device.Log.Information("Triggering sound 2 with frequency {0}Hz period {1}, envelope ({2})", ActualFrequencyHz, FrequencyPeriod, Envelope);
         }
 

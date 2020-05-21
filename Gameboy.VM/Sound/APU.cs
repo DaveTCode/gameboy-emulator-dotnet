@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Gameboy.VM.Sound.Channels;
 
 namespace Gameboy.VM.Sound
@@ -101,26 +102,17 @@ namespace Gameboy.VM.Sound
         #endregion
 
 
-        internal byte PCM12
-        {
-            get
-            {
-                return (byte)(
-                    (_squareChannel2.IsEnabled ? _squareChannel2.GetOutputVolume() << 4 : 0) |
-                    (_squareChannel1.IsEnabled ? _squareChannel1.GetOutputVolume() : 0)
-                );
-            }
-        }
-        internal byte PCM34
-        {
-            get
-            {
-                return (byte)(
-                    (_noiseChannel.IsEnabled ? _noiseChannel.GetOutputVolume() << 4 : 0) |
-                    (_waveChannel.IsEnabled ? _waveChannel.GetOutputVolume() : 0)
-                );
-            }
-        }
+        internal byte PCM12 =>
+            (byte)(
+                (_squareChannel2.IsEnabled ? _squareChannel2.GetOutputVolume() << 4 : 0) |
+                (_squareChannel1.IsEnabled ? _squareChannel1.GetOutputVolume() : 0)
+            );
+
+        internal byte PCM34 =>
+            (byte)(
+                (_noiseChannel.IsEnabled ? _noiseChannel.GetOutputVolume() << 4 : 0) |
+                (_waveChannel.IsEnabled ? _waveChannel.GetOutputVolume() : 0)
+            );
 
         private void Reset()
         {
@@ -202,7 +194,7 @@ namespace Gameboy.VM.Sound
 
         internal byte Read(ushort address)
         {
-            return address switch
+            return (byte) (address switch
             {
                 0xFF10 => _squareChannel1.Sweep.Register,
                 0xFF11 => _squareChannel1.ControlByte,
@@ -230,7 +222,7 @@ namespace Gameboy.VM.Sound
                 _ when address >= 0xFF27 && address <= 0xFF29 => 0xFF, // Unused
                 _ when address >= 0xFF30 && address <= 0xFF3F => _waveChannel.ReadRam(address),
                 _ => 0xFF
-            };
+            });
         }
 
         private int _frameSequence;

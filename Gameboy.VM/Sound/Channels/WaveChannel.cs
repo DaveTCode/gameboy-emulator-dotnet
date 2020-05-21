@@ -129,6 +129,12 @@ namespace Gameboy.VM.Sound.Channels
             _currentFrequencyPeriod = FrequencyPeriod;
             _waveSamplePositionCounter = 0;
 
+            // Redisable the channel if the DAC is not enabled
+            if ((NR30 & 0x80) == 0)
+            {
+                IsEnabled = false;
+            }
+
             Device.Log.Information("Triggering wave channel with volume shift {0} and period {1}", Volume, FrequencyPeriod);
         }
 

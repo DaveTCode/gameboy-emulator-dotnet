@@ -79,6 +79,12 @@ namespace Gameboy.VM.Sound.Envelope
         {
             ResetCurrentPeriod();
             Volume = InitialVolume;
+
+            // If the DAC is disabled then don't enable the sound channel
+            if ((Register & 0b1111_1000) == 0)
+            {
+                _channel.IsEnabled = false;
+            }
         }
 
         public override string ToString()
