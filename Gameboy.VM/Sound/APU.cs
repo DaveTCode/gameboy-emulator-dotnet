@@ -142,6 +142,8 @@ namespace Gameboy.VM.Sound
                 {
                     _waveChannel.WriteRam(address, value);
                 }
+
+                return;
             }
 
             if (address == 0xFF10)
@@ -194,7 +196,7 @@ namespace Gameboy.VM.Sound
 
         internal byte Read(ushort address)
         {
-            return (byte) (address switch
+            return address switch
             {
                 0xFF10 => _squareChannel1.Sweep.Register,
                 0xFF11 => _squareChannel1.ControlByte,
@@ -222,7 +224,7 @@ namespace Gameboy.VM.Sound
                 _ when address >= 0xFF27 && address <= 0xFF29 => 0xFF, // Unused
                 _ when address >= 0xFF30 && address <= 0xFF3F => _waveChannel.ReadRam(address),
                 _ => 0xFF
-            });
+            };
         }
 
         private int _frameSequence;
