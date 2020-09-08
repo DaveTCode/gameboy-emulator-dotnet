@@ -10,7 +10,7 @@ namespace Gameboy.Emulator.SDL
 {
     public class CommandLineOptions
     {
-        [Value(0, HelpText = "The full file path to a binary rom dump", MetaName = "RomFilePath")]
+        [Value(0, HelpText = "The full file path to a binary rom dump", MetaName = "RomFilePath", Required = true)]
         public string RomFilePath { get; }
 
         [Option("bootRomFilePath", Required = false, HelpText = "Set to the file path of a boot rom, this should match the device mode selected")]
